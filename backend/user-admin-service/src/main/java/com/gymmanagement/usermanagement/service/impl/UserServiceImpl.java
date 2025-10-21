@@ -41,8 +41,7 @@ public class UserServiceImpl implements UserService {
     @Override
     @Transactional
     public RegisterResponse registerUser(RegisterRequest request) {
-        // Allow only admin registration
-        Role role = Role.ADMIN;
+        Role role = Role.ADMIN; // only admin registration allowed
 
         // Check existing user by email
         Optional<User> existingUserOpt = userRepository.findByEmail(request.getEmail());
@@ -51,9 +50,10 @@ public class UserServiceImpl implements UserService {
             if (!existingUser.getIsActive() || !existingUser.getIsEmailVerified()) {
                 resendOtp(existingUser.getUserId());
                 return new RegisterResponse(
+                    "success",
+                    "User already registered but not verified. OTP resent.",
                     existingUser.getUserId(),
-                    existingUser.getEmail(),
-                    "User already registered but not verified. OTP resent."
+                    existingUser.getEmail()
                 );
             } else {
                 throw new UserAlreadyExistsException("Email already registered and verified");
@@ -104,12 +104,12 @@ public class UserServiceImpl implements UserService {
         sendOtp(user);
 
         return new RegisterResponse(
+            "success",
+            "Admin registered successfully. OTP sent to your email.",
             user.getUserId(),
-            user.getEmail(),
-            "Admin registered successfully. OTP sent to your email."
+            user.getEmail()
         );
     }
-
 
     // ---------------- OTP Methods ----------------
     private void sendOtp(User user) {
@@ -134,15 +134,19 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public String verifyOtp(Integer userId, String otpCode) {
+    public RegisterResponse verifyOtp(Integer userId, String otpCode) {
         Optional<User> userOpt = userRepository.findById(userId);
-        if (userOpt.isEmpty()) return "Invalid user";
+        if (userOpt.isEmpty()) {
+            return new RegisterResponse("error", "Invalid user", userId, null);
+        }
 
         Optional<UserVerification> otpOpt =
                 userVerificationRepository.findByUser_UserIdAndOtpCodeAndIsUsedFalseAndExpiresAtAfter(
                         userId, otpCode, LocalDateTime.now());
 
-        if (otpOpt.isEmpty()) return "Invalid or expired OTP";
+        if (otpOpt.isEmpty()) {
+            return new RegisterResponse("error", "Invalid or expired OTP", userId, null);
+        }
 
         UserVerification otp = otpOpt.get();
         otp.setIsUsed(true);
@@ -153,19 +157,23 @@ public class UserServiceImpl implements UserService {
         user.setIsActive(true);
         userRepository.save(user);
 
-        return "OTP verification successful. Account activated.";
+        return new RegisterResponse("success", "OTP verification successful. Account activated.", userId, user.getEmail());
     }
 
     @Override
-    public String resendOtp(Integer userId) {
+    public RegisterResponse resendOtp(Integer userId) {
         Optional<User> userOpt = userRepository.findById(userId);
-        if (userOpt.isEmpty()) return "Invalid user";
+        if (userOpt.isEmpty()) {
+            return new RegisterResponse("error", "Invalid user", userId, null);
+        }
 
         User user = userOpt.get();
-        if (user.getIsActive()) return "User already verified";
+        if (user.getIsActive()) {
+            return new RegisterResponse("error", "User already verified", userId, user.getEmail());
+        }
 
         sendOtp(user);
-        return "OTP resent successfully.";
+        return new RegisterResponse("success", "OTP resent successfully.", userId, user.getEmail());
     }
 
     // ---------------- Login ----------------
@@ -193,5 +201,4 @@ public class UserServiceImpl implements UserService {
     private String generateOtp() {
         return String.valueOf(100000 + secureRandom.nextInt(900000));
     }
-
 }

@@ -6,7 +6,7 @@ import com.gymmanagement.usermanagement.Response.RegisterResponse;
 
 public interface UserService {
     RegisterResponse registerUser(RegisterRequest request);
-    String verifyOtp(Integer userId, String otpCode);
-    String resendOtp(Integer userId);
+    RegisterResponse verifyOtp(Integer userId, String otpCode);
+    RegisterResponse resendOtp(Integer userId);
     LoginResponse login(String email, String password);
 }
