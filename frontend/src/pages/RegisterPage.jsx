@@ -11,7 +11,6 @@ import {
   Button,
   CircularProgress,
   Box,
-  Switch,
   FormControl,
   InputLabel,
   Select,
@@ -25,7 +24,6 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
-  const [darkMode, setDarkMode] = useState(false);
   const [step, setStep] = useState(0);
   const [formData, setFormData] = useState({
     email: '',
@@ -52,23 +50,24 @@ const RegisterPage = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isRedirecting, setIsRedirecting] = useState(false);
+  const [showOtpField, setShowOtpField] = useState(false);
 
   // Theme configuration with vibrant emerald green and indigo
   const theme = createTheme({
     palette: {
-      mode: darkMode ? 'dark' : 'light',
+      mode: 'light',
       primary: {
-        main: darkMode ? '#342bddff' : '#342bddff', // Emerald green
+        main: '#342bddff',
       },
       secondary: {
-        main: darkMode ? '#818CF8' : '#4F46E5', // Indigo
+        main: '#4F46E5',
       },
       background: {
-        default: darkMode ? '#111827' : 'linear-gradient(135deg, #E5E7EB 0%, #F3F4F6 100%)',
+        default: 'linear-gradient(135deg, #E5E7EB 0%, #F3F4F6 100%)',
       },
       text: {
-        primary: darkMode ? '#E5E7EB' : '#111827',
-        secondary: darkMode ? '#9CA3AF' : '#4B5563',
+        primary: '#111827',
+        secondary: '#4B5563',
       },
       success: {
         main: '#46e546ff',
@@ -93,19 +92,19 @@ const RegisterPage = () => {
           root: {
             '& .MuiOutlinedInput-root': {
               borderRadius: '10px',
-              backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.5)',
+              backgroundColor: 'rgba(255, 255, 255, 0.5)',
               transition: 'all 0.3s ease',
               '&:hover fieldset': {
-                borderColor: darkMode ? '#342bddff' : '#342bddff',
+                borderColor: '#342bddff',
               },
               '&.Mui-focused fieldset': {
-                borderColor: darkMode ? '#342bddff' : '#342bddff',
+                borderColor: '#342bddff',
               },
             },
             '& .MuiInputLabel-root': {
-              color: darkMode ? '#9CA3AF' : '#4B5563',
+              color: '#4B5563',
               '&.Mui-focused': {
-                color: darkMode ? '#342bddff' : '#342bddff',
+                color: '#342bddff',
               },
             },
           },
@@ -118,17 +117,13 @@ const RegisterPage = () => {
             borderRadius: '10px',
             padding: '12px 24px',
             fontWeight: 600,
-            background: darkMode
-              ? 'linear-gradient(90deg, #4F46E5, #4F46E5)'
-              : 'linear-gradient(90deg, #4F46E5, #4F46E5)',
+            background: 'linear-gradient(90deg, #4F46E5, #4F46E5)',
             color: '#FFFFFF',
             transition: 'all 0.3s ease',
             '&:hover': {
               transform: 'translateY(-2px)',
               boxShadow: '0 6px 12px rgba(0, 0, 0, 0.2)',
-              background: darkMode
-                ? 'linear-gradient(90deg, #342bddff, #342bddff)'
-                : 'linear-gradient(90deg, #342bddff, #342bddff)',
+              background: 'linear-gradient(90deg, #342bddff, #342bddff)',
             },
             '&:disabled': {
               background: 'grey',
@@ -141,7 +136,7 @@ const RegisterPage = () => {
       MuiSelect: {
         styleOverrides: {
           root: {
-            backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(255, 255, 255, 0.5)',
+            backgroundColor: 'rgba(255, 255, 255, 0.5)',
             borderRadius: '10px',
           },
         },
@@ -177,7 +172,7 @@ const RegisterPage = () => {
       if (!agreeTerms) newErrors.agreeTerms = 'You must agree to the terms';
     }
     setErrors(newErrors);
-    console.log('Validation errors:', newErrors); // Debug validation
+    console.log('Validation errors:', newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
@@ -195,31 +190,38 @@ const RegisterPage = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (step !== 2 || !validateStep()) {
-      console.log('Submission blocked: step=', step, 'validation failed'); // Debug
+      console.log('Submission blocked: step=', step, 'validation failed');
       return;
     }
     setApiError('');
     setSuccessMessage('');
     setIsLoading(true);
     try {
-      console.log('Sending registration request with data:', formData); // Debug
+      console.log('Sending registration request with data:', formData);
       const response = await api.post('/user/register', formData);
-      console.log('Registration response:', response.data); // Debug
+      console.log('Registration response:', response.data);
       const data = response.data;
 
-      // Handle the specific backend response format
-      if (data && data.userId && data.message && data.message.includes('successfully')) {
-        setUserId(data.userId.toString()); // Set userId from response
-        setIsRegistered(true); // Switch to OTP input view
-        setSuccessMessage(data.message || 'Registration successful! Please verify your email with the OTP sent.');
-        setResendTimer(60);
+      if (data && data.status === 'success' && data.userId) {
+        setUserId(data.userId.toString());
+        if (data.message.includes('successfully')) {
+          setIsRegistered(true);
+          setSuccessMessage('Registration successful! Please verify your email with the OTP sent.');
+          setResendTimer(60);
+        } else if (data.message.includes('not verified')) {
+          setShowOtpField(true);
+          setSuccessMessage('User already registered. An OTP has been resent. Please verify.');
+          setResendTimer(60);
+        } else {
+          setApiError('Registration failed: Unexpected response from server.');
+        }
       } else {
-        setApiError('Registration failed: Unexpected response from server.');
+        setApiError(data?.message || 'Registration failed: Unexpected response from server.');
       }
     } catch (error) {
       const errorMsg = error.response?.data?.message || error.message || 'Registration failed due to a network error. Please try again.';
       setApiError(errorMsg);
-      console.error('Registration error:', errorMsg); // Debug
+      console.error('Registration error:', errorMsg);
     } finally {
       setIsLoading(false);
     }
@@ -231,35 +233,33 @@ const RegisterPage = () => {
     setApiError('');
     setSuccessMessage('');
 
-    // Validate OTP (6-digit numeric code)
     if (!otpCode || !/^\d{6}$/.test(otpCode)) {
       setApiError('Please enter a valid 6-digit OTP code');
-      console.log('OTP validation failed:', otpCode); // Debug
+      console.log('OTP validation failed:', otpCode);
       return;
     }
 
     setIsLoading(true);
     try {
-      console.log('Verifying OTP:', { userId, otpCode }); // Debug
+      console.log('Verifying OTP:', { userId, otpCode });
       const response = await api.post(`/user/verify-otp?userId=${userId}&otpCode=${otpCode}`);
-      console.log('OTP verification response:', response.data); // Debug
+      console.log('OTP verification response:', response.data);
       const data = response.data;
 
-      // Check for backend response format: { "message": "OTP verification successful. Account activated." }
-      if (data && data.message?.includes('successful')) {
+      if (data && data.status === 'success' && data.message.includes('successful')) {
         setSuccessMessage('Email verified successfully! Redirecting to login...');
         setIsRedirecting(true);
         setTimeout(() => {
-          console.log('Navigating to /login'); // Debug
+          console.log('Navigating to /login');
           navigate('/login');
         }, 2000);
       } else {
-        setApiError('Invalid OTP. Please try again.');
+        setApiError(data?.message || 'Invalid OTP. Please try again.');
       }
     } catch (error) {
       const errorMsg = error.response?.data?.message || error.message || 'OTP verification failed due to a network error.';
       setApiError(errorMsg);
-      console.error('OTP verification error:', errorMsg); // Debug
+      console.error('OTP verification error:', errorMsg);
     } finally {
       setIsLoading(false);
     }
@@ -269,29 +269,28 @@ const RegisterPage = () => {
   const handleResendOtp = async () => {
     if (!userId) {
       setApiError('No user ID available. Please register again.');
-      console.log('Resend OTP failed: No userId'); // Debug
+      console.log('Resend OTP failed: No userId');
       return;
     }
     setApiError('');
     setSuccessMessage('');
     setIsLoading(true);
     try {
-      console.log('Resending OTP for userId:', userId); // Debug
+      console.log('Resending OTP for userId:', userId);
       const response = await api.post(`/user/resend-otp?userId=${userId}`);
-      console.log('Resend OTP response:', response.data); // Debug
+      console.log('Resend OTP response:', response.data);
       const data = response.data;
 
-      // Adjust for backend response format (assuming similar to registration/verify)
-      if (data && data.message?.includes('successful')) {
+      if (data && data.status === 'success' && data.message.includes('successfully')) {
         setSuccessMessage('OTP resent successfully! Please check your email.');
         setResendTimer(60);
       } else {
-        setApiError('Failed to resend OTP. Try again.');
+        setApiError(data?.message || 'Failed to resend OTP. Try again.');
       }
     } catch (error) {
       const errorMsg = error.response?.data?.message || error.message || 'Failed to resend OTP due to a network error.';
       setApiError(errorMsg);
-      console.error('Resend OTP error:', errorMsg); // Debug
+      console.error('Resend OTP error:', errorMsg);
     } finally {
       setIsLoading(false);
     }
@@ -299,7 +298,6 @@ const RegisterPage = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    // Sanitize phone number to allow only digits
     const sanitizedValue = name === 'phoneNumber' ? value.replace(/\D/g, '') : value;
     setFormData((prev) => ({ ...prev, [name]: sanitizedValue }));
     setErrors((prev) => ({ ...prev, [name]: '' }));
@@ -314,8 +312,7 @@ const RegisterPage = () => {
   return (
     <ThemeProvider theme={theme}>
       <CssBaseline />
-      <Box sx={{ display: 'flex', minHeight: '100vh', overflow: 'hidden', background: darkMode ? '#111827' : 'linear-gradient(135deg, #E5E7EB 0%, #F3F4F6 100%)' }}>
-        {/* Left side: Gym-related image with overlay */}
+      <Box sx={{ display: 'flex', minHeight: '100vh', overflow: 'hidden', background: 'linear-gradient(135deg, #E5E7EB 0%, #F3F4F6 100%)' }}>
         <Box
           sx={{
             flex: 1,
@@ -338,7 +335,7 @@ const RegisterPage = () => {
               left: 0,
               right: 0,
               bottom: 0,
-              background: darkMode ? 'rgba(0, 0, 0, 0.6)' : 'rgba(0, 0, 0, 0.4)',
+              background: 'rgba(0, 0, 0, 0.4)',
               display: 'flex',
               flexDirection: 'column',
               alignItems: 'center',
@@ -360,7 +357,6 @@ const RegisterPage = () => {
             </Typography>
           </Box>
         </Box>
-        {/* Right side: Registration form */}
         <Box
           sx={{
             flex: 1,
@@ -375,20 +371,13 @@ const RegisterPage = () => {
           transition={{ duration: 0.8 }}
         >
           <Box sx={{ width: '100%', maxWidth: 500 }}>
-            <Box display="flex" justifyContent="space-between" alignItems="center" mb={4}>
+            <Box display="flex" justifyContent="start" alignItems="center" mb={4}>
               <Typography variant="h5" component="h1" sx={{ fontWeight: 700 }}>
                 Admin Sign-Up
               </Typography>
-              <Box display="flex" alignItems="center">
-                <Typography variant="body2" sx={{ mr: 1 }}>
-                  {darkMode ? 'Dark' : 'Light'} Mode
-                </Typography>
-                <Switch checked={darkMode} onChange={() => setDarkMode(!darkMode)} color="primary" />
-              </Box>
             </Box>
-            {!isRegistered ? (
+            {!isRegistered && !showOtpField ? (
               <>
-                {/* Custom Step Indicator */}
                 <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
                   {steps.map((label, index) => (
                     <Box key={index} sx={{ textAlign: 'center', flex: 1 }}>
@@ -434,8 +423,7 @@ const RegisterPage = () => {
                           name="username"
                           value={formData.username}
                           onChange={handleChange}
-                          error={!!errors.username}
-                          helperText={errors.username}
+                          helperText={formData.username ? '' : 'Username is required'}
                           required
                           variant="outlined"
                           sx={{ mb: 2 }}
@@ -446,8 +434,7 @@ const RegisterPage = () => {
                           name="email"
                           value={formData.email}
                           onChange={handleChange}
-                          error={!!errors.email}
-                          helperText={errors.email}
+                          helperText={formData.email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email) ? 'Valid email is required' : ''}
                           required
                           variant="outlined"
                           sx={{ mb: 2 }}
@@ -459,8 +446,7 @@ const RegisterPage = () => {
                           type={showPassword ? 'text' : 'password'}
                           value={formData.password}
                           onChange={handleChange}
-                          error={!!errors.password}
-                          helperText={errors.password}
+                          helperText={formData.password && formData.password.length < 8 ? 'Password must be at least 8 characters' : ''}
                           required
                           variant="outlined"
                           InputProps={{
@@ -481,8 +467,7 @@ const RegisterPage = () => {
                           type={showConfirmPassword ? 'text' : 'password'}
                           value={formData.confirmPassword}
                           onChange={handleChange}
-                          error={!!errors.confirmPassword}
-                          helperText={errors.confirmPassword}
+                          helperText={formData.confirmPassword && formData.password !== formData.confirmPassword ? 'Passwords do not match' : ''}
                           required
                           variant="outlined"
                           InputProps={{
@@ -512,8 +497,7 @@ const RegisterPage = () => {
                           name="firstName"
                           value={formData.firstName}
                           onChange={handleChange}
-                          error={!!errors.firstName}
-                          helperText={errors.firstName}
+                          helperText={formData.firstName ? '' : 'First name is required'}
                           required
                           variant="outlined"
                           sx={{ mb: 2 }}
@@ -524,8 +508,7 @@ const RegisterPage = () => {
                           name="lastName"
                           value={formData.lastName}
                           onChange={handleChange}
-                          error={!!errors.lastName}
-                          helperText={errors.lastName}
+                          helperText={formData.lastName ? '' : 'Last name is required'}
                           required
                           variant="outlined"
                           sx={{ mb: 2 }}
@@ -537,14 +520,13 @@ const RegisterPage = () => {
                           type="date"
                           value={formData.dateOfBirth}
                           onChange={handleChange}
-                          error={!!errors.dateOfBirth}
-                          helperText={errors.dateOfBirth}
+                          helperText={formData.dateOfBirth ? '' : 'Date of birth is required'}
                           InputLabelProps={{ shrink: true }}
                           required
                           variant="outlined"
                           sx={{ mb: 2 }}
                         />
-                        <FormControl fullWidth error={!!errors.gender} variant="outlined" sx={{ mb: 2 }}>
+                        <FormControl fullWidth variant="outlined" sx={{ mb: 2 }}>
                           <InputLabel>Gender</InputLabel>
                           <Select
                             name="gender"
@@ -560,7 +542,7 @@ const RegisterPage = () => {
                             <MenuItem value="Female">Female</MenuItem>
                             <MenuItem value="Other">Other</MenuItem>
                           </Select>
-                          {errors.gender && <Typography color="error" variant="caption" sx={{ mt: 0.5 }}>{errors.gender}</Typography>}
+                          {!formData.gender && <Typography color="text.secondary" variant="caption" sx={{ mt: 0.5 }}>Gender is required</Typography>}
                         </FormControl>
                       </motion.div>
                     )}
@@ -578,11 +560,10 @@ const RegisterPage = () => {
                           name="phoneNumber"
                           value={formData.phoneNumber}
                           onChange={handleChange}
-                          error={!!errors.phoneNumber}
-                          helperText={errors.phoneNumber}
+                          helperText={formData.phoneNumber && !/^\d{10}$/.test(formData.phoneNumber) ? '10-digit phone number is required' : ''}
                           required
                           variant="outlined"
-                          inputProps={{ maxLength: 10 }} // Restrict to 10 digits
+                          inputProps={{ maxLength: 10 }}
                           sx={{ mb: 2 }}
                         />
                         <TextField
@@ -593,8 +574,7 @@ const RegisterPage = () => {
                           rows={3}
                           value={formData.address}
                           onChange={handleChange}
-                          error={!!errors.address}
-                          helperText={errors.address}
+                          helperText={formData.address ? '' : 'Address is required'}
                           required
                           variant="outlined"
                           sx={{ mb: 2 }}
@@ -604,7 +584,7 @@ const RegisterPage = () => {
                           label="I agree to the terms and conditions"
                           sx={{ mb: 2 }}
                         />
-                        {errors.agreeTerms && <Typography color="error" variant="caption">{errors.agreeTerms}</Typography>}
+                        {!agreeTerms && <Typography color="text.secondary" variant="caption">You must agree to the terms</Typography>}
                       </motion.div>
                     )}
                     {apiError && (
@@ -657,7 +637,7 @@ const RegisterPage = () => {
                   </Box>
                 </AnimatePresence>
               </>
-            ) : (
+            ) : showOtpField || isRegistered ? (
               <AnimatePresence mode="wait">
                 <motion.div
                   key="otp"
@@ -672,8 +652,8 @@ const RegisterPage = () => {
                       label="Enter OTP"
                       name="otpCode"
                       value={otpCode}
-                      onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))} // Allow only digits
-                      inputProps={{ maxLength: 6 }} // Restrict to 6 digits
+                      onChange={(e) => setOtpCode(e.target.value.replace(/\D/g, ''))}
+                      inputProps={{ maxLength: 6 }}
                       required
                       variant="outlined"
                       sx={{ mb: 2 }}
@@ -717,7 +697,7 @@ const RegisterPage = () => {
                   </Box>
                 </motion.div>
               </AnimatePresence>
-            )}
+            ) : null}
           </Box>
         </Box>
       </Box>
