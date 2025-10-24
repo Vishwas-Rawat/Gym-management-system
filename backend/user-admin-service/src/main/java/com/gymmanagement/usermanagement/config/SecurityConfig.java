@@ -43,7 +43,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                     // Open endpoints
                     .requestMatchers("/user/**").permitAll()
-                    .requestMatchers("/member/complete-registration").permitAll()  // member token registration
+                    .requestMatchers("/member-self/complete-registration").permitAll()
 
                     // Admin endpoints
                     .requestMatchers("/member/admin/**").hasRole("ADMIN")

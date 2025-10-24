@@ -3,14 +3,19 @@ package com.gymmanagement.usermanagement.service.impl;
 import com.gymmanagement.commonservices.entity.Gym;
 import com.gymmanagement.commonservices.entity.Member;
 import com.gymmanagement.commonservices.entity.User;
+import com.gymmanagement.commonservices.entity.UserProfile;
+import com.gymmanagement.commonservices.entity.UserVerification;
 import com.gymmanagement.commonservices.enumeration.RegistrationStatus;
 import com.gymmanagement.commonservices.enumeration.Role;
+import com.gymmanagement.commonservices.enumeration.VerificationType;
 import com.gymmanagement.usermanagement.Request.AdminAddMemberRequest;
 import com.gymmanagement.usermanagement.Request.CompleteRegistrationRequest;
 import com.gymmanagement.usermanagement.Request.UpdateMemberRequest;
 import com.gymmanagement.usermanagement.repository.GymRepository;
 import com.gymmanagement.usermanagement.repository.MemberRepository;
+import com.gymmanagement.usermanagement.repository.UserProfileRepository;
 import com.gymmanagement.usermanagement.repository.UserRepository;
+import com.gymmanagement.usermanagement.repository.UserVerificationRepository;
 import com.gymmanagement.usermanagement.service.EmailService;
 import com.gymmanagement.usermanagement.service.MemberService;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,6 +35,8 @@ public class MemberServiceImpl implements MemberService {
     private final EmailService emailService;
     private final PasswordEncoder passwordEncoder;
     private final GymRepository gymRepository;
+    private final UserVerificationRepository userVerificationRepository;
+    private final UserProfileRepository userProfileRepository;
 
     private static final long TOKEN_VALIDITY_HOURS = 24;
 
@@ -37,13 +44,18 @@ public class MemberServiceImpl implements MemberService {
                              UserRepository userRepository,
                              EmailService emailService,
                              GymRepository gymRepository,
-                             PasswordEncoder passwordEncoder) {
+                             PasswordEncoder passwordEncoder,
+                             UserVerificationRepository userVerificationRepository,
+                             UserProfileRepository userProfileRepository) {
         this.memberRepository = memberRepository;
         this.userRepository = userRepository;
         this.emailService = emailService;
         this.passwordEncoder = passwordEncoder;
-		this.gymRepository = gymRepository;
+        this.gymRepository = gymRepository;
+        this.userVerificationRepository = userVerificationRepository;
+        this.userProfileRepository = userProfileRepository;
     }
+
 
     @Override
     @Transactional
@@ -113,22 +125,50 @@ public class MemberServiceImpl implements MemberService {
                 .orElseThrow(() -> new RuntimeException("Invalid or expired token"));
 
         if (user.getTokenGeneratedAt() == null ||
-            Duration.between(user.getTokenGeneratedAt(), LocalDateTime.now()).toHours() > TOKEN_VALIDITY_HOURS)
+            Duration.between(user.getTokenGeneratedAt(), LocalDateTime.now()).toHours() > TOKEN_VALIDITY_HOURS) {
             throw new RuntimeException("Registration link expired");
+        }
 
-        // Set password & mark registered
+        // ✅ Update user account info
         user.setPassword(passwordEncoder.encode(request.getPassword()));
         user.setRegistrationStatus(RegistrationStatus.REGISTERED);
         user.setRegistrationToken(null);
         user.setTokenGeneratedAt(null);
+        user.setIsActive(true);
+        user.setIsEmailVerified(true);
 
         if (request.getGender() != null) user.setGender(request.getGender());
         if (request.getAge() != null && request.getDateOfBirth() == null)
             user.setDateOfBirth(LocalDateTime.now().minusYears(request.getAge()).toLocalDate());
+        if (request.getDateOfBirth() != null)
+            user.setDateOfBirth(request.getDateOfBirth());
 
         userRepository.save(user);
 
-        // Update member profile with remaining info
+        // ✅ Create UserProfile entry
+        UserProfile profile = new UserProfile();
+        profile.setUser(user);
+        profile.setFirstName(user.getFirstName());
+        profile.setLastName(user.getLastName());
+        profile.setDateOfBirth(user.getDateOfBirth());
+        profile.setGender(user.getGender());
+        profile.setAddress(user.getAddress());
+        profile.setCreatedAt(LocalDateTime.now());
+        profile.setUpdatedAt(LocalDateTime.now());
+        userProfileRepository.save(profile);
+
+        // ✅ Log a verification event in UserVerification
+        UserVerification verification = new UserVerification();
+        verification.setUser(user);
+        verification.setOtpCode(UUID.randomUUID().toString()); // can be random token or constant marker
+        verification.setType(VerificationType.EMAIL);
+        verification.setIsUsed(true);
+        verification.setCreatedAt(LocalDateTime.now());
+        verification.setExpiresAt(LocalDateTime.now().plusHours(24));
+        verification.setUpdatedAt(LocalDateTime.now());
+        userVerificationRepository.save(verification);
+
+        // ✅ Update member info
         memberRepository.findByUser(user).ifPresent(member -> {
             if (request.getFitnessGoal() != null) member.setFitnessGoal(request.getFitnessGoal());
             if (request.getWorkoutTimeSlot() != null) member.setWorkoutTimeSlot(request.getWorkoutTimeSlot());
@@ -136,6 +176,7 @@ public class MemberServiceImpl implements MemberService {
             memberRepository.save(member);
         });
     }
+
 
     private String buildRegistrationLink(String token) {
         return "http://localhost:3000/register/complete?token=" + token;
