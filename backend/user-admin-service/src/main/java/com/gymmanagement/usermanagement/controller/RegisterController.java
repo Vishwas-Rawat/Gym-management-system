@@ -16,25 +16,24 @@ public class RegisterController {
     @Autowired
     private UserService userService;
 
-    
     @PostMapping("/register")
     public RegisterResponse register(@RequestBody RegisterRequest request) {
         if (!"ADMIN".equalsIgnoreCase(request.getRole())) {
-            throw new IllegalArgumentException("Only Admin registration is allowed currently.");
+            return new RegisterResponse("error", "Only Admin registration is allowed currently.", null, null);
         }
         return userService.registerUser(request);
     }
 
     @PostMapping("/verify-otp")
-    public String verifyOtp(@RequestParam Integer userId, @RequestParam String otpCode) {
+    public RegisterResponse verifyOtp(@RequestParam Integer userId, @RequestParam String otpCode) {
         return userService.verifyOtp(userId, otpCode);
     }
 
     @PostMapping("/resend-otp")
-    public String resendOtp(@RequestParam Integer userId) {
+    public RegisterResponse resendOtp(@RequestParam Integer userId) {
         return userService.resendOtp(userId);
     }
-    
+
     @PostMapping("/login")
     public LoginResponse login(@RequestBody LoginRequest request) {
         return userService.login(request.getEmail(), request.getPassword());
