@@ -1,14 +1,15 @@
 package com.gymmanagement.usermanagement.Request;
 
 import lombok.Data;
+import java.time.LocalDate;
 
 @Data
 public class CompleteRegistrationRequest {
-    private String token;             // token from invite link
-    private String password;          // new password
-    private Integer age;
-    private String gender;
-    private String fitnessGoal;
-    private String workoutTimeSlot;   // optional override
-    private String dateOfBirth;
+    private String token; // from email link
+    private String password;
+    private Integer age; // optional
+    private LocalDate dateOfBirth; // optional
+    private String gender; // optional
+    private String fitnessGoal; // optional
+    private String workoutTimeSlot; // optional
 }
