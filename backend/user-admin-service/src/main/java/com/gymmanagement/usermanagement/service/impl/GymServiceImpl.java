@@ -1,16 +1,5 @@
 package com.gymmanagement.usermanagement.service.impl;
 
-import java.time.LocalDateTime;
-import java.util.List;
-import java.util.stream.Collectors;
-
-import jakarta.persistence.EntityManager;
-import jakarta.persistence.PersistenceContext;
-
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-
 import com.gymmanagement.commonservices.entity.Gym;
 import com.gymmanagement.commonservices.entity.User;
 import com.gymmanagement.commonservices.enumeration.Role;
@@ -18,140 +7,155 @@ import com.gymmanagement.usermanagement.Response.GymRegisterResponse;
 import com.gymmanagement.usermanagement.repository.GymRepository;
 import com.gymmanagement.usermanagement.repository.UserRepository;
 import com.gymmanagement.usermanagement.service.GymService;
+import jakarta.persistence.EntityManager;
+import jakarta.persistence.PersistenceContext;
+import lombok.RequiredArgsConstructor;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 @Service
+@RequiredArgsConstructor
 public class GymServiceImpl implements GymService {
 
-    @Autowired
-    private GymRepository gymRepository;
-
-    @Autowired
-    private UserRepository userRepository;
+    private final GymRepository gymRepository;
+    private final UserRepository userRepository;
 
     @PersistenceContext
     private EntityManager entityManager;
 
-    // ✅ Allow multiple gym creation with clean transaction boundaries
+    // CREATE: Multiple gyms
     @Override
     @Transactional
     public List<GymRegisterResponse> createGyms(List<Gym> gyms, Integer adminId) {
-        User admin = userRepository.findById(adminId)
-                .orElseThrow(() -> new RuntimeException("Admin not found"));
+        User admin = getAdminById(adminId);
 
-        if (admin.getRole() != Role.ADMIN) {
-            throw new RuntimeException("Only admin can create gym details");
-        }
-
-        // 💡 Clear Hibernate cache to prevent stale false positives
         entityManager.flush();
         entityManager.clear();
 
         return gyms.stream().map(gym -> {
-            // ✅ Normalize inputs (avoid case & whitespace issues)
-            String gymName = gym.getGymName().trim();
-            String address = gym.getAddress().trim();
-            String city = gym.getCity().trim();
+            validateUniqueGym(gym, admin);
 
-            boolean gymExists = gymRepository.existsByGymNameIgnoreCaseAndAddressIgnoreCaseAndCityIgnoreCaseAndCreatedByAdmin_UserId(
-                    gymName, address, city, admin.getUserId()
-            );
-
-            if (gymExists) {
-                throw new RuntimeException("Gym with same name and address already exists for this admin: " + gymName);
-            }
-
-            gym.setGymName(gymName);
-            gym.setAddress(address);
-            gym.setCity(city);
+            gym.setGymName(gym.getGymName().trim());
+            gym.setAddress(gym.getAddress().trim());
+            gym.setCity(gym.getCity().trim());
             gym.setCreatedByAdmin(admin);
             gym.setCreatedAt(LocalDateTime.now());
             gym.setUpdatedAt(LocalDateTime.now());
+            gym.setIsActive(true);
 
-            Gym savedGym = gymRepository.save(gym);
-            return toResponse(savedGym, admin, "Gym created successfully");
-
+            Gym saved = gymRepository.save(gym);
+            return toResponse(saved, admin, "Gym created successfully");
         }).collect(Collectors.toList());
     }
 
-    // ✅ Get all Gyms created by Admin
+    // READ: Only active gyms for this admin
     @Override
     public List<GymRegisterResponse> getAllGymsByAdmin(int adminId) {
-        User admin = userRepository.findById(adminId)
-                .orElseThrow(() -> new RuntimeException("Admin not found"));
+        User admin = getAdminById(adminId);
 
-        List<Gym> gyms = gymRepository.findByCreatedByAdmin(admin);
+        List<Gym> gyms = gymRepository.findByCreatedByAdminAndIsActiveTrue(admin);
         if (gyms.isEmpty()) {
-            throw new RuntimeException("No gyms found for this admin");
+            throw new RuntimeException("No active gyms found for this admin");
         }
 
         return gyms.stream()
-                .map(gym -> toResponse(gym, admin, "Gym details fetched successfully"))
+                .map(gym -> toResponse(gym, admin, null))
                 .collect(Collectors.toList());
     }
 
-    // ✅ Update Gym (only if belongs to the same admin)
+    // UPDATE: Only own gym
     @Override
     @Transactional
     public GymRegisterResponse updateGym(Long gymId, Gym updatedGym, Integer adminId) {
-        User admin = userRepository.findById(adminId)
-                .orElseThrow(() -> new RuntimeException("Admin not found"));
-
-        Gym existingGym = gymRepository.findById(gymId)
+        User admin = getAdminById(adminId);
+        Gym existing = gymRepository.findById(gymId)
                 .orElseThrow(() -> new RuntimeException("Gym not found"));
 
-        if (existingGym.getCreatedByAdmin() == null 
-                || existingGym.getCreatedByAdmin().getUserId() != (adminId)) {
+        // Safe comparison
+        if (!Objects.equals(existing.getCreatedByAdmin().getUserId(), adminId)) {
             throw new RuntimeException("You are not authorized to update this gym");
         }
 
-        // ✅ Update only non-null fields
-        if (updatedGym.getGymName() != null) existingGym.setGymName(updatedGym.getGymName());
-        if (updatedGym.getAddress() != null) existingGym.setAddress(updatedGym.getAddress());
-        if (updatedGym.getCity() != null) existingGym.setCity(updatedGym.getCity());
-        if (updatedGym.getState() != null) existingGym.setState(updatedGym.getState());
-        if (updatedGym.getContactNumber() != null) existingGym.setContactNumber(updatedGym.getContactNumber());
-        if (updatedGym.getEmail() != null) existingGym.setEmail(updatedGym.getEmail());
-        if (updatedGym.getOpeningHours() != null) existingGym.setOpeningHours(updatedGym.getOpeningHours());
+        updateFields(existing, updatedGym);
+        existing.setUpdatedAt(LocalDateTime.now());
 
-        existingGym.setUpdatedAt(LocalDateTime.now());
-        Gym savedGym = gymRepository.save(existingGym);
-
-        return toResponse(savedGym, admin, "Gym updated successfully");
+        Gym saved = gymRepository.save(existing);
+        return toResponse(saved, admin, "Gym updated successfully");
     }
 
-    // ✅ Helper method to convert Entity → DTO
-    private GymRegisterResponse toResponse(Gym gym, User admin, String message) {
-        return new GymRegisterResponse(
-                gym.getGymId(),
-                gym.getGymName(),
-                gym.getAddress(),
-                gym.getCity(),
-                gym.getState(),
-                gym.getContactNumber(),
-                gym.getEmail(),
-                gym.getOpeningHours(),
-                admin.getUserId(),
-                message
-        );
-    }
-    
     @Override
+    @Transactional
     public boolean softDeleteGym(Long gymId, Integer adminId) {
-        User admin = userRepository.findById(adminId)
-                .orElseThrow(() -> new RuntimeException("Admin not found"));
-
+        User admin = getAdminById(adminId);
         Gym gym = gymRepository.findById(gymId)
                 .orElseThrow(() -> new RuntimeException("Gym not found"));
 
-        // Ensure only creator can delete
-        if (gym.getCreatedByAdmin().getUserId() != (admin.getUserId())) {
+        // Safe comparison
+        if (!Objects.equals(gym.getCreatedByAdmin().getUserId(), adminId)) {
             throw new RuntimeException("Unauthorized: You cannot delete this gym");
         }
 
         gym.setIsActive(false);
+        gym.setUpdatedAt(LocalDateTime.now());
         gymRepository.save(gym);
-
         return true;
     }
 
+    // HELPER: Validate unique gym
+    private void validateUniqueGym(Gym gym, User admin) {
+        boolean exists = gymRepository.existsByGymNameIgnoreCaseAndAddressIgnoreCaseAndCityIgnoreCaseAndCreatedByAdmin_UserId(
+                gym.getGymName().trim(),
+                gym.getAddress().trim(),
+                gym.getCity().trim(),
+                admin.getUserId()
+        );
+        if (exists) {
+            throw new RuntimeException("Gym already exists: " + gym.getGymName() + " at " + gym.getAddress());
+        }
+    }
+
+    // HELPER: Update only non-null fields
+    private void updateFields(Gym existing, Gym updated) {
+        if (updated.getGymName() != null) existing.setGymName(updated.getGymName().trim());
+        if (updated.getAddress() != null) existing.setAddress(updated.getAddress().trim());
+        if (updated.getCity() != null) existing.setCity(updated.getCity().trim());
+        if (updated.getState() != null) existing.setState(updated.getState());
+        if (updated.getContactNumber() != null) existing.setContactNumber(updated.getContactNumber());
+        if (updated.getEmail() != null) existing.setEmail(updated.getEmail());
+        if (updated.getOpeningHours() != null) existing.setOpeningHours(updated.getOpeningHours());
+    }
+
+    // HELPER: Get admin + role check
+    private User getAdminById(Integer adminId) {
+        User admin = userRepository.findById(adminId)
+                .orElseThrow(() -> new RuntimeException("Admin not found"));
+        if (admin.getRole() != Role.ADMIN) {
+            throw new RuntimeException("Only admins can perform this action");
+        }
+        return admin;
+    }
+
+    // HELPER: Build response using @Builder
+    private GymRegisterResponse toResponse(Gym gym, User admin, String message) {
+        return GymRegisterResponse.builder()
+                .gymId(gym.getGymId())
+                .gymName(gym.getGymName())
+                .address(gym.getAddress())
+                .city(gym.getCity())
+                .state(gym.getState())
+                .contactNumber(gym.getContactNumber())
+                .email(gym.getEmail())
+                .openingHours(gym.getOpeningHours())
+                .adminId(admin.getUserId())
+                .message(message)
+                .isActive(gym.getIsActive())
+                .createdAt(gym.getCreatedAt())
+                .updatedAt(gym.getUpdatedAt())
+                .build();
+    }
 }

@@ -1,9 +1,12 @@
 package com.gymmanagement.usermanagement.Response;
 
-import lombok.AllArgsConstructor;
-import lombok.Data;
+import lombok.*;
+
+import java.time.LocalDateTime;
 
 @Data
+@Builder
+@NoArgsConstructor
 @AllArgsConstructor
 public class GymRegisterResponse {
     private Long gymId;
@@ -14,6 +17,11 @@ public class GymRegisterResponse {
     private String contactNumber;
     private String email;
     private String openingHours;
-    private Integer adminId;  // ✅ only admin ID
+
+    private Integer adminId;
     private String message;
+
+    private Boolean isActive;
+    private LocalDateTime createdAt;
+    private LocalDateTime updatedAt;
 }

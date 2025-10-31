@@ -36,12 +36,18 @@ public class GymController {
 
 	// ✅ Get all gyms by logged-in admin
 	@GetMapping("/my-gyms")
+//	public List<GymRegisterResponse> getGymsByAdmin(Authentication authentication) {
+//		String identity = authentication.getName(); // this is email from JWT
+//
+//		User admin = userRepository.findByEmail(identity).orElseThrow(() -> new RuntimeException("Admin not found"));
+//
+//		return gymService.getAllGymsByAdmin(admin.getUserId());
+//	}
 	public List<GymRegisterResponse> getGymsByAdmin(Authentication authentication) {
-		String identity = authentication.getName(); // this is email from JWT
-
-		User admin = userRepository.findByEmail(identity).orElseThrow(() -> new RuntimeException("Admin not found"));
-
-		return gymService.getAllGymsByAdmin(admin.getUserId());
+	    String email = authentication.getName(); // from JWT
+	    User admin = userRepository.findByEmail(email)
+	            .orElseThrow(() -> new RuntimeException("Admin not found"));
+	    return gymService.getAllGymsByAdmin(admin.getUserId());
 	}
 
 	// ✅ Update gym by gymId (JWT + gymId)
