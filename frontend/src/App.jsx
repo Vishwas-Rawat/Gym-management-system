@@ -5,6 +5,7 @@ import RegisterPage from './pages/RegisterPage';
 import GymRegistrationPage from './pages/GymRegistrationPage';
 import MemberCompleteRegistrationPage from './pages/MemberCompleteRegistrationPage';
 import AdminAddMemberPage from './pages/AdminAddMemberPage';
+import AdminAddTrainerPage from './pages/AdminAddTrainerPage'; // NEW
 import { AuthProvider } from './context/AuthContext';
 
 const App = () => (
@@ -16,6 +17,7 @@ const App = () => (
         <Route path="/gym-register" element={<GymRegistrationPage />} />
         <Route path="/register/complete" element={<MemberCompleteRegistrationPage />} />
         <Route path="/admin/members/add" element={<AdminAddMemberPage />} />
+        <Route path="/admin/trainers/add" element={<AdminAddTrainerPage />} />
       </Routes>
     </AuthProvider>
   </Router>
