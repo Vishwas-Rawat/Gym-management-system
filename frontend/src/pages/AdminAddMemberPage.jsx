@@ -1,11 +1,7 @@
 // src/pages/AdminAddMemberPage.jsx
-import React, { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Box,
-  Grid,
-  Card,
-  CardContent,
-  Typography,
   Button,
   Dialog,
   DialogTitle,
@@ -16,272 +12,643 @@ import {
   TableContainer,
   TableHead,
   TableRow,
-  Chip,
-  IconButton,
   Paper,
   Alert,
-  Fade,
   CircularProgress,
+  Typography,
+  InputBase,
+  Select,
+  MenuItem,
+  FormControl,
+  InputLabel,
+  useMediaQuery,
 } from "@mui/material";
 import {
-  People,
-  AttachMoney,
-  Group,
   PersonAdd,
-  Edit,
-  Delete,
   Search,
+  Group,
+  People,
 } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThemeProvider, CssBaseline, createTheme } from "@mui/material";
 import lightTheme from "../themes/lightTheme";
 import MemberAddForm from "../components/MemberAddForm";
-import {
-  MemberRegistrationProvider,
-  useMemberRegistration,
-} from "../context/MemberRegistrationContext";
+import MemberDetailModal from "../components/MemberDetailModal";
+import { MemberRegistrationProvider, useMemberRegistration } from "../context/MemberRegistrationContext";
+import MemberRow from "../components/MemberRow";
 
-// Emerald Theme
 const emeraldTheme = createTheme({
   ...lightTheme,
   palette: {
     ...lightTheme.palette,
     primary: { main: "#059669", dark: "#047857" },
-    secondary: { main: "#0d9488", dark: "#0f766e" },
-    success: { main: "#10b981", light: "#34d399" },
     background: { default: "#f8fdfb", paper: "#ffffff" },
   },
 });
 
 const AdminLayout = ({ title, subtitle, children }) => (
-  <Box sx={{ minHeight: "100vh", background: "linear-gradient(135deg, #0d9488 0%, #059669 100%)", position: "relative", overflow: "hidden" }}>
-    <Box sx={{ position: "absolute", top: 0, left: 0, right: 0, bottom: 0, overflow: "hidden", zIndex: 0 }}>
+  <Box
+    sx={{
+      minHeight: "100vh",
+      background: "linear-gradient(135deg, #0d9488 0%, #059669 100%)",
+      position: "relative",
+      overflow: "hidden",
+      width: "100%",
+    }}
+  >
+    {/* Background Animation */}
+    <Box sx={{ position: "absolute", inset: 0, overflow: "hidden", zIndex: 0 }}>
       {[...Array(12)].map((_, i) => (
         <motion.div
           key={i}
-          sx={{ position: "absolute", width: 3, height: 3, background: "rgba(255, 255, 255, 0.15)", borderRadius: "50%" }}
           animate={{ x: [0, 100, 0], y: [0, -100, 0], opacity: [0.3, 1, 0.3] }}
-          transition={{ duration: 8 + i * 1.5, repeat: Infinity, repeatType: "loop", ease: "easeInOut" }}
-          style={{ left: `${10 + i * 8}%`, top: `${20 + i * 7}%` }}
+          transition={{ duration: 8 + i * 1.5, repeat: Infinity, ease: "easeInOut" }}
+          style={{
+            position: "absolute",
+            width: 3,
+            height: 3,
+            background: "rgba(255,255,255,0.15)",
+            borderRadius: "50%",
+            left: `${10 + i * 8}%`,
+            top: `${20 + i * 7}%`,
+          }}
         />
       ))}
     </Box>
 
-    <Box sx={{ width: "100vw", maxWidth: "100%", mx: 0, px: 0, pt: { xs: 3, sm: 4, md: 6 }, pb: 6, position: "relative", zIndex: 1 }}>
+    {/* Main Content */}
+    <Box
+      sx={{
+        width: "100%",
+        pt: { xs: 3, sm: 4, md: 6 },
+        pb: 6,
+        position: "relative",
+        zIndex: 1,
+      }}
+    >
       <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
-        <Box sx={{ maxWidth: "1200px", mx: "auto", px: { xs: 2, sm: 3, md: 4 }, textAlign: "center", mb: 6 }}>
-          <Box sx={{ display: "inline-flex", alignItems: "center", gap: 1.5, mb: 2, px: 3, py: 1.5, background: "rgba(255, 255, 255, 0.2)", backdropFilter: "blur(20px)", border: "1px solid rgba(255, 255, 255, 0.3)", borderRadius: "16px" }}>
-            <Box sx={{ width: 40, height: 40, borderRadius: "12px", background: "linear-gradient(135deg, #34d399, #10b981)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+        <Box
+          sx={{
+            maxWidth: "1200px",
+            mx: "auto",
+            px: { xs: 2, sm: 3, md: 4 },
+            textAlign: "center",
+            mb: 6,
+          }}
+        >
+          <Box
+            sx={{
+              display: "inline-flex",
+              alignItems: "center",
+              gap: 1.5,
+              mb: 2,
+              px: 3,
+              py: 1.5,
+              background: "rgba(255,255,255,0.2)",
+              backdropFilter: "blur(20px)",
+              border: "1px solid rgba(255,255,255,0.3)",
+              borderRadius: "16px",
+            }}
+          >
+            <Box
+              sx={{
+                width: 40,
+                height: 40,
+                borderRadius: "12px",
+                background: "linear-gradient(135deg, #34d399, #10b981)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
               <People sx={{ color: "white", fontSize: 20 }} />
             </Box>
-            <Typography variant="h6" sx={{ fontWeight: 700, color: "white" }}>Members Dashboard</Typography>
+            <Typography variant="h6" sx={{ fontWeight: 700, color: "white" }}>
+              Members Dashboard
+            </Typography>
           </Box>
-          <Typography variant="h3" sx={{ fontWeight: 800, fontSize: { xs: "2.25rem", md: "3.5rem" }, background: "linear-gradient(135deg, #ffffff 0%, #d1fae5 100%)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent" }}>
+
+          <Typography
+            variant="h3"
+            sx={{
+              fontWeight: 800,
+              fontSize: { xs: "2.25rem", md: "3.5rem" },
+              background: "linear-gradient(135deg, #ffffff 0%, #d1fae5 100%)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
+            }}
+          >
             {title}
           </Typography>
-          <Typography sx={{ color: "rgba(255, 255, 255, 0.9)", fontSize: "1.1rem" }}>{subtitle}</Typography>
+          <Typography sx={{ color: "rgba(255,255,255,0.9)", fontSize: "1.1rem" }}>{subtitle}</Typography>
         </Box>
       </motion.div>
 
-      <Paper elevation={0} sx={{ width: "100vw", maxWidth: "100%", mx: 0, borderRadius: 0, overflow: "hidden", background: "white", p: { xs: 3, sm: 4, md: 5 } }}>
-        <Fade in timeout={400}><Box>{children}</Box></Fade>
+      <Paper
+        elevation={0}
+        sx={{
+          width: "100%",
+          maxWidth: "1400px",
+          mx: "auto",
+          borderRadius: { xs: 0, md: "24px" },
+          overflow: "hidden",
+          background: "white",
+          p: { xs: 3, sm: 4, md: 5 },
+          boxShadow: { md: "0 20px 40px rgba(0,0,0,0.08)" },
+        }}
+      >
+        <Box>{children}</Box>
       </Paper>
     </Box>
   </Box>
 );
 
+// GYM DROPDOWN USING CONTEXT
+const SelectGym = ({ onGymChange }) => {
+  const { gyms, isLoading, fetchGyms } = useMemberRegistration();
+  const [gymId, setGymId] = useState("all");
+
+  useEffect(() => {
+    fetchGyms();
+  }, [fetchGyms]);
+
+  const handleChange = (e) => {
+    const value = e.target.value;
+    setGymId(value);
+    onGymChange(value === "all" ? null : value);
+  };
+
+  if (isLoading) {
+    return (
+      <FormControl size="small" sx={{ minWidth: 180 }}>
+        <InputLabel>Gyms</InputLabel>
+        <Select value="" disabled label="Gyms">
+          <MenuItem disabled>Loading...</MenuItem>
+        </Select>
+      </FormControl>
+    );
+  }
+
+  if (!gyms.length) {
+    return (
+      <FormControl size="small" sx={{ minWidth: 180 }}>
+        <InputLabel>Gyms</InputLabel>
+        <Select value="all" disabled label="Gyms">
+          <MenuItem value="all">No gyms</MenuItem>
+        </Select>
+      </FormControl>
+    );
+  }
+
+  return (
+    <FormControl size="small" sx={{ minWidth: 180 }}>
+      <InputLabel>Gyms</InputLabel>
+      <Select
+        value={gymId}
+        onChange={handleChange}
+        label="Gyms"
+        sx={{
+          borderRadius: "12px",
+          bgcolor: "rgba(255,255,255,0.7)",
+          backdropFilter: "blur(10px)",
+          "& .MuiOutlinedInput-notchedOutline": { border: "none" },
+          "&:hover .MuiOutlinedInput-notchedOutline": { border: "none" },
+          "&.Mui-focused .MuiOutlinedInput-notchedOutline": { border: "none" },
+        }}
+        MenuProps={{
+          PaperProps: {
+            sx: { borderRadius: "12px", mt: 0.5, overflow: "hidden" },
+          },
+        }}
+      >
+        <MenuItem value="all">All Gyms</MenuItem>
+        {gyms.map((gym) => (
+          <MenuItem key={gym.gymId} value={gym.gymId}>
+            {gym.gymName}
+          </MenuItem>
+        ))}
+      </Select>
+    </FormControl>
+  );
+};
+
 const AdminAddMemberPageContent = () => {
   const {
     isLoading,
-    apiError,
     successMessage,
+    apiError,
     clearMessages,
     fetchMembers,
     searchMembers,
-    addMember,
+    addMultipleMembers,
     deleteMember,
+    updateMember,
+    resendInvite,
+    getMemberDetail,
+    getMemberById,
   } = useMemberRegistration();
 
+  const isMobile = useMediaQuery("(max-width:600px)");
+
   const [openDialog, setOpenDialog] = useState(false);
+  const [openEditDialog, setOpenEditDialog] = useState(false);
+  const [openDetailModal, setOpenDetailModal] = useState(false);
+  const [editingMember, setEditingMember] = useState(null);
+  const [selectedMember, setSelectedMember] = useState(null);
+
+  const [originalMembers, setOriginalMembers] = useState([]);
   const [members, setMembers] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
+  const [localSearchResults, setLocalSearchResults] = useState([]);
+  const [isSearchingAPI, setIsSearchingAPI] = useState(false);
+  const [selectedGymId, setSelectedGymId] = useState(null);
+  const searchTimeoutRef = useRef(null);
 
-  // Stable load function
-  const loadMembers = useCallback(async () => {
-    const data = await fetchMembers();
-    setMembers(data);
-  }, [fetchMembers]);
-
-  // Fetch on mount only
+  // Load members
   useEffect(() => {
-    loadMembers();
-  }, []); // ← FIXED: Empty deps
-
-  // Debounced search
-  useEffect(() => {
-    const timer = setTimeout(async () => {
-      if (searchTerm.trim()) {
-        const results = await searchMembers(searchTerm);
-        setMembers(results);
-      } else {
-        loadMembers();
+    let mounted = true;
+    const load = async () => {
+      const data = await fetchMembers(selectedGymId);
+      if (mounted) {
+        setOriginalMembers(data || []);
+        setMembers(data || []);
       }
-    }, 400);
-    return () => clearTimeout(timer);
-  }, [searchTerm, searchMembers, loadMembers]);
+    };
+    load();
+    return () => (mounted = false);
+  }, [fetchMembers, selectedGymId]);
 
-  // Add success
-  const handleAddSuccess = async (payload) => {
-    try {
-      await addMember(payload);
-      await loadMembers();
-      setOpenDialog(false);
-    } catch (_) {}
+  // Search + Gym Filter
+  useEffect(() => {
+    if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+
+    const term = searchTerm.trim();
+
+    if (!term) {
+      setLocalSearchResults([]);
+      setMembers(originalMembers);
+      setIsSearchingAPI(false);
+      return;
+    }
+
+    const filtered = originalMembers.filter(
+      (m) =>
+        (m.fullName?.toLowerCase().includes(term.toLowerCase()) ||
+          m.email?.toLowerCase().includes(term.toLowerCase()) ||
+          m.phoneNo?.includes(term) ||
+          m.phoneNumber?.includes(term))
+    );
+    setLocalSearchResults(filtered);
+
+    searchTimeoutRef.current = setTimeout(async () => {
+      setIsSearchingAPI(true);
+      try {
+        const results = await searchMembers(term, selectedGymId);
+        setMembers(results || []);
+      } catch (err) {
+        console.error("Search failed:", err);
+      } finally {
+        setIsSearchingAPI(false);
+      }
+    }, 600);
+
+    return () => {
+      if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
+    };
+  }, [searchTerm, originalMembers, searchMembers, selectedGymId]);
+
+  const displayMembers = searchTerm.trim() ? localSearchResults : members;
+
+  const handleGymChange = (gymId) => {
+    setSelectedGymId(gymId);
   };
 
-  // Delete
+  const handleAddSuccess = async (payloadArray) => {
+    const arr = Array.isArray(payloadArray) ? payloadArray : [payloadArray];
+    await addMultipleMembers(arr);
+    setOpenDialog(false);
+    clearMessages();
+  };
+
+  const openEdit = async (memberId) => {
+    const mem = await getMemberById(memberId);
+    if (mem) {
+      setEditingMember(mem);
+      setOpenEditDialog(true);
+    }
+  };
+
+  const openDetail = async (memberId) => {
+    const mem = await getMemberDetail(memberId);
+    if (mem) {
+      setSelectedMember(mem);
+      setOpenDetailModal(true);
+    }
+  };
+
+  const handleEditSuccess = async (payload) => {
+    await updateMember(editingMember.id, payload);
+    setOpenEditDialog(false);
+    setEditingMember(null);
+    clearMessages();
+  };
+
+  const handleResend = async (userId) => {
+    if (!window.confirm("Resend registration link?")) return;
+    await resendInvite(userId);
+  };
+
   const handleDelete = async (memberId) => {
     if (!window.confirm("Soft-delete this member?")) return;
     const ok = await deleteMember(memberId);
-    if (ok) await loadMembers();
+    if (ok) {
+      const updated = await fetchMembers(selectedGymId);
+      setOriginalMembers(updated || []);
+      setMembers(updated || []);
+    }
   };
 
-  const getStatusColor = (status) => (status === "Paid" ? "success" : "warning");
+  const sendPaymentNotification = async (memberId) => {
+    if (!window.confirm("Send payment reminder?")) return;
+    alert("Payment notification sent!");
+  };
+
+  const handleCancelAdd = () => {
+    setOpenDialog(false);
+    clearMessages();
+  };
+
+  const handleCancelEdit = () => {
+    setOpenEditDialog(false);
+    setEditingMember(null);
+    clearMessages();
+  };
+
+  const renderMembersList = () => {
+    if (isLoading || (isSearchingAPI && searchTerm.trim())) {
+      return (
+        <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
+          <CircularProgress sx={{ color: "#059669" }} />
+        </Box>
+      );
+    }
+
+    if (!displayMembers.length) {
+      return (
+        <Typography align="center" sx={{ py: 4, color: "text.secondary" }}>
+          {searchTerm.trim()
+            ? "No members found"
+            : selectedGymId
+            ? "No members in this gym"
+            : "No members yet"}
+        </Typography>
+      );
+    }
+
+    if (isMobile) {
+      return (
+        <Box sx={{ p: { xs: 1, sm: 2 } }}>
+          {displayMembers.map((m) => (
+            <MemberRow
+              key={m.memberId || m.id}
+              member={m}
+              onDetail={() => openDetail(m.memberId || m.id)}
+              onEdit={() => openEdit(m.memberId || m.id)}
+              onNotify={() => sendPaymentNotification(m.memberId || m.id)}
+              onResend={() => handleResend(m.userId || m.memberId)}
+              onDelete={() => handleDelete(m.memberId || m.id)}
+            />
+          ))}
+        </Box>
+      );
+    }
+
+    return (
+      <TableContainer sx={{ maxHeight: 520 }}>
+        <Table stickyHeader size="small">
+          <TableHead>
+            <TableRow sx={{ bgcolor: "#f0fdf4" }}>
+              {["Full Name", "Email", "Phone Number", "Plan", "Workout Timing", "Actions"].map((h) => (
+                <TableCell key={h} sx={{ fontWeight: 700, color: "#059669" }}>
+                  {h}
+                </TableCell>
+              ))}
+            </TableRow>
+          </TableHead>
+          <TableBody>
+            {displayMembers.map((m) => (
+              <MemberRow
+                key={m.memberId || m.id}
+                member={m}
+                onDetail={() => openDetail(m.memberId || m.id)}
+                onEdit={() => openEdit(m.memberId || m.id)}
+                onNotify={() => sendPaymentNotification(m.memberId || m.id)}
+                onResend={() => handleResend(m.userId || m.memberId)}
+                onDelete={() => handleDelete(m.memberId || m.id)}
+              />
+            ))}
+          </TableBody>
+        </Table>
+      </TableContainer>
+    );
+  };
 
   return (
     <AdminLayout title="Manage Members" subtitle="Real-time member management">
       <AnimatePresence>
         {successMessage && (
           <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-            <Alert severity="success" sx={{ mb: 3, borderRadius: "12px", background: "linear-gradient(135deg, #10b981, #34d399)", color: "white" }}>
+            <Alert
+              severity="success"
+              sx={{
+                mb: 3,
+                borderRadius: "12px",
+                background: "linear-gradient(135deg, #10b981, #34d399)",
+                color: "white",
+              }}
+            >
               {successMessage}
             </Alert>
           </motion.div>
         )}
         {apiError && (
-          <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
-            <Alert severity="error" sx={{ mb: 3, borderRadius: "12px", background: "linear-gradient(135deg, #ef4444, #f87171)" }}>
+          <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
+            <Alert severity="error" sx={{ mb: 3, borderRadius: "12px" }}>
               {apiError}
             </Alert>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <Box sx={{ mb: 6, textAlign: "center" }}>
+      <Box sx={{ mb: 3, textAlign: "center" }}>
         <Button
           variant="contained"
-          startIcon={<PersonAdd />}
           onClick={() => setOpenDialog(true)}
-          size="large"
+          size="small"
           sx={{
-            borderRadius: "14px",
-            fontWeight: 700,
-            fontSize: "1.1rem",
-            px: 6,
-            py: 2,
-            boxShadow: "0 8px 20px rgba(5, 150, 105, 0.25)",
+            borderRadius: "12px",
+            fontWeight: 600,
+            fontSize: { xs: "0.8rem", sm: "0.875rem" },
+            px: { xs: 2, sm: 3 },
+            py: 1,
+            minHeight: 36,
             background: "linear-gradient(135deg, #059669, #047857)",
-            "&:hover": { background: "linear-gradient(135deg, #047857, #065f46)" },
+            boxShadow: "0 4px 12px rgba(5,150,105,0.2)",
+            "&:hover": {
+              background: "linear-gradient(135deg, #047857, #03694f)",
+              boxShadow: "0 6px 16px rgba(5,150,105,0.3)",
+            },
           }}
         >
-          + Add Member
+          Add Member
         </Button>
       </Box>
 
-      <Paper sx={{ borderRadius: "16px", overflow: "hidden", boxShadow: "0 12px 30px -8px rgba(0,0,0,0.1)", mx: { xs: 2, sm: 3, md: 4 }, mb: 4 }}>
-        <Box sx={{ p: 3, borderBottom: "2px solid #d1fae5" }}>
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 2 }}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-              <Box sx={{ width: 40, height: 40, borderRadius: "12px", background: "linear-gradient(135deg, #0d9488, #059669)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <Group sx={{ color: "white", fontSize: 20 }} />
+      <Paper
+        sx={{
+          borderRadius: "16px",
+          overflow: "hidden",
+          boxShadow: "0 12px 30px -8px rgba(0,0,0,0.1)",
+          mx: "auto",
+          maxWidth: "100%",
+          mb: 4,
+        }}
+      >
+        <Box sx={{ p: { xs: 2, sm: 3 }, borderBottom: "2px solid #d1fae5" }}>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: { xs: "column", sm: "row" },
+              justifyContent: "space-between",
+              alignItems: { xs: "flex-start", sm: "center" },
+              gap: { xs: 1.5, sm: 2 },
+            }}
+          >
+            <Box
+              sx={{
+                display: "flex",
+                alignItems: "center",
+                gap: { xs: 0.8, sm: 1.5 },
+                flexWrap: "wrap",
+                maxWidth: { xs: "100%", sm: "auto" },
+              }}
+            >
+              <Box
+                sx={{
+                  width: { xs: 32, sm: 40 },
+                  height: { xs: 32, sm: 40 },
+                  borderRadius: "10px",
+                  background: "linear-gradient(135deg, #0d9488, #059669)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  flexShrink: 0,
+                }}
+              >
+                <Group sx={{ color: "white", fontSize: { xs: 16, sm: 20 } }} />
               </Box>
-              <Box>
-                <Typography variant="h5" sx={{ fontWeight: 700 }}>Members</Typography>
-                <Typography variant="body2" color="text.secondary">{members.length} members</Typography>
+
+              <Box sx={{ minWidth: 0 }}>
+                <Typography
+                  variant="h5"
+                  sx={{
+                    fontWeight: 700,
+                    fontSize: { xs: "1rem", sm: "1.25rem" },
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    maxWidth: "100%",
+                  }}
+                >
+                  Members
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="text.secondary"
+                  sx={{
+                    fontSize: { xs: "0.75rem", sm: "0.875rem" },
+                    whiteSpace: "nowrap",
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                  }}
+                >
+                  {displayMembers.length} members
+                </Typography>
               </Box>
             </Box>
-            <Box sx={{ display: "flex", alignItems: "center", bgcolor: "grey.50", borderRadius: "12px", px: 3, py: 1.5, minWidth: { xs: "100%", sm: 280 }, border: "2px solid #d1fae5", "&:hover": { borderColor: "#059669" } }}>
-              <Search sx={{ mr: 1.5, color: "text.secondary" }} />
-              <input
-                type="text"
-                placeholder="Search members..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                style={{ border: "none", outline: "none", background: "transparent", width: "100%" }}
-              />
+
+            <Box
+              sx={{
+                display: "flex",
+                gap: 2,
+                width: { xs: "100%", sm: "auto" },
+                mt: { xs: 1.5, sm: 0 },
+                flexDirection: { xs: "column", sm: "row" },
+              }}
+            >
+              <SelectGym onGymChange={handleGymChange} />
+
+              <Box
+                sx={{
+                  display: "flex",
+                  alignItems: "center",
+                  bgcolor: "grey.50",
+                  borderRadius: "12px",
+                  px: { xs: 1.5, sm: 3 },
+                  py: 1.2,
+                  minWidth: { xs: "100%", sm: 280 },
+                  border: "2px solid #d1fae5",
+                  "&:hover": { borderColor: "#059669" },
+                }}
+              >
+                <Search sx={{ mr: 1, color: "text.secondary", fontSize: { xs: 18, sm: 20 } }} />
+                <InputBase
+                  placeholder="Search..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  sx={{ width: "100%", fontSize: { xs: "0.875rem", sm: "1rem" } }}
+                />
+              </Box>
             </Box>
           </Box>
         </Box>
 
-        {isLoading && !members.length ? (
-          <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
-            <CircularProgress />
-          </Box>
-        ) : (
-          <TableContainer sx={{ maxHeight: 520 }}>
-            <Table stickyHeader size="small">
-              <TableHead>
-                <TableRow sx={{ bgcolor: "#f0fdf4" }}>
-                  {["Name", "Email", "Phone", "Plan", "Paid", "Method", "Slot", "Status", "Actions"].map((h) => (
-                    <TableCell key={h} sx={{ fontWeight: 700 }}>{h}</TableCell>
-                  ))}
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {members.map((m) => (
-                  <TableRow key={m.memberId} hover>
-                    <TableCell>
-                      <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-                        <Box sx={{ width: 36, height: 36, borderRadius: "10px", background: "linear-gradient(135deg, #10b981, #34d399)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                          <People sx={{ color: "white", fontSize: 18 }} />
-                        </Box>
-                        <Typography fontWeight={600}>{m.fullName}</Typography>
-                      </Box>
-                    </TableCell>
-                    <TableCell>{m.email}</TableCell>
-                    <TableCell>{m.phoneNo}</TableCell>
-                    <TableCell><Chip label={m.membershipPlan} size="small" color="primary" /></TableCell>
-                    <TableCell sx={{ color: m.amountPaid >= m.totalAmount ? "success.main" : "warning.main" }}>
-                      ₹{m.amountPaid?.toFixed(2) ?? "0"}
-                    </TableCell>
-                    <TableCell>{m.paymentMethod}</TableCell>
-                    <TableCell>{m.timing || "—"}</TableCell>
-                    <TableCell>
-                      <Chip label={m.paymentStatus || "Pending"} color={getStatusColor(m.paymentStatus || "Pending")} size="small" />
-                    </TableCell>
-                    <TableCell align="center">
-                      <IconButton color="primary"><Edit /></IconButton>
-                      <IconButton onClick={() => handleDelete(m.memberId)} color="error"><Delete /></IconButton>
-                    </TableCell>
-                  </TableRow>
-                ))}
-                {members.length === 0 && (
-                  <TableRow>
-                    <TableCell colSpan={9} align="center" sx={{ py: 6 }}>
-                      <Typography>No members found</Typography>
-                    </TableCell>
-                  </TableRow>
-                )}
-              </TableBody>
-            </Table>
-          </TableContainer>
-        )}
+        {renderMembersList()}
       </Paper>
 
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)} maxWidth="lg" fullWidth
-        PaperProps={{ sx: { borderRadius: "16px", boxShadow: "0 16px 35px rgba(0,0,0,0.15)", border: "2px solid #d1fae5" } }}>
-        <DialogTitle sx={{ fontWeight: 700 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-            <Box sx={{ width: 44, height: 44, borderRadius: "12px", background: "linear-gradient(135deg, #10b981, #34d399)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <PersonAdd sx={{ color: "white" }} />
-            </Box>
-            Add New Member
-          </Box>
-        </DialogTitle>
+      <Dialog
+        open={openDialog}
+        onClose={handleCancelAdd}
+        maxWidth="lg"
+        fullWidth
+        PaperProps={{
+          sx: { borderRadius: "16px", boxShadow: "0 16px 35px rgba(0,0,0,0.15)", border: "2px solid #d1fae5" },
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 700 }}>Add New Member(s)</DialogTitle>
         <DialogContent sx={{ p: 0 }}>
-          <MemberAddForm onSuccess={handleAddSuccess} />
+          <MemberAddForm onSuccess={handleAddSuccess} multiple onCancel={handleCancelAdd} />
         </DialogContent>
       </Dialog>
+
+      <Dialog
+        open={openEditDialog}
+        onClose={handleCancelEdit}
+        maxWidth="lg"
+        fullWidth
+        PaperProps={{
+          sx: { borderRadius: "16px", boxShadow: "0 16px 35px rgba(0,0,0,0.15)", border: "2 2px solid #d1fae5" },
+        }}
+      >
+        <DialogTitle sx={{ fontWeight: 700 }}>Edit Member</DialogTitle>
+        <DialogContent sx={{ p: 0 }}>
+          {editingMember && (
+            <MemberAddForm onSuccess={handleEditSuccess} member={editingMember} onCancel={handleCancelEdit} />
+          )}
+        </DialogContent>
+      </Dialog>
+
+      <MemberDetailModal open={openDetailModal} onClose={() => setOpenDetailModal(false)} member={selectedMember} />
     </AdminLayout>
   );
 };
