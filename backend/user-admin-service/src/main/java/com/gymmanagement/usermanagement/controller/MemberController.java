@@ -4,7 +4,9 @@ import com.gymmanagement.commonservices.entity.Member;
 import com.gymmanagement.usermanagement.Request.AdminAddMemberRequest;
 import com.gymmanagement.usermanagement.Request.CompleteRegistrationRequest;
 import com.gymmanagement.usermanagement.Request.UpdateMemberRequest;
+import com.gymmanagement.usermanagement.Response.AddMemberResponse;
 import com.gymmanagement.usermanagement.Response.ApiResponse;
+import com.gymmanagement.usermanagement.Response.GymMemberResponse;
 import com.gymmanagement.usermanagement.Response.UpdateMemberResponse;
 import com.gymmanagement.usermanagement.Response.ViewMemberResponse;
 import com.gymmanagement.usermanagement.service.MemberService;
@@ -25,15 +27,20 @@ public class MemberController {
     }
 
     // Admin adds member → generates invite link
-    @PostMapping("/admin/add")
-    public ResponseEntity<ApiResponse> addMemberByAdmin(@RequestBody AdminAddMemberRequest request) {
+    @PostMapping("/admin/add-multiple")
+    public ResponseEntity<ApiResponse> addMultipleMembersByAdmin(@RequestBody List<AdminAddMemberRequest> requests) {
         try {
-            memberService.addMemberByAdmin(request);
-            return ResponseEntity.ok(new ApiResponse(true, "Member added successfully and registration link sent"));
+            List<AddMemberResponse> responses = memberService.addMultipleMembersByAdmin(requests);
+            return ResponseEntity.ok(new ApiResponse(true,
+                    responses.size() + " members added successfully and registration links sent"));
         } catch (RuntimeException ex) {
             return ResponseEntity.badRequest().body(new ApiResponse(false, ex.getMessage()));
         }
     }
+
+
+
+
 
     // Admin resends registration link
     @PostMapping("/admin/{userId}/resend-invite")
@@ -96,7 +103,7 @@ public class MemberController {
     public ResponseEntity<ApiResponse> deleteMember(@PathVariable Integer memberId) {
         try {
             memberService.deleteMember(memberId);
-            return ResponseEntity.ok(new ApiResponse(true, "Member deleted successfully"));
+            return ResponseEntity.ok(new ApiResponse(true, "Member deleted successfully (soft delete)"));
         } catch (RuntimeException ex) {
             return ResponseEntity.badRequest().body(new ApiResponse(false, ex.getMessage()));
         }
@@ -109,4 +116,15 @@ public class MemberController {
                 .map(member -> new ViewMemberResponse(member, "Member retrieved successfully"))
                 .collect(Collectors.toList());
     }
+    
+ // Get all members for a specific gym
+    @GetMapping("/gym/{gymId}")
+    public ResponseEntity<List<GymMemberResponse>> getMembersByGym(@PathVariable Long gymId) {
+        List<GymMemberResponse> responses = memberService.getMembersByGymId(gymId).stream()
+                .map(GymMemberResponse::new)
+                .collect(Collectors.toList());
+
+        return ResponseEntity.ok(responses);
+    }
+
 }
