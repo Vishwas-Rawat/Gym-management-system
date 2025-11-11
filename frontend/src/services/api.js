@@ -10,18 +10,17 @@ const api = axios.create({
   },
 });
 
-// Add JWT token to every request
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token'); // Match your login key
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-}, (error) => {
-  return Promise.reject(error);
-});
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
-// Global 401 handler: redirect to login
 api.interceptors.response.use(
   (response) => response,
   (error) => {
