@@ -14,7 +14,6 @@ import org.springframework.scheduling.annotation.EnableAsync;
 @EnableJpaRepositories(basePackages = "com.gymmanagement.usermanagement.repository") // your repositories
 @EnableAsync
 public class UserManagement {
-
     public static void main(String[] args) {
         SpringApplication.run(UserManagement.class, args);
     }

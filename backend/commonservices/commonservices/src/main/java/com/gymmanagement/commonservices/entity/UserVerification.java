@@ -1,13 +1,13 @@
+// src/main/java/com/gymmanagement/commonservices/entity/UserVerification.java
 package com.gymmanagement.commonservices.entity;
 
-import java.time.LocalDateTime;
-import com.gymmanagement.commonservices.enumeration.VerificationType;
 import jakarta.persistence.*;
 import lombok.Data;
+import java.time.LocalDateTime;
 
+@Data
 @Entity
 @Table(name = "user_verifications")
-@Data
 public class UserVerification {
 
     @Id
@@ -15,22 +15,20 @@ public class UserVerification {
     @Column(name = "verification_id")
     private Integer verificationId;
 
-    @ManyToOne(fetch = FetchType.LAZY)
+    @ManyToOne
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
     @Column(name = "otp_code", nullable = false)
     private String otpCode;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "type", nullable = false)
-    private VerificationType type;
+    // Removed 'type' — now only EMAIL OTPs are used
 
-    @Column(name = "is_used", nullable = false)
+    @Column(name = "is_used")
     private Boolean isUsed = false;
 
-    @Column(name = "created_at", nullable = false)
-    private LocalDateTime createdAt;
+    @Column(name = "created_at")
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "expires_at", nullable = false)
     private LocalDateTime expiresAt;
