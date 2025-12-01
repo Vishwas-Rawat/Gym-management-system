@@ -2,12 +2,15 @@
 package com.gymmanagement.usermanagement.Response;
 
 import com.gymmanagement.commonservices.entity.Member;
+import com.gymmanagement.commonservices.entity.UserProfile;
 import lombok.Data;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Data
 public class UpdateMemberResponse {
+
     private Integer memberId;
     private String fullName;
     private String email;
@@ -23,8 +26,7 @@ public class UpdateMemberResponse {
     public UpdateMemberResponse(Member member, String message) {
         if (member != null) {
             this.memberId = member.getMemberId();
-            this.fullName = member.getUser().getFirstName() +
-                    (member.getUser().getLastName() != null ? " " + member.getUser().getLastName() : "");
+            this.fullName = buildFullName(member.getUser().getUserProfile());
             this.email = member.getUser().getEmail();
             this.phoneNumber = member.getUser().getPhoneNumber();
             this.membershipPlan = member.getMembershipPlan();
@@ -35,5 +37,15 @@ public class UpdateMemberResponse {
             this.updatedAt = member.getUpdatedAt();
         }
         this.message = message;
+    }
+
+    private String buildFullName(UserProfile profile) {
+        if (profile == null) return "Name Not Set";
+
+        String firstName = profile.getFirstName() != null ? profile.getFirstName().trim() : "";
+        String lastName = profile.getLastName() != null ? profile.getLastName().trim() : "";
+
+        if (firstName.isEmpty()) return "Member";
+        return lastName.isEmpty() ? firstName : firstName + " " + lastName;
     }
 }

@@ -1,0 +1,32 @@
+package com.gymmanagement.usermanagement.controller;
+
+import com.gymmanagement.usermanagement.repository.UserProfileRepository;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+@RestController
+@RequestMapping("/user")
+public class UserProfileController {
+
+    private final UserProfileRepository repo;
+
+    public UserProfileController(UserProfileRepository repo) {
+        this.repo = repo;
+    }
+
+    @GetMapping("/profile/{userId}")
+    public ResponseEntity<?> getProfile(@PathVariable Integer userId) {
+
+        return repo.findByUser_UserId(userId)
+                .map(p -> ResponseEntity.ok(
+                        new ProfileDto(
+                                p.getUser().getUserId(),
+                                p.getFirstName(),
+                                p.getLastName()
+                        )
+                ))
+                .orElse(ResponseEntity.notFound().build());
+    }
+
+    record ProfileDto(Integer userId, String firstName, String lastName){}
+}

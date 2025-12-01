@@ -3,11 +3,11 @@ package com.gymmanagement.usermanagement.service.impl;
 import com.gymmanagement.commonservices.entity.*;
 import com.gymmanagement.commonservices.enumeration.RegistrationStatus;
 import com.gymmanagement.commonservices.enumeration.Role;
-import com.gymmanagement.commonservices.enumeration.VerificationType;
 import com.gymmanagement.usermanagement.Request.AdminAddMemberRequest;
 import com.gymmanagement.usermanagement.Request.CompleteRegistrationRequest;
 import com.gymmanagement.usermanagement.Request.UpdateMemberRequest;
 import com.gymmanagement.usermanagement.Response.AddMemberResponse;
+import com.gymmanagement.usermanagement.Response.MemberWithExpiryResponse;
 import com.gymmanagement.usermanagement.repository.*;
 import com.gymmanagement.usermanagement.service.EmailService;
 import com.gymmanagement.usermanagement.service.MemberService;
@@ -16,7 +16,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.Duration;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.UUID;
 
@@ -50,7 +52,7 @@ public class MemberServiceImpl implements MemberService {
     }
 
     /* --------------------------------------------------------------------- */
-    /* 1. ADD MULTIPLE MEMBERS (ADMIN)                                      */
+    /* 1. ADD MULTIPLE MEMBERS ADD (ADMIN) */
     /* --------------------------------------------------------------------- */
     @Override
     @Transactional
@@ -58,89 +60,80 @@ public class MemberServiceImpl implements MemberService {
         if (requests == null || requests.isEmpty()) {
             throw new IllegalArgumentException("No members provided for addition");
         }
-
         return requests.stream()
                 .map(this::addSingleMember)
                 .toList();
     }
 
     private AddMemberResponse addSingleMember(AdminAddMemberRequest req) {
-        // ---- 1. Validate email uniqueness ----
         if (userRepository.existsByEmail(req.getEmail())) {
             throw new IllegalArgumentException("Email already exists: " + req.getEmail());
         }
 
-        // ---- 2. Split fullName → first / last ----
         String[] nameParts = req.getFullName().trim().split("\\s+", 2);
         String firstName = nameParts[0];
         String lastName = nameParts.length > 1 ? nameParts[1] : "";
 
-        // ---- 3. Load Gym ----
         Gym gym = gymRepository.findById(req.getGymId().longValue())
                 .orElseThrow(() -> new IllegalArgumentException("Gym not found: " + req.getGymId()));
 
-        // ---- 4. Create User (email + phone mandatory) ----
         User user = new User();
-        user.setFirstName(firstName);
-        user.setLastName(lastName);
         user.setEmail(req.getEmail());
         user.setPhoneNumber(req.getPhoneNo());
         user.setRole(Role.MEMBER);
         user.setRegistrationStatus(RegistrationStatus.PENDING);
         user.setRegistrationToken(UUID.randomUUID().toString());
         user.setTokenGeneratedAt(LocalDateTime.now());
+        user.setIsActive(false);
+        user.setIsEmailVerified(false);
         userRepository.save(user);
 
-        // ---- 5. Build workoutTimeSlot (legacy string) ----
+        UserProfile profile = new UserProfile();
+        profile.setUser(user);
+        profile.setFirstName(firstName);
+        profile.setLastName(lastName);
+        user.setUserProfile(profile);
+        userProfileRepository.save(profile);
+
         String workoutTimeSlot = buildWorkoutTimeSlot(req);
 
-        // ---- 6. Create Member ----
         Member member = new Member();
         member.setUser(user);
         member.setGym(gym);
-
         member.setMonthsPaid(req.getMonthsPaid());
         member.setMonthsFree(req.getMonthsFree() != null ? req.getMonthsFree() : 0);
-
         member.setFromHour(req.getFromHour());
         member.setFromMinute(req.getFromMinute());
         member.setFromPeriod(req.getFromPeriod());
         member.setToHour(req.getToHour());
         member.setToMinute(req.getToMinute());
         member.setToPeriod(req.getToPeriod());
-
         member.setRegistrationFee(req.getRegistrationFee() != null ? req.getRegistrationFee() : 0.0);
         member.setPlanPrice(req.getPlanPrice() != null ? req.getPlanPrice() : 0.0);
         member.setDiscount(req.getDiscount() != null ? req.getDiscount() : 0.0);
 
-        // ----- totalAmount calculated on server -----
         double total = member.getRegistrationFee() + member.getPlanPrice() - member.getDiscount();
         member.setTotalAmount(Math.max(0, total));
-
         member.setPaymentMethod(req.getPaymentMethod());
         member.setJoiningDate(req.getJoiningDate());
 
-        // ----- Legacy fields -----
-        member.setMembershipPlan(member.getMonthsPaid() + " months" 
-                + (member.getMonthsFree() > 0 ? " + " + member.getMonthsFree() + " free" : ""));
-        member.setJoiningDate(req.getJoiningDate());
+        // Set plan_start_date = joining_date for new members
+        member.setPlanStartDate(req.getJoiningDate());
+
+        member.setMembershipPlan(member.getMonthsPaid() + " months" +
+                (member.getMonthsFree() > 0 ? " + " + member.getMonthsFree() + " free" : ""));
         member.setAmountPaid(member.getTotalAmount());
         member.setWorkoutTimeSlot(workoutTimeSlot.isEmpty() ? null : workoutTimeSlot);
-
-        // ----- Soft-delete defaults -----
         member.setIsActive(true);
         member.setDeletedAt(null);
 
         memberRepository.save(member);
 
-        // ---- 7. Send registration email ----
         String link = buildRegistrationLink(user.getRegistrationToken());
         emailService.sendRegistrationLink(user.getEmail(), link);
 
-        // ---- 8. Return DTO ----
-        return new AddMemberResponse(member, "Member added successfully");
+        return new AddMemberResponse(member, "Member added successfully. Registration link sent.");
     }
-
 
     private String buildWorkoutTimeSlot(AdminAddMemberRequest r) {
         if (r.getFromHour() == null || r.getToHour() == null) return "";
@@ -156,16 +149,18 @@ public class MemberServiceImpl implements MemberService {
     }
 
     /* --------------------------------------------------------------------- */
-    /* 2. RESEND REGISTRATION LINK                                          */
+    /* 2. RESEND REGISTRATION LINK */
     /* --------------------------------------------------------------------- */
     @Override
     @Transactional
     public void resendRegistrationLink(Integer userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
+
         if (RegistrationStatus.REGISTERED.equals(user.getRegistrationStatus())) {
-            throw new IllegalArgumentException("User already registered");
+            throw new IllegalArgumentException("User already completed registration");
         }
+
         user.setRegistrationToken(UUID.randomUUID().toString());
         user.setTokenGeneratedAt(LocalDateTime.now());
         userRepository.save(user);
@@ -175,57 +170,60 @@ public class MemberServiceImpl implements MemberService {
     }
 
     /* --------------------------------------------------------------------- */
-    /* 3. COMPLETE REGISTRATION (member finishes password etc.)            */
+    /* 3. COMPLETE REGISTRATION */
     /* --------------------------------------------------------------------- */
     @Override
     @Transactional
     public void completeRegistration(CompleteRegistrationRequest request) {
         User user = userRepository.findByRegistrationToken(request.getToken())
-                .orElseThrow(() -> new IllegalArgumentException("Invalid or expired token"));
+                .orElseThrow(() -> new IllegalArgumentException("Invalid or expired registration token"));
 
         if (user.getTokenGeneratedAt() == null ||
             Duration.between(user.getTokenGeneratedAt(), LocalDateTime.now()).toHours() > TOKEN_VALIDITY_HOURS) {
-            throw new IllegalArgumentException("Registration link expired");
+            throw new IllegalArgumentException("Registration link has expired");
         }
 
+        if (request.getPassword() == null || request.getPassword().trim().isEmpty()) {
+            throw new IllegalArgumentException("Password is required");
+        }
         user.setPassword(passwordEncoder.encode(request.getPassword()));
+
+        String username = request.getUsername();
+        if (username == null || username.trim().isEmpty()) {
+            throw new IllegalArgumentException("Username is required");
+        }
+        username = username.trim();
+        if (userRepository.existsByUsername(username)) {
+            throw new IllegalArgumentException("Username '" + username + "' is already taken.");
+        }
+        user.setUsername(username);
+
         user.setRegistrationStatus(RegistrationStatus.REGISTERED);
-        user.setRegistrationToken(null);
-        user.setTokenGeneratedAt(null);
         user.setIsActive(true);
         user.setIsEmailVerified(true);
+        user.setRegistrationToken(null);
+        user.setTokenGeneratedAt(null);
 
-        if (request.getGender() != null) user.setGender(request.getGender());
-        if (request.getDateOfBirth() != null) user.setDateOfBirth(request.getDateOfBirth());
-        else if (request.getAge() != null)
-            user.setDateOfBirth(LocalDateTime.now().minusYears(request.getAge()).toLocalDate());
+        UserProfile profile = user.getUserProfile();
+        if (profile == null) {
+            profile = new UserProfile();
+            profile.setUser(user);
+            user.setUserProfile(profile);
+        }
+        if (request.getDateOfBirth() != null) profile.setDateOfBirth(request.getDateOfBirth());
+        if (request.getGender() != null) profile.setGender(request.getGender());
 
+        userProfileRepository.save(profile);
         userRepository.save(user);
 
-        // ---- Profile ----
-        UserProfile profile = new UserProfile();
-        profile.setUser(user);
-        profile.setFirstName(user.getFirstName());
-        profile.setLastName(user.getLastName());
-        profile.setDateOfBirth(user.getDateOfBirth());
-        profile.setGender(user.getGender());
-        profile.setAddress(user.getAddress());
-        profile.setCreatedAt(LocalDateTime.now());
-        profile.setUpdatedAt(LocalDateTime.now());
-        userProfileRepository.save(profile);
-
-        // ---- Verification record ----
         UserVerification verification = new UserVerification();
         verification.setUser(user);
         verification.setOtpCode(UUID.randomUUID().toString());
-        verification.setType(VerificationType.EMAIL);
         verification.setIsUsed(true);
         verification.setCreatedAt(LocalDateTime.now());
-        verification.setExpiresAt(LocalDateTime.now().plusHours(24));
-        verification.setUpdatedAt(LocalDateTime.now());
+        verification.setExpiresAt(LocalDateTime.now().plusDays(1));
         userVerificationRepository.save(verification);
 
-        // ---- Optional member updates (fitness goal, slot) ----
         memberRepository.findByUser(user).ifPresent(member -> {
             if (request.getFitnessGoal() != null) member.setFitnessGoal(request.getFitnessGoal());
             if (request.getWorkoutTimeSlot() != null) member.setWorkoutTimeSlot(request.getWorkoutTimeSlot());
@@ -239,36 +237,31 @@ public class MemberServiceImpl implements MemberService {
     }
 
     /* --------------------------------------------------------------------- */
-    /* 4. READ OPERATIONS (active members only)                            */
+    /* 4. READ OPERATIONS */
     /* --------------------------------------------------------------------- */
-    @Override
-    public Member getMemberById(Integer memberId) {
+    @Override public Member getMemberById(Integer memberId) {
         return memberRepository.findActiveById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("Member not found or deleted"));
     }
 
-    @Override
-    public Member getMemberByUserId(Integer userId) {
+    @Override public Member getMemberByUserId(Integer userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         return memberRepository.findByUser(user)
-                .filter(m -> m.getIsActive() && m.getDeletedAt() == null)
+                .filter(m -> Boolean.TRUE.equals(m.getIsActive()) && m.getDeletedAt() == null)
                 .orElseThrow(() -> new IllegalArgumentException("Member not found or deleted"));
     }
 
-    @Override
-    public List<Member> getAllMembers() {
-        return memberRepository.findAllActive();
-    }
+    @Override public List<Member> getAllMembers() { return memberRepository.findAllActive(); }
 
-    @Override
-    public List<Member> searchMembers(String keyword) {
-        if (keyword == null || keyword.trim().isEmpty()) return memberRepository.findAllActive();
-        return memberRepository.searchActiveMembers(keyword);
+    @Override public List<Member> searchMembers(String keyword) {
+        return keyword == null || keyword.trim().isEmpty()
+                ? memberRepository.findAllActive()
+                : memberRepository.searchActiveMembers(keyword);
     }
 
     /* --------------------------------------------------------------------- */
-    /* 5. UPDATE MEMBER                                                    */
+    /* 5. UPDATE MEMBER + RENEWAL LOGIC */
     /* --------------------------------------------------------------------- */
     @Override
     @Transactional
@@ -277,15 +270,21 @@ public class MemberServiceImpl implements MemberService {
                 .orElseThrow(() -> new IllegalArgumentException("Member not found or deleted"));
 
         User user = member.getUser();
+        UserProfile profile = user.getUserProfile();
 
-        // ---- 1. Full Name ----
+        // Full Name
         if (request.getFullName() != null && !request.getFullName().trim().isEmpty()) {
             String[] parts = request.getFullName().trim().split("\\s+", 2);
-            user.setFirstName(parts[0]);
-            user.setLastName(parts.length > 1 ? parts[1] : "");
+            if (profile == null) {
+                profile = new UserProfile();
+                profile.setUser(user);
+                user.setUserProfile(profile);
+            }
+            profile.setFirstName(parts[0]);
+            profile.setLastName(parts.length > 1 ? parts[1] : "");
         }
 
-        // ---- 2. Contact ----
+        // Contact
         if (request.getEmail() != null && !request.getEmail().equals(user.getEmail())) {
             if (userRepository.existsByEmail(request.getEmail())) {
                 throw new IllegalArgumentException("Email already in use: " + request.getEmail());
@@ -296,59 +295,47 @@ public class MemberServiceImpl implements MemberService {
             user.setPhoneNumber(request.getPhoneNo());
         }
 
-        // ---- 3. Plan ----
-        if (request.getMonthsPaid() != null || request.getMonthsFree() != null) {
-            int paid = request.getMonthsPaid() != null ? request.getMonthsPaid() : member.getMonthsPaid();
-            int free = request.getMonthsFree() != null ? request.getMonthsFree() : member.getMonthsFree();
-            member.setMonthsPaid(paid);
-            member.setMonthsFree(free);
-            member.setMembershipPlan(paid + " months" + (free > 0 ? " + " + free + " free" : ""));
+        // PLAN RENEWAL / EXTENSION
+        if (request.getMonthsPaid() != null && request.getMonthsPaid() > 0) {
+            member.setMonthsPaid(request.getMonthsPaid());
+            member.setMonthsFree(request.getMonthsFree() != null ? request.getMonthsFree() : 0);
+            member.setPlanStartDate(LocalDate.now()); // THIS IS THE KEY LINE
+            member.setMembershipPlan(request.getMonthsPaid() + " months" +
+                    (request.getMonthsFree() > 0 ? " + " + request.getMonthsFree() + " free" : ""));
+        } else if (request.getMonthsFree() != null) {
+            member.setMonthsFree(request.getMonthsFree());
         }
 
-        // ---- 4. Timing (Always rebuild workoutTimeSlot if any timing field is sent) ----
-        boolean hasTiming = false;
+        // Timing
         if (request.getFromHour() != null || request.getToHour() != null) {
-            hasTiming = true;
-
-            // Parse fromHour/toHour safely
             member.setFromHour(safeParseInt(request.getFromHour()));
             member.setToHour(safeParseInt(request.getToHour()));
             member.setFromMinute(request.getFromMinute());
             member.setFromPeriod(request.getFromPeriod());
             member.setToMinute(request.getToMinute());
             member.setToPeriod(request.getToPeriod());
+            member.setWorkoutTimeSlot(buildWorkoutTimeSlot(request).isEmpty() ? null : buildWorkoutTimeSlot(request));
         }
 
-        // Rebuild workoutTimeSlot string (same logic as create)
-        if (hasTiming && member.getFromHour() != null && member.getToHour() != null) {
-            String workoutTimeSlot = buildWorkoutTimeSlot(request);
-            member.setWorkoutTimeSlot(workoutTimeSlot.isEmpty() ? null : workoutTimeSlot);
-        } else if (request.getFromHour() == null && request.getToHour() == null) {
-            member.setWorkoutTimeSlot(null);
-            // Clear individual fields
-            member.setFromHour(null); member.setFromMinute(null); member.setFromPeriod(null);
-            member.setToHour(null);   member.setToMinute(null);   member.setToPeriod(null);
-        }
-
-        // ---- 5. Money ----
+        // Money
         if (request.getRegistrationFee() != null) member.setRegistrationFee(request.getRegistrationFee());
         if (request.getPlanPrice() != null) member.setPlanPrice(request.getPlanPrice());
         if (request.getDiscount() != null) member.setDiscount(request.getDiscount());
-
         double total = member.getRegistrationFee() + member.getPlanPrice() - member.getDiscount();
         member.setTotalAmount(Math.max(0, total));
-        member.setAmountPaid(member.getTotalAmount());
+        member.setAmountPaid(total);
 
-        // ---- 6. Misc ----
+        // Misc
         if (request.getPaymentMethod() != null) member.setPaymentMethod(request.getPaymentMethod());
         if (request.getJoiningDate() != null) member.setJoiningDate(request.getJoiningDate());
 
         member.setUpdatedAt(LocalDateTime.now());
+
+        if (profile != null) userProfileRepository.save(profile);
         userRepository.save(user);
         return memberRepository.save(member);
     }
 
-    // Helper: same as in addSingleMember
     private String buildWorkoutTimeSlot(UpdateMemberRequest r) {
         if (r.getFromHour() == null || r.getToHour() == null) return "";
         String from = String.format("%d:%s %s",
@@ -371,26 +358,125 @@ public class MemberServiceImpl implements MemberService {
     }
 
     /* --------------------------------------------------------------------- */
-    /* 6. SOFT DELETE                                                       */
+    /* 6. SOFT DELETE */
     /* --------------------------------------------------------------------- */
     @Override
     @Transactional
     public void deleteMember(Integer memberId) {
         Member member = memberRepository.findById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("Member not found"));
-        if (!member.getIsActive() || member.getDeletedAt() != null) {
+
+        if (Boolean.FALSE.equals(member.getIsActive()) || member.getDeletedAt() != null) {
             throw new IllegalArgumentException("Member already deleted");
         }
+
+        if (member.getTrainer() != null) {
+            member.setTrainer(null);
+        }
+
         member.setIsActive(false);
         member.setDeletedAt(LocalDateTime.now());
         member.setUpdatedAt(LocalDateTime.now());
         memberRepository.save(member);
     }
-    
-    
-    @Override
-    public List<Member> getMembersByGymId(Long gymId) {
+
+    @Override public List<Member> getMembersByGymId(Long gymId) {
         return memberRepository.findActiveMembersByGymId(gymId);
     }
 
+    @Override public List<Member> getMembersByTrainerAndGym(Integer trainerId, Long gymId) {
+        return memberRepository.findActiveMembersByTrainerIdAndGymId(trainerId, gymId);
+    }
+
+    @Override @Transactional
+    public void removeMemberFromTrainer(Integer memberId, Long gymId) {
+        Member member = memberRepository.findActiveById(memberId)
+            .orElseThrow(() -> new IllegalArgumentException("Member not found or inactive"));
+
+        if (!member.getGym().getGymId().equals(gymId)) {
+            throw new IllegalArgumentException("Member does not belong to gym ID: " + gymId);
+        }
+
+        if (member.getTrainer() == null) {
+            throw new IllegalArgumentException("Member is not assigned to any trainer");
+        }
+
+        if (!member.getTrainer().getGym().getGymId().equals(gymId)) {
+            throw new IllegalArgumentException("Trainer does not belong to this gym");
+        }
+
+        member.setTrainer(null);
+        member.setUpdatedAt(LocalDateTime.now());
+        memberRepository.save(member);
+    }
+
+    /* --------------------------------------------------------------------- */
+    /* 7. ACCURATE EXPIRY CALCULATION LOGIC */
+    /* --------------------------------------------------------------------- */
+    private LocalDate getEffectivePlanStartDate(Member member) {
+        return member.getPlanStartDate() != null 
+                ? member.getPlanStartDate() 
+                : member.getJoiningDate();
+    }
+
+    private LocalDate calculateExpiryDate(Member member) {
+        LocalDate start = getEffectivePlanStartDate(member);
+        int totalMonths = member.getMonthsPaid() 
+                        + (member.getMonthsFree() != null ? member.getMonthsFree() : 0);
+        return start.plusMonths(totalMonths).minusDays(1);
+    }
+
+    @Override
+    public List<MemberWithExpiryResponse> getAllMembersWithExpiry() {
+        return memberRepository.findAllActive().stream()
+                .map(MemberWithExpiryResponse::new)
+                .sorted((a, b) -> a.getPlanExpiryDate().compareTo(b.getPlanExpiryDate()))
+                .toList();
+    }
+
+    @Override
+    public void sendSingleExpiryReminder(Integer memberId) {
+        Member member = memberRepository.findActiveById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("Member not found or inactive"));
+        sendExpiryEmailIfNeeded(member);
+    }
+
+    @Override
+    public int sendAllExpiryReminders() {
+        List<Member> activeMembers = memberRepository.findAllActive();
+        int sentCount = 0;
+        for (Member member : activeMembers) {
+            if (sendExpiryEmailIfNeeded(member)) {
+                sentCount++;
+            }
+        }
+        return sentCount;
+    }
+
+    /**
+     * FINAL FIXED METHOD — This is the only one you needed to change!
+     * Now uses plan_start_date correctly → No false reminders ever again
+     */
+    private boolean sendExpiryEmailIfNeeded(Member member) {
+        LocalDate expiryDate = calculateExpiryDate(member);
+        long daysRemaining = ChronoUnit.DAYS.between(LocalDate.now(), expiryDate);
+
+        // ONLY send if 10 days or less remaining OR already expired
+        if (daysRemaining > 10) {
+            return false; // GREEN → NO EMAIL ALLOWED
+        }
+
+        String firstName = member.getUser().getUserProfile() != null
+                ? member.getUser().getUserProfile().getFirstName()
+                : "Member";
+
+        emailService.sendMembershipExpiryEmail(
+                member.getUser().getEmail(),
+                firstName,
+                expiryDate,
+                daysRemaining
+        );
+
+        return true;
+    }
 }

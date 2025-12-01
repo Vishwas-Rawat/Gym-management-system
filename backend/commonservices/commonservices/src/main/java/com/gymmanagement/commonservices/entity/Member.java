@@ -1,4 +1,3 @@
-// src/main/java/com/gymmanagement/commonservices/entity/Member.java
 package com.gymmanagement.commonservices.entity;
 
 import jakarta.persistence.*;
@@ -58,34 +57,45 @@ public class Member {
     @Column(name = "payment_method", nullable = false)
     private String paymentMethod;
 
- // With this (use joiningDate)
+    @Column(name = "plan_start_date")
+    private LocalDate planStartDate;
+
     @Column(name = "joining_date", nullable = false)
     private LocalDate joiningDate;
 
-    // === LEGACY / ADDITIONAL FIELDS ===
+    // === Legacy / Optional Fields ===
     private String fitnessGoal;
     private String membershipPlan;
     private Double amountPaid;
     private String workoutTimeSlot;
 
-    // === REQUIRED FIELDS (DO NOT REMOVE) ===
+    // === Replace Hibernate timestamps with pure JPA ===
+
     @Column(name = "created_at", nullable = false, updatable = false)
-    @org.hibernate.annotations.CreationTimestamp
-    private LocalDateTime createdAt;
+    private LocalDateTime createdAt = LocalDateTime.now();
 
     @Column(name = "updated_at", nullable = false)
-    @org.hibernate.annotations.UpdateTimestamp
-    private LocalDateTime updatedAt;
+    private LocalDateTime updatedAt = LocalDateTime.now();
 
-    // === RELATIONSHIPS ===
+    // === Relationships ===
     @ManyToOne
     @JoinColumn(name = "gym_id", nullable = false)
     private Gym gym;
 
-    // === SOFT DELETE ===
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "trainer_id")
+    private Trainer trainer;
+
+    // === Soft Delete ===
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
+
+    // === Auto-update updatedAt manually ===
+    @PreUpdate
+    public void preUpdate() {
+        this.updatedAt = LocalDateTime.now();
+    }
 }

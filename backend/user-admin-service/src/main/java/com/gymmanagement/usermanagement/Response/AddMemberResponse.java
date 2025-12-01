@@ -2,6 +2,8 @@
 package com.gymmanagement.usermanagement.Response;
 
 import com.gymmanagement.commonservices.entity.Member;
+import com.gymmanagement.commonservices.enumeration.Role;
+
 import lombok.Data;
 
 @Data
@@ -17,6 +19,7 @@ public class AddMemberResponse {
     private String paymentMethod;
     private String startDate; // ISO format: "2025-11-05"
     private String message;
+    private Role role;           // ← ADD THIS
 
     public AddMemberResponse(Member member, String message) {
         this.memberId = member.getMemberId();
@@ -30,6 +33,7 @@ public class AddMemberResponse {
         this.monthsFree = member.getMonthsFree();
         this.totalAmount = member.getTotalAmount();
         this.paymentMethod = member.getPaymentMethod();
+        this.role = member.getUser().getRole();  // ← SHOW ROLE
         this.startDate = member.getJoiningDate() != null ? member.getJoiningDate().toString() : null;
         this.message = message;
     }
