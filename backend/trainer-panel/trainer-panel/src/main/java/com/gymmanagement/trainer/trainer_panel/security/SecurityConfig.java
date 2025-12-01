@@ -12,7 +12,7 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity      // Enables @PreAuthorize
+@EnableMethodSecurity
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
@@ -27,26 +27,30 @@ public class SecurityConfig {
         http
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                    // Allow default Spring error
-                    .requestMatchers("/error").permitAll()
 
-                    // Trainer-only endpoints
+                    // Allow WebSocket handshake
+                    .requestMatchers("/ws/**").permitAll()
+
+                    // Allow chat REST APIs
+                    .requestMatchers("/chat/**").permitAll()
+
+                    // Trainer routes
                     .requestMatchers("/trainer/**").hasRole("TRAINER")
 
                     // Workout – GET my-plan → MEMBER or TRAINER
                     .requestMatchers("/api/workout/my-plan").hasAnyRole("MEMBER", "TRAINER")
 
-                    // Other workout APIs must be authenticated
+                    // All workout authenticated
                     .requestMatchers("/api/workout/**").authenticated()
 
                     // All other APIs must be authenticated
                     .anyRequest().authenticated()
             )
-            // Add JWT filter before Username/Password filter
             .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
+
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
