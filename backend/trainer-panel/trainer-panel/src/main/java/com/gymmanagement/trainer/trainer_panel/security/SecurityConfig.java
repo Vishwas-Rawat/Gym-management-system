@@ -42,6 +42,11 @@ public class SecurityConfig {
 
                     // All workout authenticated
                     .requestMatchers("/api/workout/**").authenticated()
+                    
+                    .requestMatchers("/attendance/**").authenticated()
+
+                    .requestMatchers("/auth/check-status").authenticated()
+
 
                     // All other APIs must be authenticated
                     .anyRequest().authenticated()
