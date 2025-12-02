@@ -16,4 +16,6 @@ public class ViewMemberResponse {
     private String timing;
     private Double totalPaid;
     private String paymentMethod;
+    private Integer userId;
+
 }

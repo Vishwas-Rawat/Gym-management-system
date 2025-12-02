@@ -1,15 +1,17 @@
 package com.gymmanagement.trainer.trainer_panel.security;
 
+import org.springframework.security.core.GrantedAuthority;
+import org.springframework.security.core.userdetails.UserDetails;
+
+import java.security.Principal;
 import java.util.Collection;
 import java.util.List;
 
-import org.springframework.security.core.GrantedAuthority;
+public class MemberPrincipal implements UserDetails, Principal {
 
-public class MemberPrincipal implements org.springframework.security.core.userdetails.UserDetails {
-
-    private Integer userId;
-    private String email;
-    private String role;
+    private final Integer userId;
+    private final String email;
+    private final String role;
 
     public MemberPrincipal(Integer userId, String email, String role) {
         this.userId = userId;
@@ -17,17 +19,25 @@ public class MemberPrincipal implements org.springframework.security.core.userde
         this.role = role;
     }
 
-    public Integer userId() { return userId; }
-    public String email() { return email; }
-    public String role() { return role; }
-
-    // ⭐ MOST IMPORTANT FIX ⭐
-    @Override
-    public String getUsername() {
-        return email; // Spring uses this as auth.getName()
+    // ⭐ REQUIRED (your controllers use this)
+    public Integer userId() {
+        return this.userId;
     }
 
-    // Required UserDetails methods
+    // ⭐ FIX FOR YOUR BUG
+    // Spring Security uses this for Authentication.getName()
+    // This MUST return userId
+    @Override
+    public String getName() {
+        return userId != null ? userId.toString() : email;
+    }
+
+    // UserDetails implementation
+    @Override
+    public String getUsername() {
+        return email;
+    }
+
     @Override public String getPassword() { return null; }
     @Override public boolean isAccountNonExpired() { return true; }
     @Override public boolean isAccountNonLocked() { return true; }

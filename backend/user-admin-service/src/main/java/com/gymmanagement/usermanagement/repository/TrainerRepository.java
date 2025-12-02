@@ -38,4 +38,8 @@ public interface TrainerRepository extends JpaRepository<Trainer, Integer> {
     // BY GYM
     @Query("SELECT t FROM Trainer t WHERE t.gym.gymId = :gymId AND t.isActive = true AND t.deleted = false")
     List<Trainer> findActiveTrainersByGymId(@Param("gymId") Long gymId);
+    
+    @Query("SELECT t FROM Trainer t WHERE t.gym.gymId = :gymId AND t.isActive = true")
+    List<Trainer> findActiveTrainers(Long gymId);
+
 }

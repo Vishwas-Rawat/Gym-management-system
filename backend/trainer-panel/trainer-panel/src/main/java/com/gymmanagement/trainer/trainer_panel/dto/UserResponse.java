@@ -1,4 +1,3 @@
-// src/main/java/com/gymmanagement/trainer/trainer_panel/dto/UserResponse.java
 package com.gymmanagement.trainer.trainer_panel.dto;
 
 import lombok.Data;
@@ -9,4 +8,7 @@ public class UserResponse {
     private String firstName;
     private String lastName;
     private String email;
+    private Long gymId;   // 🔥 add gymId for trainer dashboard
+    private Boolean isActive;   // ✅ REQUIRED for inactive-blocking
+    private String role;        // optional but often required
 }

@@ -58,4 +58,14 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
     	List<Member> findActiveMembersByTrainerIdAndGymId(
     	    @Param("trainerId") Integer trainerId,
     	    @Param("gymId") Long gymId);
+    
+    @Query("SELECT COUNT(m) FROM Member m WHERE m.gym.gymId = :gymId AND m.isActive = true")
+    long countActiveMembers(Long gymId);
+
+    @Query("SELECT m FROM Member m WHERE m.gym.gymId = :gymId AND m.planStartDate IS NOT NULL")
+    List<Member> findAllByGym(Long gymId);
+    
+    long countByGym_GymId(Long gymId);
+
+
 }
