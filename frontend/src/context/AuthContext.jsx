@@ -17,21 +17,25 @@ export const AuthProvider = ({ children }) => {
     if (fields.email && (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email))) {
       newErrors.email = 'Valid email is required';
     }
-    if (fields.password && (!formData.password || formData.password.length < 8)) {
-      newErrors.password = 'Password must be at least 8 characters';
+    if (fields.identifier && !formData.identifier) {
+      newErrors.identifier = 'Username or Email is required';
+    }
+    if (fields.password && !formData.password) {
+      newErrors.password = 'Password is required';
     }
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (endpoint, successAction) => {
+  const handleSubmit = async (endpoint, successAction, validationRules = { email: true, password: true }, customPayload = null) => {
     setApiError('');
     setSuccessMessage('');
-    if (!validateForm({ email: true, password: true })) return;
+    if (!validateForm(validationRules)) return;
 
     setIsLoading(true);
     try {
-      const response = await api.post(endpoint, formData);
+      const payload = customPayload || formData;
+      const response = await api.post(endpoint, payload);
       const data = response.data;
       if (successAction(data)) {
         setSuccessMessage('Success! Redirecting...');

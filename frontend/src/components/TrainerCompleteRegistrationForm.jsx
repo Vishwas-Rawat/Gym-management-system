@@ -1,3 +1,4 @@
+// src/components/TrainerCompleteRegistrationForm.jsx
 import React from 'react';
 import {
   Box,
@@ -13,9 +14,9 @@ import {
   IconButton,
 } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
-import { useMemberRegistration } from '../context/MemberRegistrationContext';
+import { useTrainerRegistration } from '../context/TrainerRegistrationContext';
 
-const MemberCompleteRegistrationForm = () => {
+const TrainerCompleteRegistrationForm = () => {
   const {
     completeRegForm,
     handleCompleteRegChange,
@@ -25,13 +26,10 @@ const MemberCompleteRegistrationForm = () => {
     apiError,
     successMessage,
     isRedirecting,
-  } = useMemberRegistration();
+  } = useTrainerRegistration();
 
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
-
-  const fitnessGoals = ['Muscle Gain', 'Weight Loss', 'Strength Training', 'Endurance', 'Flexibility'];
-  const timeSlots = ['Morning', 'Afternoon', 'Evening', 'Night'];
 
   return (
     <Box component="form" onSubmit={(e) => { e.preventDefault(); handleCompleteRegistration(); }} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
@@ -108,18 +106,7 @@ const MemberCompleteRegistrationForm = () => {
       {/* Optional Fields */}
       <TextField
         fullWidth
-        label="Age (Optional)"
-        name="age"
-        type="number"
-        value={completeRegForm.age}
-        onChange={handleCompleteRegChange}
-        variant="outlined"
-        inputProps={{ min: 16, max: 80 }}
-      />
-
-      <TextField
-        fullWidth
-        label="Date of Birth (Optional)"
+        label="Date of Birth"
         name="dateOfBirth"
         type="date"
         value={completeRegForm.dateOfBirth}
@@ -129,47 +116,17 @@ const MemberCompleteRegistrationForm = () => {
       />
 
       <FormControl fullWidth variant="outlined">
-        <InputLabel>Gender (Optional)</InputLabel>
+        <InputLabel>Gender</InputLabel>
         <Select
           name="gender"
           value={completeRegForm.gender}
           onChange={handleCompleteRegChange}
-          label="Gender (Optional)"
+          label="Gender"
         >
           <MenuItem value="">Select Gender</MenuItem>
           <MenuItem value="Male">Male</MenuItem>
           <MenuItem value="Female">Female</MenuItem>
           <MenuItem value="Other">Other</MenuItem>
-        </Select>
-      </FormControl>
-
-      <FormControl fullWidth variant="outlined">
-        <InputLabel>Fitness Goal (Optional)</InputLabel>
-        <Select
-          name="fitnessGoal"
-          value={completeRegForm.fitnessGoal}
-          onChange={handleCompleteRegChange}
-          label="Fitness Goal (Optional)"
-        >
-          <MenuItem value="">Select Goal</MenuItem>
-          {fitnessGoals.map((goal) => (
-            <MenuItem key={goal} value={goal}>{goal}</MenuItem>
-          ))}
-        </Select>
-      </FormControl>
-
-      <FormControl fullWidth variant="outlined">
-        <InputLabel>Preferred Workout Time (Optional)</InputLabel>
-        <Select
-          name="workoutTimeSlot"
-          value={completeRegForm.workoutTimeSlot}
-          onChange={handleCompleteRegChange}
-          label="Preferred Workout Time (Optional)"
-        >
-          <MenuItem value="">Select Time Slot</MenuItem>
-          {timeSlots.map((slot) => (
-            <MenuItem key={slot} value={slot}>{slot}</MenuItem>
-          ))}
         </Select>
       </FormControl>
 
@@ -205,4 +162,4 @@ const MemberCompleteRegistrationForm = () => {
   );
 };
 
-export default MemberCompleteRegistrationForm;
+export default TrainerCompleteRegistrationForm;

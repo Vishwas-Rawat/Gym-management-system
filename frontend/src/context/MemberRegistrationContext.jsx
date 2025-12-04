@@ -16,10 +16,14 @@ export const MemberRegistrationProvider = ({ children }) => {
   };
 
   const validateMemberId = (id) => {
-    if (!id || id === 'undefined' || id === 'null' || isNaN(id)) {
-      throw new Error('Invalid member ID');
+    if (id === undefined || id === null || id === 'undefined' || id === 'null') {
+      throw new Error(`Invalid member ID: ${id}`);
     }
-    return Number(id);
+    const numId = Number(id);
+    if (isNaN(numId)) {
+      throw new Error(`Invalid member ID (NaN): ${id}`);
+    }
+    return numId;
   };
 
   /* -------------------------------------------------- */
@@ -97,7 +101,7 @@ export const MemberRegistrationProvider = ({ children }) => {
       const { data } = await api.get(`/member/${id}`);
       return data;
     } catch (err) {
-      const msg = err.response?.data?.message || 'Member not found';
+      const msg = err.response?.data?.message || err.message || 'Member not found';
       setApiError(msg);
       return null;
     } finally {
@@ -151,7 +155,7 @@ export const MemberRegistrationProvider = ({ children }) => {
         workoutTimeSlot: timeSlot,
       };
     } catch (err) {
-      const msg = err.response?.data?.message || 'Member not found';
+      const msg = err.response?.data?.message || err.message || 'Member not found';
       setApiError(msg);
       return null;
     } finally {
@@ -173,7 +177,7 @@ export const MemberRegistrationProvider = ({ children }) => {
       const { data } = await api.get(`/member/user/${userId}`);
       return data;
     } catch (err) {
-      const msg = err.response?.data?.message || 'Member not found';
+      const msg = err.response?.data?.message || err.message || 'Member not found';
       setApiError(msg);
       return null;
     } finally {
@@ -197,7 +201,7 @@ export const MemberRegistrationProvider = ({ children }) => {
       const { data } = await api.get(`/member/gym/${gymId}`);
       return data || [];
     } catch (err) {
-      const msg = err.response?.data?.message || 'Failed to load members';
+      const msg = err.response?.data?.message || err.message || 'Failed to load members';
       setApiError(msg);
       return [];
     } finally {
@@ -251,7 +255,7 @@ export const MemberRegistrationProvider = ({ children }) => {
       setSuccessMessage(data.message || 'Member updated');
       return data;
     } catch (err) {
-      const msg = err.response?.data?.message || 'Update failed';
+      const msg = err.response?.data?.message || err.message || 'Update failed';
       setApiError(msg);
       throw new Error(msg);
     } finally {
@@ -271,13 +275,96 @@ export const MemberRegistrationProvider = ({ children }) => {
       setSuccessMessage(data.message || 'Member deleted');
       return true;
     } catch (err) {
-      const msg = err.response?.data?.message || 'Delete failed';
+      const msg = err.response?.data?.message || err.message || 'Delete failed';
       setApiError(msg);
       return false;
     } finally {
       setIsLoading(false);
     }
   }, []);
+
+  /* -------------------------------------------------- */
+  /* 12. Send Payment Reminder */
+  /* -------------------------------------------------- */
+  const sendPaymentReminder = useCallback(async (memberId) => {
+    try {
+      const id = validateMemberId(memberId);
+      setIsLoading(true);
+      clearMessages();
+      const { data } = await api.post(`/member/admin/send-reminder/${id}`);
+      // Remove "(expired)" from the message if present
+      const cleanMessage = (data.message || 'Payment reminder sent successfully').replace('(expired)', '').trim();
+      setSuccessMessage(cleanMessage);
+      return true;
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message || 'Failed to send reminder';
+      setApiError(msg);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  /* -------------------------------------------------- */
+  /* 13. COMPLETE REGISTRATION (Member) */
+  /* -------------------------------------------------- */
+  const [completeRegForm, setCompleteRegForm] = useState({
+    token: '',
+    username: '',
+    password: '',
+    confirmPassword: '',
+    age: '',
+    dateOfBirth: '',
+    gender: '',
+    fitnessGoal: '',
+    workoutTimeSlot: '',
+  });
+
+  const [errors, setErrors] = useState({});
+  const [isRedirecting, setIsRedirecting] = useState(false);
+
+  const handleCompleteRegChange = (e) => {
+    const { name, value } = e.target;
+    setCompleteRegForm((prev) => ({ ...prev, [name]: value }));
+    // Clear error for the field being edited
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: '' }));
+    }
+  };
+
+  const handleCompleteRegistration = async () => {
+    setIsLoading(true);
+    clearMessages();
+    setErrors({}); // Clear previous errors
+    try {
+      if (completeRegForm.password !== completeRegForm.confirmPassword) {
+        setErrors({ confirmPassword: 'Passwords do not match' });
+        throw new Error('Passwords do not match');
+      }
+      
+      const payload = {
+        token: completeRegForm.token,
+        password: completeRegForm.password,
+        username: completeRegForm.username,
+        gender: completeRegForm.gender,
+        dateOfBirth: completeRegForm.dateOfBirth,
+        fitnessGoal: completeRegForm.fitnessGoal,
+        workoutTimeSlot: completeRegForm.workoutTimeSlot,
+      };
+
+      const { data } = await api.post('/member/complete-registration', payload);
+      setSuccessMessage(data.message || 'Registration completed successfully!');
+      setIsRedirecting(true);
+      setTimeout(() => {
+        window.location.href = '/login';
+      }, 2000);
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message || 'Registration failed';
+      setApiError(msg);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <MemberRegistrationContext.Provider
@@ -298,6 +385,14 @@ export const MemberRegistrationProvider = ({ children }) => {
         updateMember,
         deleteMember,
         resendInvite,
+        sendPaymentReminder,
+        // Complete Registration exports
+        completeRegForm,
+        setCompleteRegForm,
+        handleCompleteRegChange,
+        handleCompleteRegistration,
+        errors,
+        isRedirecting,
       }}
     >
       {children}
