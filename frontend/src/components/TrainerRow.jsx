@@ -1,4 +1,4 @@
-// src/components/MemberRow.jsx
+// src/components/TrainerRow.jsx
 import React from "react";
 import {
   TableRow,
@@ -13,7 +13,7 @@ import {
   Avatar,
 } from "@mui/material";
 
-import { Visibility, Edit, AttachMoney, Delete, Person } from "@mui/icons-material";
+import { Visibility, Edit, Send, Delete, Person, FitnessCenter } from "@mui/icons-material";
 
 // ---- Framer Motion ----
 import { motion } from "framer-motion";
@@ -35,19 +35,9 @@ const buttonVariants = {
   tap: { scale: 0.9 },
 };
 
-const MemberRow = React.memo(
-  ({ member, onDetail, onEdit, onPaymentReminder, onResend, onDelete, index, isSelected }) => {
+const TrainerRow = React.memo(
+  ({ trainer, onDetail, onEdit, onResend, onDelete, index, isSelected }) => {
     const isMobile = useMediaQuery("(max-width:600px)");
-
-    const planText =
-      member.membershipPlan ||
-      (member.monthsPaid
-        ? `${member.monthsPaid} mo${member.monthsPaid > 1 ? "s" : ""}${
-            member.monthsFree ? ` + ${member.monthsFree} free` : ""
-          }`
-        : "—");
-
-    const timing = member.workoutTimeSlot || member.timing || "—";
 
     const singleLine = {
       whiteSpace: "nowrap",
@@ -82,35 +72,35 @@ const MemberRow = React.memo(
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
               <Avatar
                 sx={{
-                  bgcolor: "#10b981",
+                  bgcolor: "#059669",
                   width: 40,
                   height: 40,
                   borderRadius: "10px",
                 }}
               >
-                <Person sx={{ color: "white" }} />
+                <FitnessCenter sx={{ color: "white" }} />
               </Avatar>
 
               <Box sx={{ minWidth: 0 }}>
                 <Typography fontWeight={600} sx={singleLine}>
-                  {member.fullName}
+                  {trainer.fullName}
                 </Typography>
                 <Typography variant="body2" color="text.secondary" sx={singleLine}>
-                  {member.email}
+                  {trainer.email}
                 </Typography>
               </Box>
             </Box>
 
             <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
               <Typography variant="body2" color="text.secondary">
-                {member.phoneNo || member.phoneNumber || "—"}
+                {trainer.phoneNo || "—"}
               </Typography>
 
               <Chip
-                label={planText}
+                label={trainer.specialization || "General"}
                 size="small"
                 sx={{
-                  bgcolor: "#10b981",
+                  bgcolor: "#059669",
                   color: "white",
                   fontWeight: 600,
                   fontSize: "0.75rem",
@@ -119,11 +109,9 @@ const MemberRow = React.memo(
               />
             </Box>
 
-            {timing !== "—" && (
-              <Typography variant="body2" sx={{ fontSize: "0.85rem", color: "#4b5563" }}>
-                {timing}
-              </Typography>
-            )}
+            <Typography variant="body2" sx={{ fontSize: "0.85rem", color: "#4b5563" }}>
+              Exp: {trainer.experienceYears ? `${trainer.experienceYears} Years` : "—"}
+            </Typography>
 
             {/* Mobile action buttons */}
             <Stack
@@ -145,8 +133,8 @@ const MemberRow = React.memo(
               </motion.div>
 
               <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                <IconButton size="small" sx={{ color: "#f59e0b", bgcolor: "#fffbeb" }} onClick={onPaymentReminder}>
-                  <AttachMoney fontSize="small" />
+                <IconButton size="small" sx={{ color: "#f59e0b", bgcolor: "#fffbeb" }} onClick={onResend}>
+                  <Send fontSize="small" />
                 </IconButton>
               </motion.div>
 
@@ -184,34 +172,34 @@ const MemberRow = React.memo(
               <Avatar
                 variant="rounded"
                 sx={{
-                  bgcolor: "#10b981",
+                  bgcolor: "#059669",
                   width: 36,
                   height: 36,
                   borderRadius: "8px",
                 }}
               >
-                <Person sx={{ color: "white", fontSize: 20 }} />
+                <FitnessCenter sx={{ color: "white", fontSize: 20 }} />
               </Avatar>
             </motion.div>
 
             <Typography fontWeight={600} sx={{ color: "#1f2937", ...singleLine }}>
-              {member.fullName}
+              {trainer.fullName}
             </Typography>
           </Box>
         </TableCell>
 
-        <TableCell sx={{ color: "#4b5563", ...singleLine }}>{member.email}</TableCell>
+        <TableCell sx={{ color: "#4b5563", ...singleLine }}>{trainer.email}</TableCell>
 
         <TableCell sx={{ color: "#4b5563", ...singleLine }}>
-          {member.phoneNo || member.phoneNumber || "—"}
+          {trainer.phoneNo || "—"}
         </TableCell>
 
         <TableCell>
           <Chip
-            label={planText}
+            label={trainer.specialization || "General"}
             size="small"
             sx={{
-              bgcolor: "#10b981",
+              bgcolor: "#059669",
               color: "white",
               fontWeight: 600,
               borderRadius: "6px",
@@ -221,7 +209,9 @@ const MemberRow = React.memo(
           />
         </TableCell>
 
-        <TableCell sx={{ color: "#4b5563", ...singleLine }}>{timing}</TableCell>
+        <TableCell sx={{ color: "#4b5563", ...singleLine }}>
+          {trainer.experienceYears ? `${trainer.experienceYears} Yrs` : "—"}
+        </TableCell>
 
         {/* Action buttons */}
         <TableCell align="center" onClick={(e) => e.stopPropagation()}>
@@ -243,9 +233,9 @@ const MemberRow = React.memo(
             </motion.div>
 
             <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-              <Tooltip title="Payment Reminder">
-                <IconButton size="small" sx={{ color: "#f59e0b" }} onClick={onPaymentReminder}>
-                  <AttachMoney fontSize="small" />
+              <Tooltip title="Resend Invite">
+                <IconButton size="small" sx={{ color: "#f59e0b" }} onClick={onResend}>
+                  <Send fontSize="small" />
                 </IconButton>
               </Tooltip>
             </motion.div>
@@ -264,4 +254,4 @@ const MemberRow = React.memo(
   }
 );
 
-export default MemberRow;
+export default TrainerRow;

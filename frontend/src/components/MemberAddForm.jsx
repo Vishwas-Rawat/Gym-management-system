@@ -8,6 +8,7 @@ import {
 import { Add, Delete, ChevronLeft, ChevronRight, FitnessCenter } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
+import { motion } from "framer-motion";
 
 const hours = Array.from({ length: 12 }, (_, i) => i + 1);
 const minutes = ["00", "15", "30", "45"];
@@ -19,6 +20,22 @@ const emptyMember = {
   fromHour: "", fromMinute: "", fromPeriod: "", toHour: "", toMinute: "", toPeriod: "",
   registrationFee: "", planPrice: "", discount: "", totalAmount: 0,
   paymentMethod: "", startDate: new Date().toISOString().split("T")[0],
+};
+
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.05,
+      delayChildren: 0.1,
+    },
+  },
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 10 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.3 } },
 };
 
 export default function MemberAddForm({ onSuccess, multiple = false, member = null, onCancel }) {
@@ -167,6 +184,7 @@ export default function MemberAddForm({ onSuccess, multiple = false, member = nu
         toHour: m.toHour,
         toMinute: m.toMinute || "00",
         toPeriod: m.toPeriod,
+        workoutTimeSlot: `${m.fromHour}:${m.fromMinute || "00"} ${m.fromPeriod} to ${m.toHour}:${m.toMinute || "00"} ${m.toPeriod}`
       } : {};
 
       return {
@@ -181,6 +199,7 @@ export default function MemberAddForm({ onSuccess, multiple = false, member = nu
         registrationFee: Number(m.registrationFee || 0),
         planPrice: Number(m.planPrice || 0),
         discount: Number(m.discount || 0),
+        totalAmount: Number(m.totalAmount || 0),
         ...timing,
       };
     });
@@ -356,7 +375,7 @@ export default function MemberAddForm({ onSuccess, multiple = false, member = nu
       </Box>
 
       {/* ---------- FORM CONTENT ---------- */}
-      <Stack spacing={isJioPhone ? 1.2 : 1.8}>
+      <Stack spacing={isJioPhone ? 1.2 : 1.8} component={motion.div} variants={containerVariants} initial="hidden" animate="visible">
         <Paper variant="outlined" sx={{ p: isJioPhone ? 1.2 : { xs: 1.8, sm: 2.5 }, borderRadius: 1.5 }}>
           <Typography variant="h6"
             sx={{
@@ -370,11 +389,11 @@ export default function MemberAddForm({ onSuccess, multiple = false, member = nu
 
           {/* PERSONAL INFO */}
           <Grid container spacing={isJioPhone ? 0.8 : 1.2}>
-            <Grid item xs={12}><TextField required fullWidth label="Full Name" value={current.fullName || ""} onChange={e => handleChange(activeIdx, "fullName", e.target.value)} sx={inputSx} /></Grid>
-            <Grid item xs={12}><TextField required fullWidth label="Email" type="email" value={current.email || ""} onChange={e => handleChange(activeIdx, "email", e.target.value)} sx={inputSx} /></Grid>
-            <Grid item xs={12}><TextField required fullWidth label="Phone" value={current.phoneNo || ""} onChange={e => handleChange(activeIdx, "phoneNo", e.target.value)} sx={inputSx} inputProps={{ maxLength: 10 }} /></Grid>
-            <Grid item xs={12} sm={6}><TextField required fullWidth label="Months Paid" type="number" value={current.monthsPaid || ""} onChange={e => handleChange(activeIdx, "monthsPaid", e.target.value)} sx={inputSx} /></Grid>
-            <Grid item xs={12} sm={6}><TextField fullWidth label="Months Free" type="number" value={current.monthsFree || ""} onChange={e => handleChange(activeIdx, "monthsFree", e.target.value)} sx={inputSx} /></Grid>
+            <Grid item xs={12} component={motion.div} variants={itemVariants}><TextField required fullWidth label="Full Name" value={current.fullName || ""} onChange={e => handleChange(activeIdx, "fullName", e.target.value)} sx={inputSx} /></Grid>
+            <Grid item xs={12} component={motion.div} variants={itemVariants}><TextField required fullWidth label="Email" type="email" value={current.email || ""} onChange={e => handleChange(activeIdx, "email", e.target.value)} sx={inputSx} /></Grid>
+            <Grid item xs={12} component={motion.div} variants={itemVariants}><TextField required fullWidth label="Phone" value={current.phoneNo || ""} onChange={e => handleChange(activeIdx, "phoneNo", e.target.value)} sx={inputSx} inputProps={{ maxLength: 10 }} /></Grid>
+            <Grid item xs={12} sm={6} component={motion.div} variants={itemVariants}><TextField required fullWidth label="Months Paid" type="number" value={current.monthsPaid || ""} onChange={e => handleChange(activeIdx, "monthsPaid", e.target.value)} sx={inputSx} /></Grid>
+            <Grid item xs={12} sm={6} component={motion.div} variants={itemVariants}><TextField fullWidth label="Months Free" type="number" value={current.monthsFree || ""} onChange={e => handleChange(activeIdx, "monthsFree", e.target.value)} sx={inputSx} /></Grid>
           </Grid>
 
           <Divider sx={{ my: 1.2 }} />
@@ -382,28 +401,28 @@ export default function MemberAddForm({ onSuccess, multiple = false, member = nu
 
           {/* TIMING – FULL‑WIDTH ON MOBILE */}
           <Grid container spacing={isMobile ? 0.8 : 0.6}>
-            <Grid item xs={12} sm={isMobile ? 12 : 4}><FormControl fullWidth sx={selectSx}><InputLabel shrink>From Hour</InputLabel><Select value={current.fromHour || ""} onChange={e => handleChange(activeIdx, "fromHour", e.target.value)}><MenuItem value=""><em>Hr</em></MenuItem>{hours.map(h => <MenuItem key={h} value={h}>{h}</MenuItem>)}</Select></FormControl></Grid>
-            <Grid item xs={12} sm={isMobile ? 12 : 4}><FormControl fullWidth sx={selectSx}><InputLabel shrink>From Min</InputLabel><Select value={current.fromMinute || ""} onChange={e => handleChange(activeIdx, "fromMinute", e.target.value)}><MenuItem value=""><em>Min</em></MenuItem>{minutes.map(m => <MenuItem key={m} value={m}>{m}</MenuItem>)}</Select></FormControl></Grid>
-            <Grid item xs={12} sm={isMobile ? 12 : 4}><FormControl fullWidth sx={selectSx}><InputLabel shrink>AM/PM</InputLabel><Select value={current.fromPeriod || ""} onChange={e => handleChange(activeIdx, "fromPeriod", e.target.value)}><MenuItem value=""><em>—</em></MenuItem>{ampm.map(p => <MenuItem key={p} value={p}>{p}</MenuItem>)}</Select></FormControl></Grid>
+            <Grid item xs={12} sm={isMobile ? 12 : 4} component={motion.div} variants={itemVariants}><FormControl fullWidth sx={selectSx}><InputLabel shrink>From Hour</InputLabel><Select value={current.fromHour || ""} onChange={e => handleChange(activeIdx, "fromHour", e.target.value)}><MenuItem value=""><em>Hr</em></MenuItem>{hours.map(h => <MenuItem key={h} value={h}>{h}</MenuItem>)}</Select></FormControl></Grid>
+            <Grid item xs={12} sm={isMobile ? 12 : 4} component={motion.div} variants={itemVariants}><FormControl fullWidth sx={selectSx}><InputLabel shrink>From Min</InputLabel><Select value={current.fromMinute || ""} onChange={e => handleChange(activeIdx, "fromMinute", e.target.value)}><MenuItem value=""><em>Min</em></MenuItem>{minutes.map(m => <MenuItem key={m} value={m}>{m}</MenuItem>)}</Select></FormControl></Grid>
+            <Grid item xs={12} sm={isMobile ? 12 : 4} component={motion.div} variants={itemVariants}><FormControl fullWidth sx={selectSx}><InputLabel shrink>AM/PM</InputLabel><Select value={current.fromPeriod || ""} onChange={e => handleChange(activeIdx, "fromPeriod", e.target.value)}><MenuItem value=""><em>—</em></MenuItem>{ampm.map(p => <MenuItem key={p} value={p}>{p}</MenuItem>)}</Select></FormControl></Grid>
 
             <Grid item xs={12} textAlign="center"><Typography sx={{ fontWeight: 600, color: "#059669", fontSize: isJioPhone ? "0.75rem" : "0.9rem" }}>to</Typography></Grid>
 
-            <Grid item xs={12} sm={isMobile ? 12 : 4}><FormControl fullWidth sx={selectSx}><InputLabel shrink>To Hour</InputLabel><Select value={current.toHour || ""} onChange={e => handleChange(activeIdx, "toHour", e.target.value)}><MenuItem value=""><em>Hr</em></MenuItem>{hours.map(h => <MenuItem key={h} value={h}>{h}</MenuItem>)}</Select></FormControl></Grid>
-            <Grid item xs={12} sm={isMobile ? 12 : 4}><FormControl fullWidth sx={selectSx}><InputLabel shrink>To Min</InputLabel><Select value={current.toMinute || ""} onChange={e => handleChange(activeIdx, "toMinute", e.target.value)}><MenuItem value=""><em>Min</em></MenuItem>{minutes.map(m => <MenuItem key={m} value={m}>{m}</MenuItem>)}</Select></FormControl></Grid>
-            <Grid item xs={12} sm={isMobile ? 12 : 4}><FormControl fullWidth sx={selectSx}><InputLabel shrink>AM/PM</InputLabel><Select value={current.toPeriod || ""} onChange={e => handleChange(activeIdx, "toPeriod", e.target.value)}><MenuItem value=""><em>—</em></MenuItem>{ampm.map(p => <MenuItem key={p} value={p}>{p}</MenuItem>)}</Select></FormControl></Grid>
+            <Grid item xs={12} sm={isMobile ? 12 : 4} component={motion.div} variants={itemVariants}><FormControl fullWidth sx={selectSx}><InputLabel shrink>To Hour</InputLabel><Select value={current.toHour || ""} onChange={e => handleChange(activeIdx, "toHour", e.target.value)}><MenuItem value=""><em>Hr</em></MenuItem>{hours.map(h => <MenuItem key={h} value={h}>{h}</MenuItem>)}</Select></FormControl></Grid>
+            <Grid item xs={12} sm={isMobile ? 12 : 4} component={motion.div} variants={itemVariants}><FormControl fullWidth sx={selectSx}><InputLabel shrink>To Min</InputLabel><Select value={current.toMinute || ""} onChange={e => handleChange(activeIdx, "toMinute", e.target.value)}><MenuItem value=""><em>Min</em></MenuItem>{minutes.map(m => <MenuItem key={m} value={m}>{m}</MenuItem>)}</Select></FormControl></Grid>
+            <Grid item xs={12} sm={isMobile ? 12 : 4} component={motion.div} variants={itemVariants}><FormControl fullWidth sx={selectSx}><InputLabel shrink>AM/PM</InputLabel><Select value={current.toPeriod || ""} onChange={e => handleChange(activeIdx, "toPeriod", e.target.value)}><MenuItem value=""><em>—</em></MenuItem>{ampm.map(p => <MenuItem key={p} value={p}>{p}</MenuItem>)}</Select></FormControl></Grid>
           </Grid>
 
           <Divider sx={{ my: 1.2 }} />
           <Typography variant="subtitle2" sx={{ mb: 0.8, color: "#059669", fontSize: isJioPhone ? "0.75rem" : "0.9rem" }}>Payment</Typography>
 
           <Grid container spacing={0.8}>
-            <Grid item xs={12} sm={6}><TextField fullWidth label="Reg Fee" type="number" value={current.registrationFee} onChange={e => handleChange(activeIdx, "registrationFee", e.target.value)} InputProps={{ startAdornment: "₹" }} sx={inputSx} /></Grid>
-            <Grid item xs={12} sm={6}><TextField fullWidth label="Plan" type="number" value={current.planPrice} onChange={e => handleChange(activeIdx, "planPrice", e.target.value)} InputProps={{ startAdornment: "₹" }} sx={inputSx} /></Grid>
-            <Grid item xs={12} sm={6}><TextField fullWidth label="Discount" type="number" value={current.discount} onChange={e => handleChange(activeIdx, "discount", e.target.value)} InputProps={{ startAdornment: "₹" }} sx={inputSx} /></Grid>
-            <Grid item xs={12} sm={6}><TextField fullWidth label="Total" value={Math.max(0, current.totalAmount || 0)} disabled InputProps={{ startAdornment: "₹" }} sx={inputSx} /></Grid>
+            <Grid item xs={12} sm={6} component={motion.div} variants={itemVariants}><TextField fullWidth label="Reg Fee" type="number" value={current.registrationFee} onChange={e => handleChange(activeIdx, "registrationFee", e.target.value)} InputProps={{ startAdornment: "₹" }} sx={inputSx} /></Grid>
+            <Grid item xs={12} sm={6} component={motion.div} variants={itemVariants}><TextField fullWidth label="Plan" type="number" value={current.planPrice} onChange={e => handleChange(activeIdx, "planPrice", e.target.value)} InputProps={{ startAdornment: "₹" }} sx={inputSx} /></Grid>
+            <Grid item xs={12} sm={6} component={motion.div} variants={itemVariants}><TextField fullWidth label="Discount" type="number" value={current.discount} onChange={e => handleChange(activeIdx, "discount", e.target.value)} InputProps={{ startAdornment: "₹" }} sx={inputSx} /></Grid>
+            <Grid item xs={12} sm={6} component={motion.div} variants={itemVariants}><TextField fullWidth label="Total" value={Math.max(0, current.totalAmount || 0)} disabled InputProps={{ startAdornment: "₹" }} sx={inputSx} /></Grid>
 
             {/* PAYMENT METHOD – 100% FULL WIDTH */}
-            <Grid item xs={12}>
+            <Grid item xs={12} component={motion.div} variants={itemVariants}>
               <FormControl fullWidth sx={selectSx}>
                 <InputLabel shrink sx={{ whiteSpace: "nowrap", overflow: "visible", textOverflow: "clip", maxWidth: "none" }}>
                   Payment Method
@@ -415,7 +434,7 @@ export default function MemberAddForm({ onSuccess, multiple = false, member = nu
               </FormControl>
             </Grid>
 
-            <Grid item xs={12} sm={6}><TextField fullWidth label="Start" type="date" value={current.startDate || ""} onChange={e => handleChange(activeIdx, "startDate", e.target.value)} InputLabelProps={{ shrink: true }} sx={inputSx} /></Grid>
+            <Grid item xs={12} sm={6} component={motion.div} variants={itemVariants}><TextField fullWidth label="Start" type="date" value={current.startDate || ""} onChange={e => handleChange(activeIdx, "startDate", e.target.value)} InputLabelProps={{ shrink: true }} sx={inputSx} /></Grid>
           </Grid>
         </Paper>
 

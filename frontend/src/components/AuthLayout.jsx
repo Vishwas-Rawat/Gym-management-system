@@ -59,8 +59,7 @@ const AuthLayout = ({ title, children, navText, navAction, navLink }) => {
         sx={{
           flex: 1,
           display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
+          flexDirection: 'column',
           p: { xs: 2, sm: 4, md: 6 },
         }}
         component={motion.div}
@@ -68,8 +67,8 @@ const AuthLayout = ({ title, children, navText, navAction, navLink }) => {
         animate={{ opacity: 1, x: 0 }}
         transition={{ duration: 0.8 }}
       >
-        <Box sx={{ width: '100%', maxWidth: 500, position: 'relative' }}>
-          <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'flex-start', mb: 4 }}>
+        <Box sx={{ width: '100%', maxWidth: 500, m: 'auto', position: 'relative' }}>
+          <Box sx={{ display: 'flex', justifyContent: { xs: 'center', sm: 'flex-end' }, alignItems: 'center', mb: 4 }}>
             <Typography variant="body2" sx={{ mr: 1 }}>
               {navAction}{' '}
             </Typography>

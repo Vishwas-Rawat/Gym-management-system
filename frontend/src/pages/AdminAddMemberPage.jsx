@@ -3,9 +3,6 @@ import React, { useState, useEffect, useRef } from "react";
 import {
   Box,
   Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
   Table,
   TableBody,
   TableCell,
@@ -22,18 +19,20 @@ import {
   FormControl,
   InputLabel,
   useMediaQuery,
+  IconButton,
 } from "@mui/material";
 import {
   PersonAdd,
   Search,
   Group,
   People,
+  Close,
 } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThemeProvider, CssBaseline, createTheme } from "@mui/material";
 import lightTheme from "../themes/lightTheme";
 import MemberAddForm from "../components/MemberAddForm";
-import MemberDetailModal from "../components/MemberDetailModal";
+import { MemberDetailView } from "../components/MemberDetailModal";
 import { MemberRegistrationProvider, useMemberRegistration } from "../context/MemberRegistrationContext";
 import MemberRow from "../components/MemberRow";
 
@@ -41,8 +40,33 @@ const emeraldTheme = createTheme({
   ...lightTheme,
   palette: {
     ...lightTheme.palette,
-    primary: { main: "#059669", dark: "#047857" },
-    background: { default: "#f8fdfb", paper: "#ffffff" },
+    primary: { main: "#10b981", dark: "#059669", light: "#34d399" },
+    background: { default: "#f0fdf4", paper: "#ffffff" },
+    text: { primary: "#1f2937", secondary: "#6b7280" },
+  },
+  typography: {
+    fontFamily: "'Inter', 'Roboto', 'Helvetica', 'Arial', sans-serif",
+    h4: { fontWeight: 700 },
+    h6: { fontWeight: 600 },
+  },
+  components: {
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: "10px",
+          textTransform: "none",
+          fontWeight: 600,
+        },
+      },
+    },
+    MuiPaper: {
+      styleOverrides: {
+        root: {
+          borderRadius: "16px",
+          boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+        },
+      },
+    },
   },
 });
 
@@ -50,122 +74,50 @@ const AdminLayout = ({ title, subtitle, children }) => (
   <Box
     sx={{
       minHeight: "100vh",
-      background: "linear-gradient(135deg, #0d9488 0%, #059669 100%)",
-      position: "relative",
-      overflow: "hidden",
-      width: "100%",
+      bgcolor: "#0f766e", // Darker teal background
+      backgroundImage: "linear-gradient(135deg, #0f766e 0%, #047857 100%)",
+      pb: 6,
+      overflowX: "hidden", // Prevent horizontal scroll during transitions
     }}
   >
-    {/* Background Animation */}
-    <Box sx={{ position: "absolute", inset: 0, overflow: "hidden", zIndex: 0 }}>
-      {[...Array(12)].map((_, i) => (
-        <motion.div
-          key={i}
-          animate={{ x: [0, 100, 0], y: [0, -100, 0], opacity: [0.3, 1, 0.3] }}
-          transition={{ duration: 8 + i * 1.5, repeat: Infinity, ease: "easeInOut" }}
-          style={{
-            position: "absolute",
-            width: 3,
-            height: 3,
-            background: "rgba(255,255,255,0.15)",
-            borderRadius: "50%",
-            left: `${10 + i * 8}%`,
-            top: `${20 + i * 7}%`,
-          }}
-        />
-      ))}
-    </Box>
-
-    {/* Main Content */}
-    <Box
-      sx={{
-        width: "100%",
-        pt: { xs: 3, sm: 4, md: 6 },
-        pb: 6,
-        position: "relative",
-        zIndex: 1,
-      }}
-    >
-      <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}>
+    <Box sx={{ maxWidth: "1400px", mx: "auto", px: { xs: 2, sm: 3, md: 4 }, pt: 4 }}>
+      {/* Header Section */}
+      <Box sx={{ textAlign: "center", mb: 6, color: "white" }}>
         <Box
           sx={{
-            maxWidth: "1200px",
-            mx: "auto",
-            px: { xs: 2, sm: 3, md: 4 },
-            textAlign: "center",
-            mb: 6,
+            display: "inline-flex",
+            alignItems: "center",
+            gap: 1,
+            bgcolor: "rgba(255,255,255,0.15)",
+            backdropFilter: "blur(8px)",
+            px: 2,
+            py: 0.5,
+            borderRadius: "20px",
+            mb: 2,
+            border: "1px solid rgba(255,255,255,0.2)",
           }}
         >
-          <Box
-            sx={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 1.5,
-              mb: 2,
-              px: 3,
-              py: 1.5,
-              background: "rgba(255,255,255,0.2)",
-              backdropFilter: "blur(20px)",
-              border: "1px solid rgba(255,255,255,0.3)",
-              borderRadius: "16px",
-            }}
-          >
-            <Box
-              sx={{
-                width: 40,
-                height: 40,
-                borderRadius: "12px",
-                background: "linear-gradient(135deg, #34d399, #10b981)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <People sx={{ color: "white", fontSize: 20 }} />
-            </Box>
-            <Typography variant="h6" sx={{ fontWeight: 700, color: "white" }}>
-              Members Dashboard
-            </Typography>
-          </Box>
-
-          <Typography
-            variant="h3"
-            sx={{
-              fontWeight: 800,
-              fontSize: { xs: "2.25rem", md: "3.5rem" },
-              background: "linear-gradient(135deg, #ffffff 0%, #d1fae5 100%)",
-              WebkitBackgroundClip: "text",
-              WebkitTextFillColor: "transparent",
-            }}
-          >
-            {title}
+          <People fontSize="small" />
+          <Typography variant="subtitle2" fontWeight={600}>
+            Members Dashboard
           </Typography>
-          <Typography sx={{ color: "rgba(255,255,255,0.9)", fontSize: "1.1rem" }}>{subtitle}</Typography>
         </Box>
-      </motion.div>
+        <Typography variant="h3" fontWeight={800} sx={{ mb: 1, letterSpacing: "-0.02em" }}>
+          {title}
+        </Typography>
+        <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 400 }}>
+          {subtitle}
+        </Typography>
+      </Box>
 
-      <Paper
-        elevation={0}
-        sx={{
-          width: "100%",
-          maxWidth: "1400px",
-          mx: "auto",
-          borderRadius: { xs: 0, md: "24px" },
-          overflow: "hidden",
-          background: "white",
-          p: { xs: 3, sm: 4, md: 5 },
-          boxShadow: { md: "0 20px 40px rgba(0,0,0,0.08)" },
-        }}
-      >
-        <Box>{children}</Box>
-      </Paper>
+      {children}
     </Box>
   </Box>
 );
 
-// GYM DROPDOWN USING CONTEXT
+// GYM DROPDOWN
 const SelectGym = ({ onGymChange }) => {
-  const { gyms, isLoading, fetchGyms } = useMemberRegistration();
+  const { gyms, fetchGyms } = useMemberRegistration();
   const [gymId, setGymId] = useState("all");
 
   useEffect(() => {
@@ -178,47 +130,18 @@ const SelectGym = ({ onGymChange }) => {
     onGymChange(value === "all" ? null : value);
   };
 
-  if (isLoading) {
-    return (
-      <FormControl size="small" sx={{ minWidth: 180 }}>
-        <InputLabel>Gyms</InputLabel>
-        <Select value="" disabled label="Gyms">
-          <MenuItem disabled>Loading...</MenuItem>
-        </Select>
-      </FormControl>
-    );
-  }
-
-  if (!gyms.length) {
-    return (
-      <FormControl size="small" sx={{ minWidth: 180 }}>
-        <InputLabel>Gyms</InputLabel>
-        <Select value="all" disabled label="Gyms">
-          <MenuItem value="all">No gyms</MenuItem>
-        </Select>
-      </FormControl>
-    );
-  }
-
   return (
-    <FormControl size="small" sx={{ minWidth: 180 }}>
-      <InputLabel>Gyms</InputLabel>
+    <FormControl size="small" sx={{ minWidth: 200 }}>
+      <InputLabel id="gym-select-label">Gyms</InputLabel>
       <Select
+        labelId="gym-select-label"
         value={gymId}
-        onChange={handleChange}
         label="Gyms"
+        onChange={handleChange}
         sx={{
-          borderRadius: "12px",
-          bgcolor: "rgba(255,255,255,0.7)",
-          backdropFilter: "blur(10px)",
-          "& .MuiOutlinedInput-notchedOutline": { border: "none" },
-          "&:hover .MuiOutlinedInput-notchedOutline": { border: "none" },
-          "&.Mui-focused .MuiOutlinedInput-notchedOutline": { border: "none" },
-        }}
-        MenuProps={{
-          PaperProps: {
-            sx: { borderRadius: "12px", mt: 0.5, overflow: "hidden" },
-          },
+          bgcolor: "white",
+          borderRadius: "10px",
+          "& .MuiOutlinedInput-notchedOutline": { borderColor: "#e5e7eb" },
         }}
       >
         <MenuItem value="all">All Gyms</MenuItem>
@@ -244,17 +167,19 @@ const AdminAddMemberPageContent = () => {
     deleteMember,
     updateMember,
     resendInvite,
+    sendPaymentReminder,
     getMemberDetail,
     getMemberById,
   } = useMemberRegistration();
 
-  const isMobile = useMediaQuery("(max-width:600px)");
+  const isMobile = useMediaQuery("(max-width:900px)"); // Treat tablets as mobile for split view
 
-  const [openDialog, setOpenDialog] = useState(false);
-  const [openEditDialog, setOpenEditDialog] = useState(false);
-  const [openDetailModal, setOpenDetailModal] = useState(false);
-  const [editingMember, setEditingMember] = useState(null);
-  const [selectedMember, setSelectedMember] = useState(null);
+  // Side Panel State
+  const [sidePanel, setSidePanel] = useState({
+    open: false,
+    view: "none", // 'add', 'edit', 'detail'
+    data: null,
+  });
 
   const [originalMembers, setOriginalMembers] = useState([]);
   const [members, setMembers] = useState([]);
@@ -323,34 +248,41 @@ const AdminAddMemberPageContent = () => {
     setSelectedGymId(gymId);
   };
 
+  const closePanel = () => {
+    setSidePanel({ open: false, view: "none", data: null });
+    clearMessages();
+  };
+
   const handleAddSuccess = async (payloadArray) => {
     const arr = Array.isArray(payloadArray) ? payloadArray : [payloadArray];
     await addMultipleMembers(arr);
-    setOpenDialog(false);
-    clearMessages();
+    closePanel();
+  };
+
+  const handleEditSuccess = async (payload) => {
+    if (sidePanel.data) {
+      await updateMember(sidePanel.data.id, payload);
+      closePanel();
+    }
+  };
+
+  const openAddMember = () => {
+    setSidePanel({ open: true, view: "add", data: null });
   };
 
   const openEdit = async (memberId) => {
     const mem = await getMemberById(memberId);
     if (mem) {
-      setEditingMember(mem);
-      setOpenEditDialog(true);
+      setSidePanel({ open: true, view: "edit", data: mem });
     }
   };
 
   const openDetail = async (memberId) => {
+    if (!memberId) return;
     const mem = await getMemberDetail(memberId);
     if (mem) {
-      setSelectedMember(mem);
-      setOpenDetailModal(true);
+      setSidePanel({ open: true, view: "detail", data: mem });
     }
-  };
-
-  const handleEditSuccess = async (payload) => {
-    await updateMember(editingMember.id, payload);
-    setOpenEditDialog(false);
-    setEditingMember(null);
-    clearMessages();
   };
 
   const handleResend = async (userId) => {
@@ -368,85 +300,99 @@ const AdminAddMemberPageContent = () => {
     }
   };
 
-  const sendPaymentNotification = async (memberId) => {
-    if (!window.confirm("Send payment reminder?")) return;
-    alert("Payment notification sent!");
-  };
-
-  const handleCancelAdd = () => {
-    setOpenDialog(false);
-    clearMessages();
-  };
-
-  const handleCancelEdit = () => {
-    setOpenEditDialog(false);
-    setEditingMember(null);
-    clearMessages();
+  const handlePaymentReminder = async (memberId) => {
+    if (!window.confirm("Send payment reminder to this member?")) return;
+    await sendPaymentReminder(memberId);
   };
 
   const renderMembersList = () => {
     if (isLoading || (isSearchingAPI && searchTerm.trim())) {
       return (
-        <Box sx={{ display: "flex", justifyContent: "center", py: 6 }}>
-          <CircularProgress sx={{ color: "#059669" }} />
+        <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
+          <CircularProgress sx={{ color: "#10b981" }} />
         </Box>
       );
     }
 
     if (!displayMembers.length) {
       return (
-        <Typography align="center" sx={{ py: 4, color: "text.secondary" }}>
+        <Typography align="center" sx={{ py: 8, color: "text.secondary", fontSize: "1.1rem" }}>
           {searchTerm.trim()
-            ? "No members found"
+            ? "No members found matching your search."
             : selectedGymId
-            ? "No members in this gym"
-            : "No members yet"}
+            ? "No members found in this gym."
+            : "No members added yet."}
         </Typography>
       );
     }
 
     if (isMobile) {
       return (
-        <Box sx={{ p: { xs: 1, sm: 2 } }}>
-          {displayMembers.map((m) => (
-            <MemberRow
-              key={m.memberId || m.id}
-              member={m}
-              onDetail={() => openDetail(m.memberId || m.id)}
-              onEdit={() => openEdit(m.memberId || m.id)}
-              onNotify={() => sendPaymentNotification(m.memberId || m.id)}
-              onResend={() => handleResend(m.userId || m.memberId)}
-              onDelete={() => handleDelete(m.memberId || m.id)}
-            />
-          ))}
+        <Box sx={{ p: 2 }}>
+          <AnimatePresence>
+            {displayMembers.map((m, index) => {
+               const id = m.memberId || m.id || m.gymMemberId; 
+               const isSelected = sidePanel.open && sidePanel.data && (sidePanel.data.memberId === id || sidePanel.data.id === id);
+               return (
+                <MemberRow
+                  key={id || index}
+                  member={m}
+                  index={index}
+                  isSelected={isSelected}
+                  onDetail={() => openDetail(id)}
+                  onEdit={() => openEdit(id)}
+                  onPaymentReminder={() => handlePaymentReminder(id)}
+                  onResend={() => handleResend(m.userId || id)}
+                  onDelete={() => handleDelete(id)}
+                />
+              );
+            })}
+          </AnimatePresence>
         </Box>
       );
     }
 
     return (
-      <TableContainer sx={{ maxHeight: 520 }}>
-        <Table stickyHeader size="small">
+      <TableContainer>
+        <Table stickyHeader>
           <TableHead>
-            <TableRow sx={{ bgcolor: "#f0fdf4" }}>
+            <TableRow>
               {["Full Name", "Email", "Phone Number", "Plan", "Workout Timing", "Actions"].map((h) => (
-                <TableCell key={h} sx={{ fontWeight: 700, color: "#059669" }}>
+                <TableCell
+                  key={h}
+                  sx={{
+                    fontWeight: 700,
+                    color: "#047857",
+                    bgcolor: "#f0fdf4",
+                    borderBottom: "2px solid #d1fae5",
+                    py: 2,
+                  }}
+                >
                   {h}
                 </TableCell>
               ))}
             </TableRow>
           </TableHead>
-          <TableBody>
-            {displayMembers.map((m) => (
-              <MemberRow
-                key={m.memberId || m.id}
-                member={m}
-                onDetail={() => openDetail(m.memberId || m.id)}
-                onEdit={() => openEdit(m.memberId || m.id)}
-                onNotify={() => sendPaymentNotification(m.memberId || m.id)}
-                onResend={() => handleResend(m.userId || m.memberId)}
-                onDelete={() => handleDelete(m.memberId || m.id)}
-              />
-            ))}
+          <TableBody component={motion.tbody} layout>
+            <AnimatePresence>
+              {displayMembers.map((m, index) => {
+                const id = m.memberId || m.id || m.gymMemberId;
+                const isSelected = sidePanel.open && sidePanel.data && (sidePanel.data.memberId === id || sidePanel.data.id === id);
+                return (
+                  <MemberRow
+                    key={id || index}
+                    member={m}
+                    index={index}
+                    isSelected={isSelected}
+                    onDetail={() => openDetail(id)}
+                    onEdit={() => openEdit(id)}
+                    onPaymentReminder={() => handlePaymentReminder(id)}
+                    onResend={() => handleResend(m.userId || id)}
+                    onDelete={() => handleDelete(id)}
+                  />
+                );
+              })}
+            </AnimatePresence>
           </TableBody>
         </Table>
       </TableContainer>
@@ -457,14 +403,13 @@ const AdminAddMemberPageContent = () => {
     <AdminLayout title="Manage Members" subtitle="Real-time member management">
       <AnimatePresence>
         {successMessage && (
-          <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -8 }}>
+          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
             <Alert
               severity="success"
               sx={{
                 mb: 3,
                 borderRadius: "12px",
-                background: "linear-gradient(135deg, #10b981, #34d399)",
-                color: "white",
+                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
               }}
             >
               {successMessage}
@@ -472,7 +417,7 @@ const AdminAddMemberPageContent = () => {
           </motion.div>
         )}
         {apiError && (
-          <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }}>
+          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
             <Alert severity="error" sx={{ mb: 3, borderRadius: "12px" }}>
               {apiError}
             </Alert>
@@ -480,175 +425,186 @@ const AdminAddMemberPageContent = () => {
         )}
       </AnimatePresence>
 
-      <Box sx={{ mb: 3, textAlign: "center" }}>
-        <Button
-          variant="contained"
-          onClick={() => setOpenDialog(true)}
-          size="small"
-          sx={{
-            borderRadius: "12px",
-            fontWeight: 600,
-            fontSize: { xs: "0.8rem", sm: "0.875rem" },
-            px: { xs: 2, sm: 3 },
-            py: 1,
-            minHeight: 36,
-            background: "linear-gradient(135deg, #059669, #047857)",
-            boxShadow: "0 4px 12px rgba(5,150,105,0.2)",
-            "&:hover": {
-              background: "linear-gradient(135deg, #047857, #03694f)",
-              boxShadow: "0 6px 16px rgba(5,150,105,0.3)",
-            },
+      {/* SPLIT SCREEN CONTAINER */}
+      <Box sx={{ position: "relative", display: "flex", alignItems: "flex-start", gap: 2 }}>
+        
+        {/* LEFT PANEL: MEMBER LIST */}
+        <motion.div
+          layout
+          initial={false}
+          animate={{
+            width: sidePanel.open ? (isMobile ? "100%" : "60%") : "100%",
+            x: sidePanel.open && isMobile ? "-100%" : "0%",
+            opacity: sidePanel.open && isMobile ? 0 : 1,
           }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+          style={{ flexShrink: 0, width: "100%" }}
         >
-          Add Member
-        </Button>
-      </Box>
-
-      <Paper
-        sx={{
-          borderRadius: "16px",
-          overflow: "hidden",
-          boxShadow: "0 12px 30px -8px rgba(0,0,0,0.1)",
-          mx: "auto",
-          maxWidth: "100%",
-          mb: 4,
-        }}
-      >
-        <Box sx={{ p: { xs: 2, sm: 3 }, borderBottom: "2px solid #d1fae5" }}>
-          <Box
+          <Paper
             sx={{
-              display: "flex",
-              flexDirection: { xs: "column", sm: "row" },
-              justifyContent: "space-between",
-              alignItems: { xs: "flex-start", sm: "center" },
-              gap: { xs: 1.5, sm: 2 },
+              overflow: "hidden",
+              border: "1px solid #e5e7eb",
+              borderRadius: "24px",
+              boxShadow: "0 10px 40px -10px rgba(0,0,0,0.1)",
+              minHeight: "70vh",
             }}
           >
+            {/* TOOLBAR */}
             <Box
               sx={{
+                p: 4,
+                borderBottom: "1px solid #e5e7eb",
                 display: "flex",
-                alignItems: "center",
-                gap: { xs: 0.8, sm: 1.5 },
-                flexWrap: "wrap",
-                maxWidth: { xs: "100%", sm: "auto" },
+                flexDirection: { xs: "column", lg: sidePanel.open ? "column" : "row", xl: "row" },
+                justifyContent: "space-between",
+                alignItems: { xs: "stretch", lg: sidePanel.open ? "stretch" : "center", xl: "center" },
+                gap: 3,
+                bgcolor: "white",
               }}
             >
-              <Box
-                sx={{
-                  width: { xs: 32, sm: 40 },
-                  height: { xs: 32, sm: 40 },
-                  borderRadius: "10px",
-                  background: "linear-gradient(135deg, #0d9488, #059669)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  flexShrink: 0,
-                }}
-              >
-                <Group sx={{ color: "white", fontSize: { xs: 16, sm: 20 } }} />
+              <Box sx={{ display: "flex", alignItems: "center", gap: 2.5 }}>
+                <Box
+                  sx={{
+                    width: 56,
+                    height: 56,
+                    borderRadius: "16px",
+                    bgcolor: "#ecfdf5",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#059669",
+                  }}
+                >
+                  <Group sx={{ fontSize: 30 }} />
+                </Box>
+                <Box>
+                  <Typography variant="h5" fontWeight={700}>
+                    All Members
+                  </Typography>
+                  <Typography variant="body1" color="text.secondary">
+                    {displayMembers.length} members found
+                  </Typography>
+                </Box>
               </Box>
 
-              <Box sx={{ minWidth: 0 }}>
-                <Typography
-                  variant="h5"
+              <Box sx={{ display: "flex", gap: 2, flexDirection: { xs: "column", sm: "row" }, flexWrap: "wrap" }}>
+                <SelectGym onGymChange={handleGymChange} />
+                
+                <Box
                   sx={{
-                    fontWeight: 700,
-                    fontSize: { xs: "1rem", sm: "1.25rem" },
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                    maxWidth: "100%",
+                    display: "flex",
+                    alignItems: "center",
+                    bgcolor: "#f9fafb",
+                    borderRadius: "12px",
+                    px: 2.5,
+                    py: 1.5,
+                    border: "1px solid #e5e7eb",
+                    flexGrow: 1,
+                    minWidth: { xs: "100%", sm: "250px" },
+                    maxWidth: { xs: "100%", sm: "350px" },
+                    "&:focus-within": { borderColor: "#10b981", boxShadow: "0 0 0 4px rgba(16,185,129,0.1)" },
                   }}
                 >
-                  Members
-                </Typography>
-                <Typography
-                  variant="body2"
-                  color="text.secondary"
-                  sx={{
-                    fontSize: { xs: "0.75rem", sm: "0.875rem" },
-                    whiteSpace: "nowrap",
-                    overflow: "hidden",
-                    textOverflow: "ellipsis",
-                  }}
-                >
-                  {displayMembers.length} members
-                </Typography>
+                  <Search sx={{ color: "text.secondary", mr: 1.5, fontSize: 24 }} />
+                  <InputBase
+                    placeholder="Search..."
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                    sx={{ width: "100%", fontSize: "1.05rem" }}
+                  />
+                </Box>
+
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button
+                    variant="contained"
+                    startIcon={<PersonAdd />}
+                    onClick={openAddMember}
+                    sx={{
+                      bgcolor: "#059669",
+                      "&:hover": { bgcolor: "#047857" },
+                      px: 4,
+                      py: 1.5,
+                      fontSize: "1rem",
+                      borderRadius: "12px",
+                      whiteSpace: "nowrap",
+                    }}
+                  >
+                    Add Member
+                  </Button>
+                </motion.div>
               </Box>
             </Box>
 
-            <Box
-              sx={{
-                display: "flex",
-                gap: 2,
-                width: { xs: "100%", sm: "auto" },
-                mt: { xs: 1.5, sm: 0 },
-                flexDirection: { xs: "column", sm: "row" },
+            {renderMembersList()}
+          </Paper>
+        </motion.div>
+
+        {/* RIGHT PANEL: SIDE PANEL */}
+        <AnimatePresence>
+          {sidePanel.open && (
+            <motion.div
+              initial={{ x: "100%", opacity: 0 }}
+              animate={{ x: 0, opacity: 1 }}
+              exit={{ x: "100%", opacity: 0 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              style={{
+                position: isMobile ? "absolute" : "relative",
+                right: 0,
+                top: 0,
+                width: isMobile ? "100%" : "40%",
+                height: "100%",
+                minHeight: "70vh",
+                flexShrink: 0,
+                zIndex: 10,
               }}
             >
-              <SelectGym onGymChange={handleGymChange} />
-
-              <Box
+              <Paper
                 sx={{
+                  height: "100%",
+                  borderRadius: "24px",
+                  overflow: "hidden",
+                  boxShadow: "-10px 0 30px rgba(0,0,0,0.1)",
+                  bgcolor: "white",
                   display: "flex",
-                  alignItems: "center",
-                  bgcolor: "grey.50",
-                  borderRadius: "12px",
-                  px: { xs: 1.5, sm: 3 },
-                  py: 1.2,
-                  minWidth: { xs: "100%", sm: 280 },
-                  border: "2px solid #d1fae5",
-                  "&:hover": { borderColor: "#059669" },
+                  flexDirection: "column",
                 }}
               >
-                <Search sx={{ mr: 1, color: "text.secondary", fontSize: { xs: 18, sm: 20 } }} />
-                <InputBase
-                  placeholder="Search..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  sx={{ width: "100%", fontSize: { xs: "0.875rem", sm: "1rem" } }}
-                />
-              </Box>
-            </Box>
-          </Box>
-        </Box>
+                {/* Close Button for Mobile/Desktop */}
+                <Box sx={{ p: 2, display: "flex", justifyContent: "flex-end", borderBottom: "1px solid #f3f4f6" }}>
+                  <IconButton onClick={closePanel}>
+                    <Close />
+                  </IconButton>
+                </Box>
 
-        {renderMembersList()}
-      </Paper>
+                <Box sx={{ flexGrow: 1, overflowY: "auto" }}>
+                  {sidePanel.view === "add" && (
+                    <Box sx={{ p: 2 }}>
+                      <Typography variant="h5" fontWeight={700} sx={{ mb: 3, px: 2, color: "#065f46" }}>
+                        Add New Member
+                      </Typography>
+                      <MemberAddForm onSuccess={handleAddSuccess} multiple onCancel={closePanel} />
+                    </Box>
+                  )}
 
-      <Dialog
-        open={openDialog}
-        onClose={handleCancelAdd}
-        maxWidth="lg"
-        fullWidth
-        PaperProps={{
-          sx: { borderRadius: "16px", boxShadow: "0 16px 35px rgba(0,0,0,0.15)", border: "2px solid #d1fae5" },
-        }}
-      >
-        <DialogTitle sx={{ fontWeight: 700 }}>Add New Member(s)</DialogTitle>
-        <DialogContent sx={{ p: 0 }}>
-          <MemberAddForm onSuccess={handleAddSuccess} multiple onCancel={handleCancelAdd} />
-        </DialogContent>
-      </Dialog>
+                  {sidePanel.view === "edit" && sidePanel.data && (
+                    <Box sx={{ p: 2 }}>
+                      <Typography variant="h5" fontWeight={700} sx={{ mb: 3, px: 2, color: "#065f46" }}>
+                        Edit Member
+                      </Typography>
+                      <MemberAddForm onSuccess={handleEditSuccess} member={sidePanel.data} onCancel={closePanel} />
+                    </Box>
+                  )}
 
-      <Dialog
-        open={openEditDialog}
-        onClose={handleCancelEdit}
-        maxWidth="lg"
-        fullWidth
-        PaperProps={{
-          sx: { borderRadius: "16px", boxShadow: "0 16px 35px rgba(0,0,0,0.15)", border: "2 2px solid #d1fae5" },
-        }}
-      >
-        <DialogTitle sx={{ fontWeight: 700 }}>Edit Member</DialogTitle>
-        <DialogContent sx={{ p: 0 }}>
-          {editingMember && (
-            <MemberAddForm onSuccess={handleEditSuccess} member={editingMember} onCancel={handleCancelEdit} />
+                  {sidePanel.view === "detail" && sidePanel.data && (
+                    <MemberDetailView member={sidePanel.data} />
+                  )}
+                </Box>
+              </Paper>
+            </motion.div>
           )}
-        </DialogContent>
-      </Dialog>
+        </AnimatePresence>
 
-      <MemberDetailModal open={openDetailModal} onClose={() => setOpenDetailModal(false)} member={selectedMember} />
+      </Box>
     </AdminLayout>
   );
 };
