@@ -66,6 +66,8 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
     List<Member> findAllByGym(Long gymId);
     
     long countByGym_GymId(Long gymId);
+    
+    Optional<Member> findByUser_UserId(Integer userId);
 
 
 }
