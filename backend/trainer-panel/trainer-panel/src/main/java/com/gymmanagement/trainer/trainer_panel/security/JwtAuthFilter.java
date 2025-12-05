@@ -25,8 +25,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain)
+            HttpServletResponse response,
+            FilterChain filterChain)
             throws ServletException, IOException {
 
         String auth = request.getHeader("Authorization");
@@ -58,15 +58,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                                 user != null ? user.getUserId() : null,
                                 trainerId,
                                 email,
-                                role
-                        );
+                                role);
 
-                        UsernamePasswordAuthenticationToken authToken =
-                                new UsernamePasswordAuthenticationToken(
-                                        principal,
-                                        null,
-                                        List.of(() -> "ROLE_TRAINER")
-                                );
+                        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                                principal,
+                                null,
+                                List.of(() -> "ROLE_TRAINER"));
 
                         authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                         SecurityContextHolder.getContext().setAuthentication(authToken);
@@ -79,15 +76,28 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                         MemberPrincipal principal = new MemberPrincipal(
                                 user != null ? user.getUserId() : null,
                                 email,
-                                role
-                        );
+                                role);
 
-                        UsernamePasswordAuthenticationToken authToken =
-                                new UsernamePasswordAuthenticationToken(
-                                        principal,
-                                        null,
-                                        List.of(() -> "ROLE_MEMBER")
-                                );
+                        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                                principal,
+                                null,
+                                List.of(() -> "ROLE_MEMBER"));
+
+                        authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        SecurityContextHolder.getContext().setAuthentication(authToken);
+                    }
+
+                    // ADMIN LOGIN
+                    else if (role.equalsIgnoreCase("ADMIN")) {
+                        AdminPrincipal principal = new AdminPrincipal(
+                                user != null ? user.getUserId() : null,
+                                email,
+                                role);
+
+                        UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
+                                principal,
+                                null,
+                                List.of(() -> "ROLE_ADMIN"));
 
                         authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                         SecurityContextHolder.getContext().setAuthentication(authToken);

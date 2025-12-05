@@ -13,8 +13,8 @@ import java.util.function.Function;
 public class JwtUtil {
 
     // MUST match user-management secret (or both use env/prop in prod)
-    private final String SECRET_KEY = "your-256-bit-secret-here-change-in-prod-your-256-bit-secret-here";
-    
+    private final String SECRET_KEY = "your-256-bit-secret-here-change-in-prod-12345678901234567890123456789012";
+
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
     }
@@ -42,9 +42,12 @@ public class JwtUtil {
     public Integer extractTrainerId(String token) {
         // note: JJWT may return Integer or Number depending on serialization
         Object val = extractClaim(token, claims -> claims.get("trainerId"));
-        if (val == null) return null;
-        if (val instanceof Integer) return (Integer) val;
-        if (val instanceof Number) return ((Number) val).intValue();
+        if (val == null)
+            return null;
+        if (val instanceof Integer)
+            return (Integer) val;
+        if (val instanceof Number)
+            return ((Number) val).intValue();
         try {
             return Integer.valueOf(val.toString());
         } catch (Exception e) {

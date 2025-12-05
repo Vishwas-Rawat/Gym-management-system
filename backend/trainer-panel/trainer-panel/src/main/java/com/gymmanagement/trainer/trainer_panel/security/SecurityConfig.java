@@ -25,41 +25,53 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         http
-            .csrf(csrf -> csrf.disable())
-            .authorizeHttpRequests(auth -> auth
+                .csrf(csrf -> csrf.disable())
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()))
+                .authorizeHttpRequests(auth -> auth
 
-                    // Allow WebSocket handshake
-                    .requestMatchers("/ws/**").permitAll()
+                        // Allow WebSocket handshake
+                        .requestMatchers("/ws/**").permitAll()
 
-                    // Allow chat REST APIs
-                    .requestMatchers("/chat/**").permitAll()
+                        // Allow chat REST APIs
+                        .requestMatchers("/chat/**").permitAll()
 
-                    // Trainer routes
-                    .requestMatchers("/trainer/**").hasRole("TRAINER")
+                        // Trainer routes
+                        .requestMatchers("/trainer/**").hasRole("TRAINER")
 
-                    // Workout – GET my-plan → MEMBER or TRAINER
-                    .requestMatchers("/api/workout/my-plan").hasAnyRole("MEMBER", "TRAINER")
+                        // Workout – GET my-plan → MEMBER or TRAINER
+                        .requestMatchers("/api/workout/my-plan").hasAnyRole("MEMBER", "TRAINER")
 
-                    // All workout authenticated
-                    .requestMatchers("/api/workout/**").authenticated()
-                    
-                    .requestMatchers("/attendance/**").authenticated()
+                        // All workout authenticated
+                        .requestMatchers("/api/workout/**").authenticated()
 
-                    .requestMatchers("/auth/check-status").authenticated()
+                        .requestMatchers("/attendance/**").authenticated()
 
+                        .requestMatchers("/auth/check-status").authenticated()
 
-                    // All other APIs must be authenticated
-                    .anyRequest().authenticated()
-            )
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                        // All other APIs must be authenticated
+                        .anyRequest().authenticated())
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
-
 
     @Bean
     public AuthenticationManager authenticationManager(AuthenticationConfiguration config)
             throws Exception {
         return config.getAuthenticationManager();
+    }
+
+    @Bean
+    public org.springframework.web.cors.CorsConfigurationSource corsConfigurationSource() {
+        org.springframework.web.cors.CorsConfiguration config = new org.springframework.web.cors.CorsConfiguration();
+        config.addAllowedOriginPattern("*");
+        config.setAllowedMethods(java.util.List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
+        config.setAllowedHeaders(java.util.List.of("*"));
+        config.setExposedHeaders(java.util.List.of("Authorization"));
+        config.setAllowCredentials(true);
+
+        org.springframework.web.cors.UrlBasedCorsConfigurationSource source = new org.springframework.web.cors.UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", config);
+        return source;
     }
 }

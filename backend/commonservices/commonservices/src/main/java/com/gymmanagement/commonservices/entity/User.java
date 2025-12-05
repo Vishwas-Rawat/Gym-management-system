@@ -18,16 +18,17 @@ import com.gymmanagement.commonservices.enumeration.Role;
         @UniqueConstraint(columnNames = "phone_number"),
         @UniqueConstraint(columnNames = "username")
 })
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties({ "hibernateLazyInitializer", "handler" })
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
-    @ToString.Include                    // SAFE field
+    @ToString.Include // SAFE field
     private Integer userId;
 
     @Column(nullable = false, unique = true)
-    @ToString.Include                    // SAFE field
+    @ToString.Include // SAFE field
     private String email;
 
     @Column(name = "phone_number", unique = true)
@@ -38,7 +39,7 @@ public class User {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    @ToString.Include                    // SAFE field
+    @ToString.Include // SAFE field
     private Role role;
 
     @Column(name = "username", unique = true)

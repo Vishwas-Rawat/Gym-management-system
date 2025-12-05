@@ -42,9 +42,13 @@ public class ChatRestController {
     }
 
     @GetMapping("/history/{otherUserId}")
-    public ResponseEntity<?> getConversation(@RequestHeader("X-User-Id") Integer authUserId,
-                                             @PathVariable Integer otherUserId) {
-        // You will likely extract userId from JWT/auth in real code; shown here simple
+    public ResponseEntity<?> getConversation(org.springframework.security.core.Authentication authentication,
+            @PathVariable Integer otherUserId) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body("Unauthorized");
+        }
+
+        Integer authUserId = extractUserId(authentication);
         var conv = chatService.getConversation(authUserId, otherUserId);
         return ResponseEntity.ok(conv);
     }
@@ -53,5 +57,19 @@ public class ChatRestController {
     public ResponseEntity<?> markRead(@PathVariable Long messageId) {
         chatService.markMessageRead(messageId);
         return ResponseEntity.ok().build();
+    }
+
+    private Integer extractUserId(org.springframework.security.core.Authentication auth) {
+        Object p = auth.getPrincipal();
+        if (p instanceof com.gymmanagement.trainer.trainer_panel.security.TrainerPrincipal tp) {
+            return tp.userId();
+        }
+        if (p instanceof com.gymmanagement.trainer.trainer_panel.security.MemberPrincipal mp) {
+            return mp.userId();
+        }
+        if (p instanceof com.gymmanagement.trainer.trainer_panel.security.AdminPrincipal ap) {
+            return ap.userId();
+        }
+        throw new RuntimeException("Unknown principal type: " + p.getClass().getName());
     }
 }

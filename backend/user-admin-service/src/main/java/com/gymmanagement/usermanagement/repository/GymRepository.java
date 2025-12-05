@@ -6,13 +6,11 @@ import com.gymmanagement.commonservices.entity.Gym;
 import com.gymmanagement.commonservices.entity.User;
 
 public interface GymRepository extends JpaRepository<Gym, Long> {
-	boolean existsByGymNameAndAddressAndCityAndCreatedByAdmin_UserId(
-		    String gymName, String address, String city, Integer adminId
-		);
-	List<Gym> findByCreatedByAdmin(User createdByAdmin);
-	boolean existsByGymNameIgnoreCaseAndAddressIgnoreCaseAndCityIgnoreCaseAndCreatedByAdmin_UserId(
-		    String gymName, String address, String city, Integer adminId);
 
+    // To check duplicate gym for same admin (case-insensitive)
+    boolean existsByGymNameIgnoreCaseAndAddressIgnoreCaseAndCityIgnoreCaseAndCreatedByAdmin_UserId(
+            String gymName, String address, String city, Integer adminId);
+
+    // Get only active gyms created by this admin
     List<Gym> findByCreatedByAdminAndIsActiveTrue(User admin);
-
 }

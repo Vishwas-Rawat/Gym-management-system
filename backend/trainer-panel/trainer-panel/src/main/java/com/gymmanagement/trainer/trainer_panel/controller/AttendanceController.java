@@ -1,6 +1,7 @@
 package com.gymmanagement.trainer.trainer_panel.controller;
 
 import com.gymmanagement.trainer.trainer_panel.dto.AttendanceMarkResponse;
+import com.gymmanagement.trainer.trainer_panel.security.AdminPrincipal;
 import com.gymmanagement.trainer.trainer_panel.security.MemberPrincipal;
 import com.gymmanagement.trainer.trainer_panel.security.TrainerPrincipal;
 import com.gymmanagement.trainer.trainer_panel.service.AttendanceService;
@@ -16,7 +17,8 @@ public class AttendanceController {
 
     private final AttendanceService attendanceService;
 
-    private record UserContext(Integer userId, String role) {}
+    private record UserContext(Integer userId, String role) {
+    }
 
     private UserContext extractUser(Authentication auth) {
         Object p = auth.getPrincipal();
@@ -27,14 +29,16 @@ public class AttendanceController {
         if (p instanceof MemberPrincipal mp) {
             return new UserContext(mp.userId(), "MEMBER");
         }
+        if (p instanceof AdminPrincipal ap) {
+            return new UserContext(ap.userId(), "ADMIN");
+        }
         throw new RuntimeException("Invalid principal");
     }
 
     @PostMapping("/mark")
     public ResponseEntity<?> markAttendance(Authentication auth) {
         var ctx = extractUser(auth);
-        AttendanceMarkResponse res =
-                attendanceService.markToday(ctx.userId(), ctx.role);
+        AttendanceMarkResponse res = attendanceService.markToday(ctx.userId(), ctx.role);
         return ResponseEntity.ok(res);
     }
 

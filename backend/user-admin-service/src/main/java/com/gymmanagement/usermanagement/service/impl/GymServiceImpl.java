@@ -10,8 +10,10 @@ import com.gymmanagement.usermanagement.service.GymService;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
 import java.util.List;
@@ -28,11 +30,11 @@ public class GymServiceImpl implements GymService {
     @PersistenceContext
     private EntityManager entityManager;
 
-    // CREATE: Multiple gyms
+    // CREATE gyms for admin
     @Override
     @Transactional
-    public List<GymRegisterResponse> createGyms(List<Gym> gyms, Integer adminId) {
-        User admin = getAdminById(adminId);
+    public List<GymRegisterResponse> createGyms(List<Gym> gyms, String adminEmail) {
+        User admin = getAdminByEmail(adminEmail);
 
         entityManager.flush();
         entityManager.clear();
@@ -53,32 +55,29 @@ public class GymServiceImpl implements GymService {
         }).collect(Collectors.toList());
     }
 
-    // READ: Only active gyms for this admin
+    // GET all gyms for logged admin
     @Override
-    public List<GymRegisterResponse> getAllGymsByAdmin(int adminId) {
-        User admin = getAdminById(adminId);
+    public List<GymRegisterResponse> getAllGymsByAdmin(String adminEmail) {
+        User admin = getAdminByEmail(adminEmail);
 
         List<Gym> gyms = gymRepository.findByCreatedByAdminAndIsActiveTrue(admin);
         if (gyms.isEmpty()) {
-            throw new RuntimeException("No active gyms found for this admin");
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No active gyms found for this admin");
         }
 
-        return gyms.stream()
-                .map(gym -> toResponse(gym, admin, null))
-                .collect(Collectors.toList());
+        return gyms.stream().map(gym -> toResponse(gym, admin, null)).collect(Collectors.toList());
     }
 
-    // UPDATE: Only own gym
+    // UPDATE gym
     @Override
     @Transactional
-    public GymRegisterResponse updateGym(Long gymId, Gym updatedGym, Integer adminId) {
-        User admin = getAdminById(adminId);
+    public GymRegisterResponse updateGym(Long gymId, Gym updatedGym, String adminEmail) {
+        User admin = getAdminByEmail(adminEmail);
         Gym existing = gymRepository.findById(gymId)
-                .orElseThrow(() -> new RuntimeException("Gym not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Gym not found"));
 
-        // Safe comparison
-        if (!Objects.equals(existing.getCreatedByAdmin().getUserId(), adminId)) {
-            throw new RuntimeException("You are not authorized to update this gym");
+        if (!Objects.equals(existing.getCreatedByAdmin().getUserId(), admin.getUserId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "You are not authorized to update this gym");
         }
 
         updateFields(existing, updatedGym);
@@ -88,16 +87,16 @@ public class GymServiceImpl implements GymService {
         return toResponse(saved, admin, "Gym updated successfully");
     }
 
+    // DELETE gym (soft delete)
     @Override
     @Transactional
-    public boolean softDeleteGym(Long gymId, Integer adminId) {
-        User admin = getAdminById(adminId);
+    public boolean softDeleteGym(Long gymId, String adminEmail) {
+        User admin = getAdminByEmail(adminEmail);
         Gym gym = gymRepository.findById(gymId)
-                .orElseThrow(() -> new RuntimeException("Gym not found"));
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Gym not found"));
 
-        // Safe comparison
-        if (!Objects.equals(gym.getCreatedByAdmin().getUserId(), adminId)) {
-            throw new RuntimeException("Unauthorized: You cannot delete this gym");
+        if (!Objects.equals(gym.getCreatedByAdmin().getUserId(), admin.getUserId())) {
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Unauthorized: You cannot delete this gym");
         }
 
         gym.setIsActive(false);
@@ -106,7 +105,7 @@ public class GymServiceImpl implements GymService {
         return true;
     }
 
-    // HELPER: Validate unique gym
+    // Validate uniqueness
     private void validateUniqueGym(Gym gym, User admin) {
         boolean exists = gymRepository.existsByGymNameIgnoreCaseAndAddressIgnoreCaseAndCityIgnoreCaseAndCreatedByAdmin_UserId(
                 gym.getGymName().trim(),
@@ -115,11 +114,12 @@ public class GymServiceImpl implements GymService {
                 admin.getUserId()
         );
         if (exists) {
-            throw new RuntimeException("Gym already exists: " + gym.getGymName() + " at " + gym.getAddress());
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Gym already exists: " + gym.getGymName() + " at " + gym.getAddress());
         }
     }
 
-    // HELPER: Update only non-null fields
+    // Update only available fields
     private void updateFields(Gym existing, Gym updated) {
         if (updated.getGymName() != null) existing.setGymName(updated.getGymName().trim());
         if (updated.getAddress() != null) existing.setAddress(updated.getAddress().trim());
@@ -130,17 +130,18 @@ public class GymServiceImpl implements GymService {
         if (updated.getOpeningHours() != null) existing.setOpeningHours(updated.getOpeningHours());
     }
 
-    // HELPER: Get admin + role check
-    private User getAdminById(Integer adminId) {
-        User admin = userRepository.findById(adminId)
-                .orElseThrow(() -> new RuntimeException("Admin not found"));
+    // Admin lookup
+    private User getAdminByEmail(String email) {
+        User admin = userRepository.findByEmail(email)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Admin not found"));
+
         if (admin.getRole() != Role.ADMIN) {
-            throw new RuntimeException("Only admins can perform this action");
+            throw new ResponseStatusException(HttpStatus.FORBIDDEN, "Only admins can perform this action");
         }
         return admin;
     }
 
-    // HELPER: Build response using @Builder
+    // Response builder
     private GymRegisterResponse toResponse(Gym gym, User admin, String message) {
         return GymRegisterResponse.builder()
                 .gymId(gym.getGymId())

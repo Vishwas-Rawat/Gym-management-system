@@ -7,7 +7,7 @@ import com.gymmanagement.usermanagement.Request.AddTrainerRequest;
 import com.gymmanagement.usermanagement.Request.AssignMembersToTrainerRequest;
 import com.gymmanagement.usermanagement.Request.CompleteTrainerRegistrationRequest;
 import com.gymmanagement.usermanagement.Request.UpdateTrainerRequest;
-import com.gymmanagement.usermanagement.Response.AddTrainerResponse;  // ← Changed
+import com.gymmanagement.usermanagement.Response.AddTrainerResponse; // ← Changed
 import com.gymmanagement.usermanagement.Response.TrainerResponse;
 import com.gymmanagement.usermanagement.repository.*;
 import com.gymmanagement.usermanagement.service.EmailService;
@@ -35,11 +35,11 @@ public class TrainerServiceImpl implements TrainerService {
     private static final long TOKEN_VALIDITY_HOURS = 24;
 
     public TrainerServiceImpl(UserRepository userRepository,
-                              TrainerRepository trainerRepository,
-                              GymRepository gymRepository,
-                              UserProfileRepository userProfileRepository,
-                              EmailService emailService,
-                              PasswordEncoder passwordEncoder, MemberRepository memberRepository) {
+            TrainerRepository trainerRepository,
+            GymRepository gymRepository,
+            UserProfileRepository userProfileRepository,
+            EmailService emailService,
+            PasswordEncoder passwordEncoder, MemberRepository memberRepository) {
         this.userRepository = userRepository;
         this.trainerRepository = trainerRepository;
         this.gymRepository = gymRepository;
@@ -106,9 +106,11 @@ public class TrainerServiceImpl implements TrainerService {
     }
 
     @Override
-    public void resendTrainerRegistrationLink(Integer userId) {
-        User user = userRepository.findById(userId)
+    public void resendTrainerRegistrationLink(Integer trainerId) {
+        Trainer trainer = trainerRepository.findById(trainerId)
                 .orElseThrow(() -> new IllegalArgumentException("Trainer not found"));
+
+        User user = trainer.getUser();
 
         if (RegistrationStatus.REGISTERED.equals(user.getRegistrationStatus())) {
             throw new IllegalArgumentException("Trainer already registered");
@@ -159,12 +161,14 @@ public class TrainerServiceImpl implements TrainerService {
             profile.setUser(user);
             user.setUserProfile(profile);
         }
-        if (request.getDateOfBirth() != null) profile.setDateOfBirth(request.getDateOfBirth());
-        if (request.getGender() != null) profile.setGender(request.getGender());
+        if (request.getDateOfBirth() != null)
+            profile.setDateOfBirth(request.getDateOfBirth());
+        if (request.getGender() != null)
+            profile.setGender(request.getGender());
         userProfileRepository.save(profile);
     }
-    
- // Add these methods to your TrainerServiceImpl
+
+    // Add these methods to your TrainerServiceImpl
 
     @Override
     @Transactional
@@ -172,12 +176,18 @@ public class TrainerServiceImpl implements TrainerService {
         Trainer trainer = trainerRepository.findActiveById(trainerId)
                 .orElseThrow(() -> new IllegalArgumentException("Trainer not found or deleted"));
 
-        if (request.getSpecialization() != null) trainer.setSpecialization(request.getSpecialization());
-        if (request.getExperienceYears() != null) trainer.setExperienceYears(request.getExperienceYears());
-        if (request.getAvailability() != null) trainer.setAvailability(request.getAvailability());
-        if (request.getPhoneNo() != null) trainer.setPhoneNo(request.getPhoneNo());
-        if (request.getSalary() != null) trainer.setSalary(request.getSalary());
-        if (request.getStatus() != null) trainer.setStatus(request.getStatus());
+        if (request.getSpecialization() != null)
+            trainer.setSpecialization(request.getSpecialization());
+        if (request.getExperienceYears() != null)
+            trainer.setExperienceYears(request.getExperienceYears());
+        if (request.getAvailability() != null)
+            trainer.setAvailability(request.getAvailability());
+        if (request.getPhoneNo() != null)
+            trainer.setPhoneNo(request.getPhoneNo());
+        if (request.getSalary() != null)
+            trainer.setSalary(request.getSalary());
+        if (request.getStatus() != null)
+            trainer.setStatus(request.getStatus());
 
         trainer.setUpdatedAt(LocalDateTime.now());
         return trainerRepository.save(trainer);
@@ -210,7 +220,7 @@ public class TrainerServiceImpl implements TrainerService {
         return trainerRepository.findActiveById(trainerId)
                 .orElseThrow(() -> new IllegalArgumentException("Trainer not found"));
     }
-    
+
     @Override
     public List<TrainerResponse> searchTrainers(String keyword) {
         return trainerRepository.searchActiveTrainers(keyword).stream()
@@ -224,8 +234,8 @@ public class TrainerServiceImpl implements TrainerService {
                 .map(TrainerResponse::new)
                 .toList();
     }
-    
- // In TrainerServiceImpl
+
+    // In TrainerServiceImpl
     @Override
     @Transactional
     public void assignMembersToTrainer(AssignMembersToTrainerRequest request) {
@@ -244,6 +254,14 @@ public class TrainerServiceImpl implements TrainerService {
         }
 
         // Optional: Log or audit
-        System.out.println(count + " members assigned to trainer: " + trainer.getUser().getUserProfile().getFirstName());
+        System.out
+                .println(count + " members assigned to trainer: " + trainer.getUser().getUserProfile().getFirstName());
+    }
+
+    @Override
+    public List<com.gymmanagement.usermanagement.Response.GymMemberResponse> getMembersUnderTrainer(Integer trainerId) {
+        return memberRepository.findActiveMembersByTrainerId(trainerId).stream()
+                .map(com.gymmanagement.usermanagement.Response.GymMemberResponse::new)
+                .toList();
     }
 }

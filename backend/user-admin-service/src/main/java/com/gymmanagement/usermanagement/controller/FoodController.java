@@ -13,6 +13,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -51,8 +52,7 @@ public class FoodController {
 
     // Helper to handle BigDecimal / Double safely
     private Double toDouble(Object obj) {
-        if (obj == null) return 0.0;
-        return ((Number) obj).doubleValue();
+        return obj == null ? 0.0 : ((Number) obj).doubleValue();
     }
 
     // 2. Popular global foods
@@ -81,15 +81,20 @@ public class FoodController {
         CustomFoodItem food = new CustomFoodItem();
         food.setMemberId(memberId);
         food.setName(req.name());
-        food.setCaloriesPer100g(req.caloriesPer100g());
-        food.setProteinPer100g(req.proteinPer100g());
-        food.setCarbsPer100g(req.carbsPer100g());
-        food.setFatPer100g(req.fatPer100g());
-        food.setFiberPer100g(req.fiberPer100g() != null ? req.fiberPer100g() : 0.0);
+        food.setCaloriesPer100g(toBig(req.caloriesPer100g()));
+        food.setProteinPer100g(toBig(req.proteinPer100g()));
+        food.setCarbsPer100g(toBig(req.carbsPer100g()));
+        food.setFatPer100g(toBig(req.fatPer100g()));
+        food.setFiberPer100g(toBig(req.fiberPer100g()));
         food.setServingUnit(req.servingUnit() != null ? req.servingUnit() : "100g");
 
         customFoodRepo.save(food);
         return ResponseEntity.ok(food);
+    }
+
+    // **Single correct toBig helper**
+    private BigDecimal toBig(Number value) {
+        return value != null ? BigDecimal.valueOf(value.doubleValue()) : BigDecimal.ZERO;
     }
 
     // 5. Log food (existing)
@@ -101,7 +106,6 @@ public class FoodController {
 
         Integer memberId = extractMemberId(auth);
 
-        // Try global food first
         FoodItem globalFood = foodRepo.findById(req.foodId()).orElse(null);
         CustomFoodItem customFood = null;
 
@@ -111,6 +115,7 @@ public class FoodController {
         }
 
         double multiplier = req.quantity() / 100.0;
+        BigDecimal mul = BigDecimal.valueOf(multiplier);
 
         DietLog log = new DietLog();
         log.setMemberId(memberId);
@@ -120,26 +125,26 @@ public class FoodController {
         if (globalFood != null) {
             log.setFoodId(globalFood.getId());
             log.setFoodName(globalFood.getName());
-            log.setCalories(globalFood.getCaloriesPer100g() * multiplier);
-            log.setProtein(globalFood.getProteinPer100g() * multiplier);
-            log.setCarbs(globalFood.getCarbsPer100g() * multiplier);
-            log.setFat(globalFood.getFatPer100g() * multiplier);
+            log.setCalories(toBig(globalFood.getCaloriesPer100g()).multiply(mul).doubleValue());
+            log.setProtein(toBig(globalFood.getProteinPer100g()).multiply(mul).doubleValue());
+            log.setCarbs(toBig(globalFood.getCarbsPer100g()).multiply(mul).doubleValue());
+            log.setFat(toBig(globalFood.getFatPer100g()).multiply(mul).doubleValue());
         } else {
             log.setFoodId(customFood.getId());
             log.setFoodName(customFood.getName());
-            log.setCalories(customFood.getCaloriesPer100g() * multiplier);
-            log.setProtein(customFood.getProteinPer100g() * multiplier);
-            log.setCarbs(customFood.getCarbsPer100g() * multiplier);
-            log.setFat(customFood.getFatPer100g() * multiplier);
+            log.setCalories(customFood.getCaloriesPer100g().multiply(mul).doubleValue());
+            log.setProtein(customFood.getProteinPer100g().multiply(mul).doubleValue());
+            log.setCarbs(customFood.getCarbsPer100g().multiply(mul).doubleValue());
+            log.setFat(customFood.getFatPer100g().multiply(mul).doubleValue());
         }
 
         log.setQuantity(req.quantity());
         logRepo.save(log);
 
         return ResponseEntity.ok(new LogFoodResponse(
-            log.getLogId(),
-            "Food logged successfully!",
-            log.getCalories()
+                log.getLogId(),
+                "Food logged successfully!",
+                log.getCalories()
         ));
     }
 

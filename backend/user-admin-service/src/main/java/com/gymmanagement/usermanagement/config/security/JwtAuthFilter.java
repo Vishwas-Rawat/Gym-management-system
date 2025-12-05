@@ -26,8 +26,8 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+            HttpServletResponse response,
+            FilterChain filterChain) throws ServletException, IOException {
 
         String path = request.getRequestURI();
 
@@ -63,10 +63,9 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
                         if (user != null) {
                             var auth = new UsernamePasswordAuthenticationToken(
-                                    user,
+                                    email,
                                     null,
-                                    Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role))
-                            );
+                                    Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role)));
 
                             auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                             SecurityContextHolder.getContext().setAuthentication(auth);
@@ -80,7 +79,5 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
         filterChain.doFilter(request, response);
     }
-    
-    
-    
+
 }

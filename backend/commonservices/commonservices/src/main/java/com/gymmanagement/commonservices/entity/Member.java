@@ -1,9 +1,12 @@
 package com.gymmanagement.commonservices.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
+import lombok.Data;
+
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import lombok.Data;
 
 @Data
 @Entity
@@ -14,8 +17,10 @@ public class Member {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer memberId;
 
+    // ❗ Prevent recursion into User → Gym/Trainer → Member loop
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false, unique = true)
+    @JsonIgnore
     private User user;
 
     @Column(name = "months_paid", nullable = false)
@@ -31,7 +36,7 @@ public class Member {
     private String fromMinute;
 
     @Column(name = "from_period")
-    private String fromPeriod; // AM/PM
+    private String fromPeriod;
 
     @Column(name = "to_hour")
     private Integer toHour;
@@ -40,7 +45,7 @@ public class Member {
     private String toMinute;
 
     @Column(name = "to_period")
-    private String toPeriod; // AM/PM
+    private String toPeriod;
 
     @Column(name = "registration_fee")
     private Double registrationFee = 0.0;
@@ -63,13 +68,11 @@ public class Member {
     @Column(name = "joining_date", nullable = false)
     private LocalDate joiningDate;
 
-    // === Legacy / Optional Fields ===
+    // Optional Fields
     private String fitnessGoal;
     private String membershipPlan;
     private Double amountPaid;
     private String workoutTimeSlot;
-
-    // === Replace Hibernate timestamps with pure JPA ===
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -77,23 +80,24 @@ public class Member {
     @Column(name = "updated_at", nullable = false)
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-    // === Relationships ===
-    @ManyToOne
+    // ❗ Prevent recursion into Gym → Admin(User) → Member → Gym
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "gym_id", nullable = false)
+    @JsonBackReference
     private Gym gym;
 
+    // ❗ Prevent recursion into Trainer → Members → Trainer
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "trainer_id")
+    @JsonIgnore
     private Trainer trainer;
 
-    // === Soft Delete ===
     @Column(name = "is_active", nullable = false)
     private Boolean isActive = true;
 
     @Column(name = "deleted_at")
     private LocalDateTime deletedAt;
 
-    // === Auto-update updatedAt manually ===
     @PreUpdate
     public void preUpdate() {
         this.updatedAt = LocalDateTime.now();

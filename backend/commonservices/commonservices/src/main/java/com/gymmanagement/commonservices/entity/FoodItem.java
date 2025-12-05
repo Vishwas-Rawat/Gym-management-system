@@ -1,12 +1,13 @@
 package com.gymmanagement.commonservices.entity;
 
+import java.math.BigDecimal;
 import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
 @Table(name = "food_items", indexes = {
-    @Index(name = "idx_food_name", columnList = "name"),
-    @Index(name = "idx_popularity", columnList = "popularity DESC")
+        @Index(name = "idx_food_name", columnList = "name"),
+        @Index(name = "idx_popularity", columnList = "popularity DESC")
 })
 @Data
 public class FoodItem {
@@ -19,27 +20,28 @@ public class FoodItem {
     private String name;
 
     @Column(length = 50)
-    private String category; // Protein, Carb, Vegetable, etc.
+    private String category;
 
-    @Column(nullable = false, precision = 8, scale = 2)
-    private Double caloriesPer100g;
+    @Column(name = "calories_per100g", nullable = false, precision = 8, scale = 2)
+    private BigDecimal caloriesPer100g;
 
-    @Column(nullable = false, precision = 8, scale = 2)
-    private Double proteinPer100g = 0.0;
+    @Column(name = "protein_per100g", nullable = false, precision = 8, scale = 2)
+    private BigDecimal proteinPer100g = BigDecimal.ZERO;
 
-    @Column(nullable = false, precision = 8, scale = 2)
-    private Double carbsPer100g = 0.0;
+    @Column(name = "carbs_per100g", nullable = false, precision = 8, scale = 2)
+    private BigDecimal carbsPer100g = BigDecimal.ZERO;
 
-    @Column(nullable = false, precision = 8, scale = 2)
-    private Double fatPer100g = 0.0;
+    @Column(name = "fat_per100g", nullable = false, precision = 8, scale = 2)
+    private BigDecimal fatPer100g = BigDecimal.ZERO;
 
-    @Column(precision = 8, scale = 2)
-    private Double fiberPer100g = 0.0;
+    @Column(name = "fiber_per100g", precision = 8, scale = 2)
+    private BigDecimal fiberPer100g = BigDecimal.ZERO;
 
-    @Column(length = 20)
-    private String servingUnit = "100g"; // 100g, 1 piece, 1 bowl
+    @Column(name = "serving_unit", length = 20)
+    private String servingUnit = "100g";
 
+    @Column(name = "is_indian")
     private Boolean isIndian = false;
 
-    private Integer popularity = 0; // for search ranking
+    private Integer popularity = 0;
 }

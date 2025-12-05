@@ -1,5 +1,6 @@
 package com.gymmanagement.commonservices.entity;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 import jakarta.persistence.Column;
@@ -23,19 +24,19 @@ public class CustomFoodItem {
  private String name;
 
  @Column(nullable = false, precision = 8, scale = 2)
- private Double caloriesPer100g;
+ private BigDecimal caloriesPer100g;
 
  @Column(nullable = false, precision = 8, scale = 2)
- private Double proteinPer100g;
+ private BigDecimal proteinPer100g;
 
  @Column(nullable = false, precision = 8, scale = 2)
- private Double carbsPer100g;
+ private BigDecimal carbsPer100g;
 
  @Column(nullable = false, precision = 8, scale = 2)
- private Double fatPer100g;
+ private BigDecimal fatPer100g;
 
  @Column(precision = 8, scale = 2)
- private Double fiberPer100g = 0.0;
+ private BigDecimal fiberPer100g = BigDecimal.ZERO;
 
  @Column(length = 20)
  private String servingUnit = "100g";
