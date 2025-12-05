@@ -37,9 +37,11 @@ export const AuthProvider = ({ children }) => {
       const payload = customPayload || formData;
       const response = await api.post(endpoint, payload);
       const data = response.data;
-      if (successAction(data)) {
+      
+      const result = successAction(data);
+      if (result) {
         setSuccessMessage('Success! Redirecting...');
-        setTimeout(() => navigate(successAction(data).redirect || '/dashboard'), 2000);
+        setTimeout(() => navigate(result.redirect || '/dashboard'), 2000);
       } else if (data.message?.includes('not verified')) {
         setApiError('Account not verified. Please verify your OTP first.');
         setTimeout(() => navigate(`/verify-otp?userId=${data.userId}`), 2000);
@@ -61,7 +63,23 @@ export const AuthProvider = ({ children }) => {
     setSuccessMessage('');
   };
 
-  const value = { formData, errors, apiError, successMessage, isLoading, handleChange, validateForm, handleSubmit };
+  const logout = async () => {
+    try {
+      await api.post('/auth/logout');
+    } catch (error) {
+      console.error('Logout failed', error);
+    } finally {
+      localStorage.removeItem('token');
+      localStorage.removeItem('userId');
+      setFormData({});
+      setErrors({});
+      setApiError('');
+      setSuccessMessage('');
+      navigate('/login');
+    }
+  };
+
+  const value = { formData, errors, apiError, successMessage, isLoading, handleChange, validateForm, handleSubmit, logout };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 };

@@ -165,7 +165,7 @@ export default function TrainerAddForm({ onSuccess, multiple = false, trainer = 
       fontSize: isJioPhone ? "0.75rem" : "0.95rem",
       "& fieldset": { borderColor: "rgba(0,0,0,0.23)" },
       "&:hover fieldset": { borderColor: "rgba(0,0,0,0.4)" },
-      "&.Mui-focused fieldset": { borderColor: "#059669" },
+      "&.Mui-focused fieldset": { borderColor: "primary.main" },
     },
     "& .MuiInputLabel-root": {
       fontSize: isJioPhone ? "0.65rem" : "0.8rem",
@@ -248,7 +248,8 @@ export default function TrainerAddForm({ onSuccess, multiple = false, trainer = 
             sx={{
               height: isJioPhone ? 38 : 52,
               borderRadius: "6px",
-              background: "linear-gradient(135deg, #059669, #047857)",
+              bgcolor: "primary.main",
+              "&:hover": { bgcolor: "primary.dark" },
               textTransform: "none",
               fontWeight: 600,
               fontSize: isJioPhone ? "0.7rem" : "0.85rem",
@@ -279,7 +280,7 @@ export default function TrainerAddForm({ onSuccess, multiple = false, trainer = 
           scrollButtons allowScrollButtonsMobile ScrollButtonComponent={ScrollButton}
           sx={{
             minHeight: isJioPhone ? 34 : 38,
-            "& .MuiTabs-indicator": { height: 2.5, borderRadius: "2.5px 2.5px 0 0", background: "linear-gradient(135deg, #059669, #047857)" },
+            "& .MuiTabs-indicator": { height: 2.5, borderRadius: "2.5px 2.5px 0 0", bgcolor: "primary.main" },
             "& .MuiTab-root": { minHeight: isJioPhone ? 34 : 38, fontSize: isJioPhone ? "0.68rem" : "0.85rem", py: 0.4 }
           }}>
           {trainers.map((t, idx) => (
@@ -301,8 +302,8 @@ export default function TrainerAddForm({ onSuccess, multiple = false, trainer = 
                 minHeight: isJioPhone ? 34 : 38,
                 borderRadius: "6px 6px 0 0",
                 mr: 0.2,
-                bgcolor: activeIdx === idx ? "#f0fdf4" : "background.paper",
-                "&:hover": { bgcolor: "#e6f7f0" }
+                bgcolor: activeIdx === idx ? "rgba(0, 123, 255, 0.08)" : "background.paper",
+                "&:hover": { bgcolor: "rgba(0, 123, 255, 0.15)" }
               }} />
           ))}
           {multiple && (
@@ -314,7 +315,7 @@ export default function TrainerAddForm({ onSuccess, multiple = false, trainer = 
                 ml: 0.4,
                 border: "1px dashed",
                 borderColor: "divider",
-                "&:hover": { borderColor: "#059669" },
+                "&:hover": { borderColor: "primary.main" },
                 fontSize: isJioPhone ? "0.68rem" : "0.85rem"
               }} />
           )}
@@ -328,7 +329,7 @@ export default function TrainerAddForm({ onSuccess, multiple = false, trainer = 
             sx={{
               fontWeight: 700,
               mb: 1.2,
-              color: "#059669",
+              color: "primary.main",
               fontSize: isJioPhone ? "0.85rem" : { xs: "0.95rem", sm: "1.05rem" }
             }}>
             {multiple ? getTabLabel(current, activeIdx) : isEdit ? "Edit Trainer" : "New Trainer"}
@@ -342,7 +343,7 @@ export default function TrainerAddForm({ onSuccess, multiple = false, trainer = 
           </Grid>
 
           <Divider sx={{ my: 1.2 }} />
-          <Typography variant="subtitle2" sx={{ mb: 0.8, color: "#059669", fontSize: isJioPhone ? "0.75rem" : "0.9rem" }}>Professional Info</Typography>
+          <Typography variant="subtitle2" sx={{ mb: 0.8, color: "primary.main", fontSize: isJioPhone ? "0.75rem" : "0.9rem" }}>Professional Info</Typography>
 
           <Grid container spacing={isJioPhone ? 0.8 : 1.2}>
             <Grid item xs={12} sm={6} component={motion.div} variants={itemVariants}><TextField required fullWidth label="Specialization" value={current.specialization || ""} onChange={e => handleChange(activeIdx, "specialization", e.target.value)} sx={inputSx} /></Grid>
@@ -372,7 +373,8 @@ export default function TrainerAddForm({ onSuccess, multiple = false, trainer = 
             size={isJioPhone ? "small" : "medium"}
             sx={{
               minHeight: 38,
-              background: "linear-gradient(135deg, #059669, #047857)",
+              bgcolor: "primary.main",
+              "&:hover": { bgcolor: "primary.dark" },
               fontSize: isJioPhone ? "0.7rem" : "0.85rem"
             }}>
             {isEdit ? "Update" : multiple ? "Register All" : "Register"}

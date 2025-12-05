@@ -218,7 +218,7 @@ export default function MemberAddForm({ onSuccess, multiple = false, member = nu
       fontSize: isJioPhone ? "0.75rem" : "0.95rem",
       "& fieldset": { borderColor: "rgba(0,0,0,0.23)" },
       "&:hover fieldset": { borderColor: "rgba(0,0,0,0.4)" },
-      "&.Mui-focused fieldset": { borderColor: "#059669" },
+      "&.Mui-focused fieldset": { borderColor: "primary.main" },
     },
     "& .MuiInputLabel-root": {
       fontSize: isJioPhone ? "0.65rem" : "0.8rem",
@@ -301,7 +301,8 @@ export default function MemberAddForm({ onSuccess, multiple = false, member = nu
             sx={{
               height: isJioPhone ? 38 : 52,
               borderRadius: "6px",
-              background: "linear-gradient(135deg, #059669, #047857)",
+              background: "primary.main",
+              "&:hover": { background: "#0069d9" },
               textTransform: "none",
               fontWeight: 600,
               fontSize: isJioPhone ? "0.7rem" : "0.85rem",
@@ -332,7 +333,7 @@ export default function MemberAddForm({ onSuccess, multiple = false, member = nu
           scrollButtons allowScrollButtonsMobile ScrollButtonComponent={ScrollButton}
           sx={{
             minHeight: isJioPhone ? 34 : 38,
-            "& .MuiTabs-indicator": { height: 2.5, borderRadius: "2.5px 2.5px 0 0", background: "linear-gradient(135deg, #059669, #047857)" },
+            "& .MuiTabs-indicator": { height: 2.5, borderRadius: "2.5px 2.5px 0 0", background: "primary.main" },
             "& .MuiTab-root": { minHeight: isJioPhone ? 34 : 38, fontSize: isJioPhone ? "0.68rem" : "0.85rem", py: 0.4 }
           }}>
           {members.map((m, idx) => (
@@ -354,8 +355,8 @@ export default function MemberAddForm({ onSuccess, multiple = false, member = nu
                 minHeight: isJioPhone ? 34 : 38,
                 borderRadius: "6px 6px 0 0",
                 mr: 0.2,
-                bgcolor: activeIdx === idx ? "#f0fdf4" : "background.paper",
-                "&:hover": { bgcolor: "#e6f7f0" }
+                bgcolor: activeIdx === idx ? "rgba(0, 123, 255, 0.08)" : "background.paper",
+                "&:hover": { bgcolor: "rgba(0, 123, 255, 0.15)" }
               }} />
           ))}
           {multiple && (
@@ -367,7 +368,7 @@ export default function MemberAddForm({ onSuccess, multiple = false, member = nu
                 ml: 0.4,
                 border: "1px dashed",
                 borderColor: "divider",
-                "&:hover": { borderColor: "#059669" },
+                "&:hover": { borderColor: "primary.main" },
                 fontSize: isJioPhone ? "0.68rem" : "0.85rem"
               }} />
           )}
@@ -381,7 +382,7 @@ export default function MemberAddForm({ onSuccess, multiple = false, member = nu
             sx={{
               fontWeight: 700,
               mb: 1.2,
-              color: "#059669",
+              color: "primary.main",
               fontSize: isJioPhone ? "0.85rem" : { xs: "0.95rem", sm: "1.05rem" }
             }}>
             {multiple ? getTabLabel(current, activeIdx) : isEdit ? "Edit" : "New Member"}
@@ -397,7 +398,7 @@ export default function MemberAddForm({ onSuccess, multiple = false, member = nu
           </Grid>
 
           <Divider sx={{ my: 1.2 }} />
-          <Typography variant="subtitle2" sx={{ mb: 0.8, color: "#059669", fontSize: isJioPhone ? "0.75rem" : "0.9rem" }}>Timing</Typography>
+          <Typography variant="subtitle2" sx={{ mb: 0.8, color: "primary.main", fontSize: isJioPhone ? "0.75rem" : "0.9rem" }}>Timing</Typography>
 
           {/* TIMING – FULL‑WIDTH ON MOBILE */}
           <Grid container spacing={isMobile ? 0.8 : 0.6}>
@@ -405,7 +406,7 @@ export default function MemberAddForm({ onSuccess, multiple = false, member = nu
             <Grid item xs={12} sm={isMobile ? 12 : 4} component={motion.div} variants={itemVariants}><FormControl fullWidth sx={selectSx}><InputLabel shrink>From Min</InputLabel><Select value={current.fromMinute || ""} onChange={e => handleChange(activeIdx, "fromMinute", e.target.value)}><MenuItem value=""><em>Min</em></MenuItem>{minutes.map(m => <MenuItem key={m} value={m}>{m}</MenuItem>)}</Select></FormControl></Grid>
             <Grid item xs={12} sm={isMobile ? 12 : 4} component={motion.div} variants={itemVariants}><FormControl fullWidth sx={selectSx}><InputLabel shrink>AM/PM</InputLabel><Select value={current.fromPeriod || ""} onChange={e => handleChange(activeIdx, "fromPeriod", e.target.value)}><MenuItem value=""><em>—</em></MenuItem>{ampm.map(p => <MenuItem key={p} value={p}>{p}</MenuItem>)}</Select></FormControl></Grid>
 
-            <Grid item xs={12} textAlign="center"><Typography sx={{ fontWeight: 600, color: "#059669", fontSize: isJioPhone ? "0.75rem" : "0.9rem" }}>to</Typography></Grid>
+            <Grid item xs={12} textAlign="center"><Typography sx={{ fontWeight: 600, color: "primary.main", fontSize: isJioPhone ? "0.75rem" : "0.9rem" }}>to</Typography></Grid>
 
             <Grid item xs={12} sm={isMobile ? 12 : 4} component={motion.div} variants={itemVariants}><FormControl fullWidth sx={selectSx}><InputLabel shrink>To Hour</InputLabel><Select value={current.toHour || ""} onChange={e => handleChange(activeIdx, "toHour", e.target.value)}><MenuItem value=""><em>Hr</em></MenuItem>{hours.map(h => <MenuItem key={h} value={h}>{h}</MenuItem>)}</Select></FormControl></Grid>
             <Grid item xs={12} sm={isMobile ? 12 : 4} component={motion.div} variants={itemVariants}><FormControl fullWidth sx={selectSx}><InputLabel shrink>To Min</InputLabel><Select value={current.toMinute || ""} onChange={e => handleChange(activeIdx, "toMinute", e.target.value)}><MenuItem value=""><em>Min</em></MenuItem>{minutes.map(m => <MenuItem key={m} value={m}>{m}</MenuItem>)}</Select></FormControl></Grid>
@@ -413,7 +414,7 @@ export default function MemberAddForm({ onSuccess, multiple = false, member = nu
           </Grid>
 
           <Divider sx={{ my: 1.2 }} />
-          <Typography variant="subtitle2" sx={{ mb: 0.8, color: "#059669", fontSize: isJioPhone ? "0.75rem" : "0.9rem" }}>Payment</Typography>
+          <Typography variant="subtitle2" sx={{ mb: 0.8, color: "primary.main", fontSize: isJioPhone ? "0.75rem" : "0.9rem" }}>Payment</Typography>
 
           <Grid container spacing={0.8}>
             <Grid item xs={12} sm={6} component={motion.div} variants={itemVariants}><TextField fullWidth label="Reg Fee" type="number" value={current.registrationFee} onChange={e => handleChange(activeIdx, "registrationFee", e.target.value)} InputProps={{ startAdornment: "₹" }} sx={inputSx} /></Grid>
@@ -449,7 +450,8 @@ export default function MemberAddForm({ onSuccess, multiple = false, member = nu
             size={isJioPhone ? "small" : "medium"}
             sx={{
               minHeight: 38,
-              background: "linear-gradient(135deg, #059669, #047857)",
+              background: "primary.main",
+              "&:hover": { background: "#0069d9" },
               fontSize: isJioPhone ? "0.7rem" : "0.85rem"
             }}>
             {isEdit ? "Update" : multiple ? "Register All" : "Register"}

@@ -193,6 +193,15 @@ export const MemberRegistrationProvider = ({ children }) => {
     clearMessages();
     try {
       if (!gymId) {
+        // Check if user is a trainer
+        const role = localStorage.getItem('role');
+        const userId = localStorage.getItem('userId');
+        
+        if (role === 'TRAINER' && userId) {
+             const { data } = await api.get(`/trainer/${userId}/members`);
+             return data || [];
+        }
+
         // Optional: fallback to all members
         const { data } = await api.get('/member/all');
         return data || [];

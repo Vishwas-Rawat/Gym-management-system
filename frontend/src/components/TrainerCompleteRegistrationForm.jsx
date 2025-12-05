@@ -41,8 +41,10 @@ const TrainerCompleteRegistrationForm = () => {
         value={completeRegForm.token}
         InputProps={{ readOnly: true }}
         error={!!errors.token}
-        helperText={errors.token}
+        helperText={errors.token || "This token is automatically retrieved from your invite link."}
         variant="outlined"
+        disabled
+        sx={{ bgcolor: 'action.hover' }}
       />
 
       {/* Username Field */}
@@ -113,9 +115,10 @@ const TrainerCompleteRegistrationForm = () => {
         onChange={handleCompleteRegChange}
         InputLabelProps={{ shrink: true }}
         variant="outlined"
+        required
       />
 
-      <FormControl fullWidth variant="outlined">
+      <FormControl fullWidth variant="outlined" required>
         <InputLabel>Gender</InputLabel>
         <Select
           name="gender"
@@ -151,7 +154,7 @@ const TrainerCompleteRegistrationForm = () => {
         type="submit"
         variant="contained"
         color="primary"
-        disabled={isLoading || isRedirecting}
+        disabled={isLoading || isRedirecting || !completeRegForm.token}
         startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : null}
         fullWidth
         sx={{ borderRadius: '10px', fontWeight: 600, py: 1.5 }}

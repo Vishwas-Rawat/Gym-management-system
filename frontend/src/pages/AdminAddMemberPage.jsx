@@ -30,43 +30,85 @@ import {
 } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThemeProvider, CssBaseline, createTheme } from "@mui/material";
-import lightTheme from "../themes/lightTheme";
 import MemberAddForm from "../components/MemberAddForm";
 import { MemberDetailView } from "../components/MemberDetailModal";
 import { MemberRegistrationProvider, useMemberRegistration } from "../context/MemberRegistrationContext";
 import MemberRow from "../components/MemberRow";
 
-const emeraldTheme = createTheme({
-  ...lightTheme,
+const dashboardTheme = createTheme({
   palette: {
-    ...lightTheme.palette,
-    primary: { main: "#10b981", dark: "#059669", light: "#34d399" },
-    background: { default: "#f0fdf4", paper: "#ffffff" },
-    text: { primary: "#1f2937", secondary: "#6b7280" },
+    mode: 'light',
+    primary: { main: "#007BFF" }, // Bootstrap Blue
+    secondary: { main: "#6c757d" }, // Bootstrap Secondary (Gray)
+    success: { main: "#27C499", light: "#D1FAE5" }, // Clean SaaS Green
+    warning: { main: "#F6A23E" }, // Amber
+    error: { main: "#E53935" }, // Material Red
+    info: { main: "#17A2B8" }, // Info Blue-light
+    background: { default: "#F4F6F9", paper: "#FFFFFF" },
+    text: { primary: "#1F2937", secondary: "#6B7280" },
   },
   typography: {
-    fontFamily: "'Inter', 'Roboto', 'Helvetica', 'Arial', sans-serif",
-    h4: { fontWeight: 700 },
-    h6: { fontWeight: 600 },
+    fontFamily: "'Outfit', 'Inter', sans-serif",
+    h4: { fontWeight: 700, letterSpacing: '-0.02em' },
+    h6: { fontWeight: 600, letterSpacing: '-0.01em' },
+    subtitle2: { fontWeight: 500, fontSize: '0.875rem' },
   },
   components: {
-    MuiButton: {
+    MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: "10px",
-          textTransform: "none",
-          fontWeight: 600,
+          borderRadius: "12px",
+          boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
+          border: "1px solid #E5E7EB",
         },
       },
     },
     MuiPaper: {
       styleOverrides: {
-        root: {
-          borderRadius: "16px",
-          boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+        root: { 
+            borderRadius: "12px", 
+            boxShadow: "0 2px 4px rgba(0,0,0,0.05)", 
+            border: "1px solid #E5E7EB" 
         },
       },
     },
+    MuiButton: {
+      styleOverrides: {
+        root: { 
+            borderRadius: "6px", 
+            textTransform: "none", 
+            fontWeight: 600,
+            boxShadow: "none",
+            "&:hover": { boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }
+        },
+        containedPrimary: {
+            backgroundColor: "#007BFF",
+            color: "white",
+            "&:hover": { backgroundColor: "#0069d9" }
+        },
+        outlined: {
+            borderColor: "#E5E7EB",
+            color: "#1F2937",
+            backgroundColor: "#FFFFFF",
+            "&:hover": { backgroundColor: "#F4F6F9", borderColor: "#D1D5DB" }
+        }
+      },
+    },
+    MuiTableCell: {
+      styleOverrides: {
+        root: { borderBottom: "1px solid #E5E7EB", padding: "16px 24px", color: "#1F2937" },
+        head: { backgroundColor: "#FFFFFF", color: "#1F2937", fontWeight: 600, borderBottom: "2px solid #E5E7EB" },
+      },
+    },
+    MuiChip: {
+        styleOverrides: {
+            root: { fontWeight: 600 },
+            colorSuccess: { backgroundColor: "#D1FAE5", color: "#27C499" },
+            colorWarning: { backgroundColor: "#FEF3C7", color: "#F6A23E" },
+            colorError: { backgroundColor: "#FEE2E2", color: "#E53935" },
+            colorInfo: { backgroundColor: "#E0F2F1", color: "#17A2B8" }
+        }
+    }
   },
 });
 
@@ -74,27 +116,27 @@ const AdminLayout = ({ title, subtitle, children }) => (
   <Box
     sx={{
       minHeight: "100vh",
-      bgcolor: "#0f766e", // Darker teal background
-      backgroundImage: "linear-gradient(135deg, #0f766e 0%, #047857 100%)",
+      bgcolor: "background.default",
       pb: 6,
-      overflowX: "hidden", // Prevent horizontal scroll during transitions
+      overflowX: "hidden",
     }}
   >
     <Box sx={{ maxWidth: "1400px", mx: "auto", px: { xs: 2, sm: 3, md: 4 }, pt: 4 }}>
       {/* Header Section */}
-      <Box sx={{ textAlign: "center", mb: 6, color: "white" }}>
+      <Box sx={{ textAlign: "center", mb: 6 }}>
         <Box
           sx={{
             display: "inline-flex",
             alignItems: "center",
             gap: 1,
-            bgcolor: "rgba(255,255,255,0.15)",
-            backdropFilter: "blur(8px)",
+            bgcolor: "white",
+            boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
             px: 2,
             py: 0.5,
             borderRadius: "20px",
             mb: 2,
-            border: "1px solid rgba(255,255,255,0.2)",
+            border: "1px solid #E5E7EB",
+            color: "primary.main"
           }}
         >
           <People fontSize="small" />
@@ -102,10 +144,10 @@ const AdminLayout = ({ title, subtitle, children }) => (
             Members Dashboard
           </Typography>
         </Box>
-        <Typography variant="h3" fontWeight={800} sx={{ mb: 1, letterSpacing: "-0.02em" }}>
+        <Typography variant="h3" fontWeight={800} sx={{ mb: 1, letterSpacing: "-0.02em", color: "text.primary" }}>
           {title}
         </Typography>
-        <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 400 }}>
+        <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 400, color: "text.secondary" }}>
           {subtitle}
         </Typography>
       </Box>
@@ -309,7 +351,7 @@ const AdminAddMemberPageContent = () => {
     if (isLoading || (isSearchingAPI && searchTerm.trim())) {
       return (
         <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-          <CircularProgress sx={{ color: "#10b981" }} />
+          <CircularProgress sx={{ color: "primary.main" }} />
         </Box>
       );
     }
@@ -362,9 +404,9 @@ const AdminAddMemberPageContent = () => {
                   key={h}
                   sx={{
                     fontWeight: 700,
-                    color: "#047857",
-                    bgcolor: "#f0fdf4",
-                    borderBottom: "2px solid #d1fae5",
+                    color: "text.secondary",
+                    bgcolor: "background.paper",
+                    borderBottom: "2px solid #E5E7EB",
                     py: 2,
                   }}
                 >
@@ -468,11 +510,11 @@ const AdminAddMemberPageContent = () => {
                     width: 56,
                     height: 56,
                     borderRadius: "16px",
-                    bgcolor: "#ecfdf5",
+                    bgcolor: "primary.50",
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    color: "#059669",
+                    color: "primary.main",
                   }}
                 >
                   <Group sx={{ fontSize: 30 }} />
@@ -502,7 +544,7 @@ const AdminAddMemberPageContent = () => {
                     flexGrow: 1,
                     minWidth: { xs: "100%", sm: "250px" },
                     maxWidth: { xs: "100%", sm: "350px" },
-                    "&:focus-within": { borderColor: "#10b981", boxShadow: "0 0 0 4px rgba(16,185,129,0.1)" },
+                    "&:focus-within": { borderColor: "#007BFF", boxShadow: "0 0 0 4px rgba(0, 123, 255, 0.1)" },
                   }}
                 >
                   <Search sx={{ color: "text.secondary", mr: 1.5, fontSize: 24 }} />
@@ -520,8 +562,8 @@ const AdminAddMemberPageContent = () => {
                     startIcon={<PersonAdd />}
                     onClick={openAddMember}
                     sx={{
-                      bgcolor: "#059669",
-                      "&:hover": { bgcolor: "#047857" },
+                      bgcolor: "primary.main",
+                      "&:hover": { bgcolor: "primary.dark" },
                       px: 4,
                       py: 1.5,
                       fontSize: "1rem",
@@ -579,7 +621,7 @@ const AdminAddMemberPageContent = () => {
                 <Box sx={{ flexGrow: 1, overflowY: "auto" }}>
                   {sidePanel.view === "add" && (
                     <Box sx={{ p: 2 }}>
-                      <Typography variant="h5" fontWeight={700} sx={{ mb: 3, px: 2, color: "#065f46" }}>
+                      <Typography variant="h5" fontWeight={700} sx={{ mb: 3, px: 2, color: "primary.dark" }}>
                         Add New Member
                       </Typography>
                       <MemberAddForm onSuccess={handleAddSuccess} multiple onCancel={closePanel} />
@@ -588,7 +630,7 @@ const AdminAddMemberPageContent = () => {
 
                   {sidePanel.view === "edit" && sidePanel.data && (
                     <Box sx={{ p: 2 }}>
-                      <Typography variant="h5" fontWeight={700} sx={{ mb: 3, px: 2, color: "#065f46" }}>
+                      <Typography variant="h5" fontWeight={700} sx={{ mb: 3, px: 2, color: "primary.dark" }}>
                         Edit Member
                       </Typography>
                       <MemberAddForm onSuccess={handleEditSuccess} member={sidePanel.data} onCancel={closePanel} />
@@ -610,7 +652,7 @@ const AdminAddMemberPageContent = () => {
 };
 
 const AdminAddMemberPage = () => (
-  <ThemeProvider theme={emeraldTheme}>
+  <ThemeProvider theme={dashboardTheme}>
     <CssBaseline />
     <MemberRegistrationProvider>
       <AdminAddMemberPageContent />

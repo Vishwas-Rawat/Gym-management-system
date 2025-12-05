@@ -33,4 +33,42 @@ api.interceptors.response.use(
   }
 );
 
+// Attendance API (Port 8085)
+export const attendanceApi = axios.create({
+  baseURL: 'http://localhost:8085',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+attendanceApi.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
+// Chat API (Port 8085)
+export const chatApi = axios.create({
+  baseURL: 'http://localhost:8085',
+  headers: {
+    'Content-Type': 'application/json',
+  },
+});
+
+chatApi.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
+
 export default api;
