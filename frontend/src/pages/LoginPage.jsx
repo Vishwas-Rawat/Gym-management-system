@@ -5,6 +5,8 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import AuthLayout from '../components/AuthLayout';
 import lightTheme from '../themes/lightTheme';
+import { motion } from 'framer-motion';
+import { jwtDecode } from "jwt-decode";
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -13,8 +15,7 @@ const LoginPage = () => {
 
   useEffect(() => {
     if (successMessage && successMessage.includes('Redirecting')) {
-      const timer = setTimeout(() => navigate('/dashboard'), 2000);
-      return () => clearTimeout(timer);
+      // The redirection is now handled in the handleSubmit callback, but we keep this as a fallback or for other messages
     }
   }, [successMessage, navigate]);
 
@@ -30,7 +31,30 @@ const LoginPage = () => {
       if (data.token) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('userId', data.userId);
-        return { redirect: '/dashboard' };
+        
+        let role = data.role;
+        
+        // If role is not in the response, try to decode it from the token
+        if (!role && data.token) {
+            try {
+                const decoded = jwtDecode(data.token);
+                role = decoded.role || decoded.sub?.role || decoded.authorities?.[0]?.authority;
+            } catch (err) {
+                console.error("Failed to decode token", err);
+            }
+        }
+
+        role = role?.toUpperCase();
+        
+        if (role === 'ADMIN') {
+            return { redirect: '/admin/dashboard' };
+        }
+        if (role === 'TRAINER') {
+            return { redirect: '/trainer/dashboard' };
+        }
+        
+        // Default fallback (e.g. for members or unknown roles)
+        return { redirect: '/' };
       }
       return null;
     }, { username: true, password: true }, payload);
@@ -49,7 +73,15 @@ const LoginPage = () => {
         navAction="Don't have an account?"
         navLink="/register"
       >
-        <Box component="form" onSubmit={handleFormSubmit} noValidate sx={{ mt: 1 }}>
+        <Box 
+            component={motion.form}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            onSubmit={handleFormSubmit} 
+            noValidate 
+            sx={{ mt: 1 }}
+        >
           <TextField
             margin="normal"
             required
@@ -118,7 +150,7 @@ const LoginPage = () => {
             color="primary"
             disabled={isLoading}
             startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : null}
-            sx={{ mt: 3, mb: 2 }}
+            sx={{ mt: 3, mb: 2, py: 1.5, fontSize: '1rem', fontWeight: 600, borderRadius: '8px' }}
           >
             Login
           </Button>

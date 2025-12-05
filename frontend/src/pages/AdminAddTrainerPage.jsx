@@ -35,36 +35,72 @@ import TrainerAddForm from "../components/TrainerAddForm";
 import { TrainerDetailView } from "../components/TrainerDetailView";
 import { TrainerRegistrationProvider, useTrainerRegistration } from "../context/TrainerRegistrationContext";
 import TrainerRow from "../components/TrainerRow";
+import AssignMembersDialog from "../components/AssignMembersDialog";
 
-const emeraldTheme = createTheme({
-  ...lightTheme,
+const dashboardTheme = createTheme({
   palette: {
-    ...lightTheme.palette,
-    primary: { main: "#10b981", dark: "#059669", light: "#34d399" },
-    background: { default: "#f0fdf4", paper: "#ffffff" },
-    text: { primary: "#1f2937", secondary: "#6b7280" },
+    mode: 'light',
+    primary: { main: "#007BFF" }, // Bootstrap Blue
+    secondary: { main: "#6c757d" }, // Bootstrap Secondary (Gray)
+    success: { main: "#27C499", light: "#D1FAE5" }, // Clean SaaS Green
+    warning: { main: "#F6A23E" }, // Amber
+    error: { main: "#E53935" }, // Material Red
+    info: { main: "#17A2B8" }, // Info Blue-light
+    background: { default: "#F4F6F9", paper: "#FFFFFF" },
+    text: { primary: "#1F2937", secondary: "#6B7280" },
   },
   typography: {
     fontFamily: "'Inter', 'Roboto', 'Helvetica', 'Arial', sans-serif",
     h4: { fontWeight: 700 },
     h6: { fontWeight: 600 },
+    subtitle2: { fontWeight: 600 },
+    button: { textTransform: "none", fontWeight: 600 },
   },
   components: {
-    MuiButton: {
+    MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: "10px",
-          textTransform: "none",
-          fontWeight: 600,
+          borderRadius: 16,
+          boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+          border: "1px solid #E5E7EB",
         },
       },
     },
     MuiPaper: {
       styleOverrides: {
+        root: { borderRadius: 16, boxShadow: "0 4px 20px rgba(0,0,0,0.05)" },
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
         root: {
-          borderRadius: "16px",
-          boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
+          borderRadius: 10,
+          padding: "10px 24px",
+          boxShadow: "none",
+          "&:hover": { boxShadow: "0 4px 12px rgba(0,0,0,0.1)" },
         },
+        containedPrimary: {
+          background: "#007BFF",
+          "&:hover": { background: "#0056b3" },
+        },
+      },
+    },
+    MuiTableCell: {
+      styleOverrides: {
+        root: {
+          borderBottom: "1px solid #E5E7EB",
+          padding: "16px 24px",
+        },
+        head: {
+          fontWeight: 600,
+          color: "#6B7280",
+          backgroundColor: "#F9FAFB",
+        },
+      },
+    },
+    MuiChip: {
+      styleOverrides: {
+        root: { fontWeight: 600, borderRadius: 8 },
       },
     },
   },
@@ -74,40 +110,53 @@ const AdminLayout = ({ title, subtitle, children }) => (
   <Box
     sx={{
       minHeight: "100vh",
-      bgcolor: "#0f766e",
-      backgroundImage: "linear-gradient(135deg, #0f766e 0%, #047857 100%)",
+      bgcolor: "background.default",
       pb: 6,
       overflowX: "hidden",
     }}
   >
-    <Box sx={{ maxWidth: "1400px", mx: "auto", px: { xs: 2, sm: 3, md: 4 }, pt: 4 }}>
-      <Box sx={{ textAlign: "center", mb: 6, color: "white" }}>
+    {/* HEADER */}
+    <Box
+      sx={{
+        bgcolor: "white",
+        borderBottom: "1px solid #E5E7EB",
+        py: 2,
+        px: { xs: 2, sm: 3, md: 4 },
+        mb: 4,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        boxShadow: "0 2px 10px rgba(0,0,0,0.02)",
+      }}
+    >
+      <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
         <Box
           sx={{
-            display: "inline-flex",
+            width: 48,
+            height: 48,
+            borderRadius: "12px",
+            bgcolor: "primary.main",
+            display: "flex",
             alignItems: "center",
-            gap: 1,
-            bgcolor: "rgba(255,255,255,0.15)",
-            backdropFilter: "blur(8px)",
-            px: 2,
-            py: 0.5,
-            borderRadius: "20px",
-            mb: 2,
-            border: "1px solid rgba(255,255,255,0.2)",
+            justifyContent: "center",
+            color: "white",
+            boxShadow: "0 4px 12px rgba(0, 123, 255, 0.2)",
           }}
         >
-          <FitnessCenter fontSize="small" />
-          <Typography variant="subtitle2" fontWeight={600}>
-            Trainers Dashboard
+          <FitnessCenter />
+        </Box>
+        <Box>
+          <Typography variant="h5" fontWeight={800} color="text.primary">
+            {title}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" fontWeight={500}>
+            {subtitle}
           </Typography>
         </Box>
-        <Typography variant="h3" fontWeight={800} sx={{ mb: 1 }}>
-          {title}
-        </Typography>
-        <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 400 }}>
-          {subtitle}
-        </Typography>
       </Box>
+    </Box>
+
+    <Box sx={{ maxWidth: "1400px", mx: "auto", px: { xs: 2, sm: 3, md: 4 } }}>
       {children}
     </Box>
   </Box>
@@ -166,6 +215,7 @@ const AdminAddTrainerPageContent = () => {
     updateTrainer,
     resendInvite,
     getTrainerById,
+    assignMembers,
   } = useTrainerRegistration();
 
   const isMobile = useMediaQuery("(max-width:900px)");
@@ -183,6 +233,10 @@ const AdminAddTrainerPageContent = () => {
   const [isSearchingAPI, setIsSearchingAPI] = useState(false);
   const [selectedGymId, setSelectedGymId] = useState(null);
   const searchTimeoutRef = useRef(null);
+
+  // Assign Dialog State
+  const [assignDialogOpen, setAssignDialogOpen] = useState(false);
+  const [trainerForAssign, setTrainerForAssign] = useState(null);
 
   // Load trainers safely
   useEffect(() => {
@@ -321,11 +375,23 @@ const AdminAddTrainerPageContent = () => {
     }
   };
 
+  // Assign Members Handlers
+  const openAssignDialog = () => {
+    if (sidePanel.data) {
+        setTrainerForAssign(sidePanel.data);
+        setAssignDialogOpen(true);
+    }
+  };
+
+  const handleAssignMembers = async (trainerId, memberIds) => {
+      await assignMembers(trainerId, memberIds);
+  };
+
   const renderTrainersList = () => {
     if (isLoading || (isSearchingAPI && searchTerm.trim())) {
       return (
         <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-          <CircularProgress sx={{ color: "#10b981" }} />
+          <CircularProgress sx={{ color: "primary.main" }} />
         </Box>
       );
     }
@@ -379,9 +445,9 @@ const AdminAddTrainerPageContent = () => {
                   key={h}
                   sx={{
                     fontWeight: 700,
-                    color: "#047857",
-                    bgcolor: "#f0fdf4",
-                    borderBottom: "2px solid #d1fae5",
+                    color: "text.secondary",
+                    bgcolor: "background.paper",
+                    borderBottom: "2px solid #E5E7EB",
                     py: 2,
                   }}
                 >
@@ -449,11 +515,11 @@ const AdminAddTrainerPageContent = () => {
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
           style={{ flexShrink: 0, width: "100%" }}
         >
-          <Paper sx={{ overflow: "hidden", border: "1px solid #e5e7eb", borderRadius: "24px", boxShadow: "0 10px 40px -10px rgba(0,0,0,0.1)", minHeight: "70vh" }}>
+          <Paper sx={{ overflow: "hidden", border: "1px solid #E5E7EB", borderRadius: "24px", boxShadow: "0 10px 40px -10px rgba(0,0,0,0.1)", minHeight: "70vh" }}>
             <Box
               sx={{
                 p: 4,
-                borderBottom: "1px solid #e5e7eb",
+                borderBottom: "1px solid #E5E7EB",
                 display: "flex",
                 flexDirection: { xs: "column", lg: sidePanel.open ? "column" : "row", xl: "row" },
                 justifyContent: "space-between",
@@ -463,7 +529,7 @@ const AdminAddTrainerPageContent = () => {
               }}
             >
               <Box sx={{ display: "flex", alignItems: "center", gap: 2.5 }}>
-                <Box sx={{ width: 56, height: 56, borderRadius: "16px", bgcolor: "#ecfdf5", display: "flex", alignItems: "center", justifyContent: "center", color: "#059669" }}>
+                <Box sx={{ width: 56, height: 56, borderRadius: "16px", bgcolor: "rgba(0, 123, 255, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "primary.main" }}>
                   <Group sx={{ fontSize: 30 }} />
                 </Box>
                 <Box>
@@ -484,10 +550,10 @@ const AdminAddTrainerPageContent = () => {
                     borderRadius: "12px",
                     px: 2.5,
                     py: 1.5,
-                    border: "1px solid #e5e7eb",
+                    border: "1px solid #E5E7EB",
                     flexGrow: 1,
                     minWidth: { xs: "100%", sm: "250px" },
-                    "&:focus-within": { borderColor: "#10b981", boxShadow: "0 0 0 4px rgba(16,185,129,0.1)" },
+                    "&:focus-within": { borderColor: "#007BFF", boxShadow: "0 0 0 4px rgba(0, 123, 255, 0.1)" },
                   }}
                 >
                   <Search sx={{ color: "text.secondary", mr: 1.5, fontSize: 24 }} />
@@ -504,8 +570,8 @@ const AdminAddTrainerPageContent = () => {
                     startIcon={<PersonAdd />}
                     onClick={openAddTrainer}
                     sx={{
-                      bgcolor: "#059669",
-                      "&:hover": { bgcolor: "#047857" },
+                      bgcolor: "primary.main",
+                      "&:hover": { bgcolor: "primary.dark" },
                       px: 4,
                       py: 1.5,
                       fontSize: "1rem",
@@ -541,7 +607,7 @@ const AdminAddTrainerPageContent = () => {
               }}
             >
               <Paper sx={{ height: "100%", borderRadius: "24px", overflow: "hidden", boxShadow: "-10px 0 30px rgba(0,0,0,0.1)", bgcolor: "white", display: "flex", flexDirection: "column" }}>
-                <Box sx={{ p: 2, display: "flex", justifyContent: "flex-end", borderBottom: "1px solid #f3f4f6" }}>
+                <Box sx={{ p: 2, display: "flex", justifyContent: "flex-end", borderBottom: "1px solid #E5E7EB" }}>
                   <IconButton onClick={closePanel}>
                     <Close />
                   </IconButton>
@@ -549,7 +615,7 @@ const AdminAddTrainerPageContent = () => {
                 <Box sx={{ flexGrow: 1, overflowY: "auto" }}>
                   {sidePanel.view === "add" && (
                     <Box sx={{ p: 2 }}>
-                      <Typography variant="h5" fontWeight={700} sx={{ mb: 3, px: 2, color: "#065f46" }}>
+                      <Typography variant="h5" fontWeight={700} sx={{ mb: 3, px: 2, color: "primary.main" }}>
                         Add New Trainer
                       </Typography>
                       <TrainerAddForm onSuccess={handleAddSuccess} multiple onCancel={closePanel} />
@@ -557,14 +623,18 @@ const AdminAddTrainerPageContent = () => {
                   )}
                   {sidePanel.view === "edit" && sidePanel.data && (
                     <Box sx={{ p: 2 }}>
-                      <Typography variant="h5" fontWeight={700} sx={{ mb: 3, px: 2, color: "#065f46" }}>
+                      <Typography variant="h5" fontWeight={700} sx={{ mb: 3, px: 2, color: "primary.main" }}>
                         Edit Trainer
                       </Typography>
                       <TrainerAddForm onSuccess={handleEditSuccess} trainer={sidePanel.data} onCancel={closePanel} />
                     </Box>
                   )}
                   {sidePanel.view === "detail" && sidePanel.data && (
-                    <TrainerDetailView trainer={sidePanel.data} />
+                    <TrainerDetailView 
+                        trainer={sidePanel.data} 
+                        onClose={closePanel}
+                        onAssignMembers={openAssignDialog}
+                    />
                   )}
                 </Box>
               </Paper>
@@ -572,12 +642,19 @@ const AdminAddTrainerPageContent = () => {
           )}
         </AnimatePresence>
       </Box>
+
+      <AssignMembersDialog 
+        open={assignDialogOpen}
+        onClose={() => setAssignDialogOpen(false)}
+        trainer={trainerForAssign}
+        onAssign={handleAssignMembers}
+      />
     </AdminLayout>
   );
 };
 
 const AdminAddTrainerPage = () => (
-  <ThemeProvider theme={emeraldTheme}>
+  <ThemeProvider theme={dashboardTheme}>
     <CssBaseline />
     <TrainerRegistrationProvider>
       <AdminAddTrainerPageContent />

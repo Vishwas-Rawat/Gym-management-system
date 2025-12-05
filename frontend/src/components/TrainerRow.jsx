@@ -58,11 +58,11 @@ const TrainerRow = React.memo(
           whileTap={{ scale: 0.98 }}
           layout
           sx={{
-            border: isSelected ? "2px solid #10b981" : "1px solid #e5e7eb",
+            border: isSelected ? "2px solid #007BFF" : "1px solid #E5E7EB",
             borderRadius: "12px",
             p: 2,
             mb: 2,
-            bgcolor: isSelected ? "#ecfdf5" : "white",
+            bgcolor: isSelected ? "rgba(0, 123, 255, 0.08)" : "white",
             boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
             cursor: "pointer",
           }}
@@ -72,7 +72,7 @@ const TrainerRow = React.memo(
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
               <Avatar
                 sx={{
-                  bgcolor: "#059669",
+                  bgcolor: "primary.main",
                   width: 40,
                   height: 40,
                   borderRadius: "10px",
@@ -100,8 +100,8 @@ const TrainerRow = React.memo(
                 label={trainer.specialization || "General"}
                 size="small"
                 sx={{
-                  bgcolor: "#059669",
-                  color: "white",
+                  bgcolor: "success.light",
+                  color: "success.main",
                   fontWeight: 600,
                   fontSize: "0.75rem",
                   height: 24,
@@ -109,7 +109,7 @@ const TrainerRow = React.memo(
               />
             </Box>
 
-            <Typography variant="body2" sx={{ fontSize: "0.85rem", color: "#4b5563" }}>
+            <Typography variant="body2" sx={{ fontSize: "0.85rem", color: "text.secondary" }}>
               Exp: {trainer.experienceYears ? `${trainer.experienceYears} Years` : "—"}
             </Typography>
 
@@ -121,25 +121,25 @@ const TrainerRow = React.memo(
               onClick={(e) => e.stopPropagation()}
             >
               <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                <IconButton size="small" sx={{ color: "#10b981", bgcolor: "#ecfdf5" }} onClick={onDetail}>
+                <IconButton size="small" sx={{ color: "info.main", bgcolor: "rgba(23, 162, 184, 0.08)" }} onClick={onDetail}>
                   <Visibility fontSize="small" />
                 </IconButton>
               </motion.div>
 
               <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                <IconButton size="small" sx={{ color: "#6366f1", bgcolor: "#eef2ff" }} onClick={onEdit}>
+                <IconButton size="small" sx={{ color: "warning.main", bgcolor: "#fffbeb" }} onClick={onEdit}>
                   <Edit fontSize="small" />
                 </IconButton>
               </motion.div>
 
               <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                <IconButton size="small" sx={{ color: "#f59e0b", bgcolor: "#fffbeb" }} onClick={onResend}>
+                <IconButton size="small" sx={{ color: "success.main", bgcolor: "success.light" }} onClick={onResend}>
                   <Send fontSize="small" />
                 </IconButton>
               </motion.div>
 
               <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                <IconButton size="small" sx={{ color: "#ef4444", bgcolor: "#fef2f2" }} onClick={onDelete}>
+                <IconButton size="small" sx={{ color: "error.main", bgcolor: "#fef2f2" }} onClick={onDelete}>
                   <Delete fontSize="small" />
                 </IconButton>
               </motion.div>
@@ -161,8 +161,8 @@ const TrainerRow = React.memo(
         onClick={onDetail}
         sx={{
           cursor: "pointer",
-          bgcolor: isSelected ? "#ecfdf5" : "inherit",
-          "&:hover": { bgcolor: isSelected ? "#d1fae5" : "#f9fafb" },
+          bgcolor: isSelected ? "rgba(0, 123, 255, 0.08)" : "inherit",
+          "&:hover": { bgcolor: isSelected ? "rgba(0, 123, 255, 0.15)" : "#f9fafb" },
           transition: "background-color 0.2s",
         }}
       >
@@ -172,7 +172,7 @@ const TrainerRow = React.memo(
               <Avatar
                 variant="rounded"
                 sx={{
-                  bgcolor: "#059669",
+                  bgcolor: "primary.main",
                   width: 36,
                   height: 36,
                   borderRadius: "8px",
@@ -182,15 +182,15 @@ const TrainerRow = React.memo(
               </Avatar>
             </motion.div>
 
-            <Typography fontWeight={600} sx={{ color: "#1f2937", ...singleLine }}>
+            <Typography fontWeight={600} sx={{ color: "text.primary", ...singleLine }}>
               {trainer.fullName}
             </Typography>
           </Box>
         </TableCell>
 
-        <TableCell sx={{ color: "#4b5563", ...singleLine }}>{trainer.email}</TableCell>
+        <TableCell sx={{ color: "text.secondary", ...singleLine }}>{trainer.email}</TableCell>
 
-        <TableCell sx={{ color: "#4b5563", ...singleLine }}>
+        <TableCell sx={{ color: "text.secondary", ...singleLine }}>
           {trainer.phoneNo || "—"}
         </TableCell>
 
@@ -199,8 +199,8 @@ const TrainerRow = React.memo(
             label={trainer.specialization || "General"}
             size="small"
             sx={{
-              bgcolor: "#059669",
-              color: "white",
+              bgcolor: "success.light",
+              color: "success.main",
               fontWeight: 600,
               borderRadius: "6px",
               fontSize: "0.8rem",
@@ -209,7 +209,7 @@ const TrainerRow = React.memo(
           />
         </TableCell>
 
-        <TableCell sx={{ color: "#4b5563", ...singleLine }}>
+        <TableCell sx={{ color: "text.secondary", ...singleLine }}>
           {trainer.experienceYears ? `${trainer.experienceYears} Yrs` : "—"}
         </TableCell>
 
@@ -218,7 +218,7 @@ const TrainerRow = React.memo(
           <Stack direction="row" spacing={1} justifyContent="center">
             <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
               <Tooltip title="View">
-                <IconButton size="small" sx={{ color: "#10b981" }} onClick={onDetail}>
+                <IconButton size="small" sx={{ color: "info.main" }} onClick={onDetail}>
                   <Visibility fontSize="small" />
                 </IconButton>
               </Tooltip>
@@ -226,7 +226,7 @@ const TrainerRow = React.memo(
 
             <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
               <Tooltip title="Edit">
-                <IconButton size="small" sx={{ color: "#6366f1" }} onClick={onEdit}>
+                <IconButton size="small" sx={{ color: "warning.main" }} onClick={onEdit}>
                   <Edit fontSize="small" />
                 </IconButton>
               </Tooltip>
@@ -234,7 +234,7 @@ const TrainerRow = React.memo(
 
             <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
               <Tooltip title="Resend Invite">
-                <IconButton size="small" sx={{ color: "#f59e0b" }} onClick={onResend}>
+                <IconButton size="small" sx={{ color: "success.main" }} onClick={onResend}>
                   <Send fontSize="small" />
                 </IconButton>
               </Tooltip>
@@ -242,7 +242,7 @@ const TrainerRow = React.memo(
 
             <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
               <Tooltip title="Delete">
-                <IconButton size="small" sx={{ color: "#ef4444" }} onClick={onDelete}>
+                <IconButton size="small" sx={{ color: "error.main" }} onClick={onDelete}>
                   <Delete fontSize="small" />
                 </IconButton>
               </Tooltip>

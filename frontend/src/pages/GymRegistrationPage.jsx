@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import axios from 'axios';
 import {
   ThemeProvider,
   createTheme,
@@ -14,20 +13,17 @@ import {
   IconButton,
 } from '@mui/material';
 import { Add, Delete } from '@mui/icons-material';
+import { useGym } from '../context/GymContext';
 
 const GymRegistrationPage = () => {
   const navigate = useNavigate();
+  const { createGyms, loading } = useGym();
   const [gyms, setGyms] = useState([{ gymName: '', address: '', city: '', state: '', contactNumber: '', email: '', openingHours: '' }]);
   const [activeGymIndex, setActiveGymIndex] = useState(0);
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
-
-  // 🔍 DEBUG: Log base URL
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-  console.log("VITE_API_BASE_URL:", API_BASE_URL);
 
   const theme = createTheme({
     palette: {
@@ -137,38 +133,18 @@ const GymRegistrationPage = () => {
 
     if (Object.keys(allErrors).length > 0) return;
 
-    setIsLoading(true);
-    try {
-      const token = localStorage.getItem('token');
-      console.log("Using token:", token);
+    const result = await createGyms(gyms);
 
-      const response = await axios.post(
-        `${API_BASE_URL}/gym/create`,
-        gyms,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response.data && response.data[0]?.message === 'Gym created successfully') {
-        setSuccessMessage('Gyms registered successfully! Redirecting...');
-        setTimeout(() => navigate('/dashboard'), 2000);
-      } else {
-        setApiError('Unexpected response from server');
-      }
-    } catch (error) {
-      const errorMsg = error.response?.data?.message || error.message || 'Failed to register gyms';
-      setApiError(errorMsg.includes('already exists') ? 'Gym already exists with this name/address' : errorMsg);
-    } finally {
-      setIsLoading(false);
+    if (result.success) {
+      setSuccessMessage('Gyms registered successfully! Redirecting...');
+      setTimeout(() => navigate('/admin/dashboard'), 2000);
+    } else {
+      setApiError(result.message);
     }
   };
 
   return (
     <ThemeProvider theme={theme}>
-      <CssBaseline />
       <CssBaseline />
       <Box
         sx={{
@@ -395,8 +371,8 @@ const GymRegistrationPage = () => {
                   type="submit"
                   variant="contained"
                   color="primary"
-                  disabled={isLoading}
-                  startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : null}
+                  disabled={loading}
+                  startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
                   fullWidth
                 >
                   Register Gyms

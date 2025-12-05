@@ -37,6 +37,7 @@ import {
   Menu as MenuIcon,
   Logout,
   Dashboard as DashboardIcon,
+  Business,
 } from "@mui/icons-material";
 import {
   BarChart,
@@ -56,92 +57,193 @@ import {
   Area,
 } from "recharts";
 import { motion } from "framer-motion";
-import api from "../services/api"; // Ensure this is your configured axios instance
+import api, { attendanceApi } from "../services/api"; // Ensure this is your configured axios instance
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
 
+// --- THEME SETUP ---
 // --- THEME SETUP ---
 const dashboardTheme = createTheme({
   palette: {
-    primary: { main: "#6366f1" }, // Indigo
-    secondary: { main: "#ec4899" }, // Pink
-    success: { main: "#10b981" }, // Emerald
-    warning: { main: "#f59e0b" }, // Amber
-    error: { main: "#ef4444" }, // Red
-    background: { default: "#f8fafc", paper: "#ffffff" },
-    text: { primary: "#1e293b", secondary: "#64748b" },
+    mode: 'light',
+    primary: { main: "#007BFF" }, // Bootstrap Blue
+    secondary: { main: "#6c757d" }, // Bootstrap Secondary (Gray)
+    success: { main: "#27C499", light: "#D1FAE5" }, // Clean SaaS Green
+    warning: { main: "#F6A23E" }, // Amber
+    error: { main: "#E53935" }, // Material Red
+    info: { main: "#17A2B8" }, // Info Blue-light
+    background: { default: "#F4F6F9", paper: "#FFFFFF" },
+    text: { primary: "#1F2937", secondary: "#6B7280" },
   },
   typography: {
-    fontFamily: "'Inter', 'Roboto', sans-serif",
+    fontFamily: "'Inter', 'Roboto', 'Helvetica', 'Arial', sans-serif",
     h4: { fontWeight: 700 },
     h6: { fontWeight: 600 },
+    subtitle2: { fontWeight: 600 },
+    button: { textTransform: "none", fontWeight: 600 },
   },
   components: {
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: "16px",
+          borderRadius: 16,
           boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
-          transition: "transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out",
-          "&:hover": {
-            transform: "translateY(-4px)",
-            boxShadow: "0 12px 30px rgba(0,0,0,0.1)",
-          },
+          border: "1px solid #E5E7EB",
         },
       },
     },
     MuiPaper: {
       styleOverrides: {
-        root: { borderRadius: "16px" },
+        root: { borderRadius: 16, boxShadow: "0 4px 20px rgba(0,0,0,0.05)" },
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          borderRadius: 10,
+          padding: "10px 24px",
+          boxShadow: "none",
+          "&:hover": { boxShadow: "0 4px 12px rgba(0,0,0,0.1)" },
+        },
+        containedPrimary: {
+          background: "#007BFF",
+          "&:hover": { background: "#0056b3" },
+        },
+      },
+    },
+    MuiTableCell: {
+      styleOverrides: {
+        root: {
+          borderBottom: "1px solid #E5E7EB",
+          padding: "16px 24px",
+        },
+        head: {
+          fontWeight: 600,
+          color: "#6B7280",
+          backgroundColor: "#F9FAFB",
+        },
+      },
+    },
+    MuiChip: {
+      styleOverrides: {
+        root: { fontWeight: 600, borderRadius: 8 },
       },
     },
   },
-});
+}); 
+
 
 // --- KPI CARD COMPONENT ---
-const KpiCard = ({ title, value, icon: Icon, color, gradient }) => (
+const KpiCard = ({ title, value, icon: Icon, gradient }) => (
   <Card
     sx={{
       height: "100%",
-      background: gradient,
+      background: gradient || "white",
       color: "white",
       position: "relative",
       overflow: "hidden",
+      borderRadius: "24px",
+      boxShadow: "0 10px 20px -5px rgba(0,0,0,0.1)",
+      transition: "all 0.3s ease",
+      "&:hover": {
+        transform: "translateY(-5px)",
+        boxShadow: "0 20px 30px -10px rgba(0,0,0,0.15)",
+      },
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'space-between'
     }}
   >
+    {/* Decorative Background Pattern */}
     <Box
       sx={{
         position: "absolute",
-        top: -20,
-        right: -20,
-        opacity: 0.2,
-        transform: "rotate(15deg)",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        opacity: 0.1,
+        backgroundImage: 'radial-gradient(circle at 10% 20%, rgba(255,255,255,0.4) 0%, transparent 20%), radial-gradient(circle at 90% 80%, rgba(255,255,255,0.4) 0%, transparent 20%)',
+        zIndex: 0
       }}
-    >
-      <Icon sx={{ fontSize: 100 }} />
-    </Box>
-    <CardContent sx={{ position: "relative", zIndex: 1 }}>
-      <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-        <Box
-          sx={{
-            p: 1,
-            borderRadius: "12px",
-            bgcolor: "rgba(255,255,255,0.2)",
-            display: "flex",
-            mr: 2,
-          }}
-        >
-          <Icon />
+    />
+    
+    <CardContent sx={{ position: "relative", zIndex: 1, p: 3, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+      <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", mb: 2 }}>
+        <Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1, opacity: 0.9 }}>
+                <Icon sx={{ fontSize: 20 }} />
+                <Typography variant="subtitle2" fontWeight={600}>
+                    {title}
+                </Typography>
+            </Box>
+            <Typography variant="h4" fontWeight={700} sx={{ letterSpacing: '-0.5px' }}>
+                {value}
+            </Typography>
         </Box>
-        <Typography variant="subtitle2" sx={{ opacity: 0.9, fontWeight: 600 }}>
-          {title}
-        </Typography>
       </Box>
-      <Typography variant="h4" fontWeight={800}>
-        {value}
-      </Typography>
+      
+      {/* Progress bar simulation or extra info could go here */}
+      <Box sx={{ width: '100%', bgcolor: 'rgba(255,255,255,0.2)', height: 6, borderRadius: 3, mt: 2 }}>
+        <Box sx={{ width: '70%', bgcolor: 'white', height: '100%', borderRadius: 3 }} />
+      </Box>
     </CardContent>
   </Card>
 );
+
+const WelcomeBanner = () => (
+  <Box
+    component={motion.div}
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5 }}
+    sx={{
+      p: { xs: 3, md: 5 },
+      mb: 5,
+      borderRadius: "32px",
+      background: "linear-gradient(135deg, #007BFF 0%, #0056b3 100%)", // Blue gradient
+      color: "white",
+      position: "relative",
+      overflow: "hidden",
+      boxShadow: "0 20px 25px -5px rgba(0, 123, 255, 0.3)",
+    }}
+  >
+    <Box sx={{ position: "relative", zIndex: 1, maxWidth: "600px" }}>
+      <Typography variant="h4" fontWeight={800} gutterBottom sx={{ fontSize: { xs: "1.5rem", md: "2rem" } }}>
+        Welcome back, Admin! 👋
+      </Typography>
+      <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 400, lineHeight: 1.6 }}>
+        Here's what's happening in your gym today. Check out the latest attendance and revenue stats.
+      </Typography>
+    </Box>
+    
+    {/* Decorative Elements */}
+    <Box
+      sx={{
+        position: "absolute",
+        top: -60,
+        right: -60,
+        width: 300,
+        height: 300,
+        borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%)",
+      }}
+    />
+    <Box
+      sx={{
+        position: "absolute",
+        bottom: -40,
+        right: 100,
+        width: 150,
+        height: 150,
+        borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%)",
+      }}
+    />
+  </Box>
+);
+
+
 
 // --- DASHBOARD PAGE ---
 const AdminDashboardPage = () => {
@@ -151,6 +253,7 @@ const AdminDashboardPage = () => {
   const [error, setError] = useState(null);
   const [currentTab, setCurrentTab] = useState(0); // 0: Gym, 1: Member, 2: Trainer
   const navigate = useNavigate();
+  const { logout } = useAuth();
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -174,8 +277,10 @@ const AdminDashboardPage = () => {
 
         // 3. Fetch Attendance Logs
         try {
-            const attendanceRes = await api.get(`/attendance/admin/gym/${gymId}`);
-            setAttendanceLogs(Array.isArray(attendanceRes.data) ? attendanceRes.data : []);
+            const attendanceRes = await attendanceApi.get(`/attendance/admin/gym/${gymId}`);
+            // Handle new structure { gymId, records: [...] } or fallback to array
+            const logs = attendanceRes.data.records || (Array.isArray(attendanceRes.data) ? attendanceRes.data : []);
+            setAttendanceLogs(logs);
         } catch (attErr) {
             console.error("Failed to fetch attendance logs", attErr);
             // Don't block main dashboard if attendance fails
@@ -194,7 +299,7 @@ const AdminDashboardPage = () => {
   if (loading) {
     return (
       <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
-        <CircularProgress size={60} thickness={4} sx={{ color: "#6366f1" }} />
+        <CircularProgress size={60} thickness={4} sx={{ color: "primary.main" }} />
       </Box>
     );
   }
@@ -221,7 +326,7 @@ const AdminDashboardPage = () => {
     { name: "Active", value: data.activeMembers },
     { name: "Inactive", value: data.totalMembers - data.activeMembers },
   ];
-  const PIE_COLORS = ["#10b981", "#ef4444"];
+  const PIE_COLORS = ["#27C499", "#E53935"];
 
   // 2. Attendance (Bar/Line Combo)
   const attendanceData = [
@@ -255,20 +360,30 @@ const AdminDashboardPage = () => {
       <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "background.default" }}>
         
         {/* SIDEBAR */}
-        <Paper
-          elevation={0}
+        {/* SIDEBAR */}
+        {/* SIDEBAR */}
+        <Box
+          component={motion.div}
+          initial="collapsed"
+          whileHover="expanded"
+          variants={{
+            collapsed: { width: 80 },
+            expanded: { width: 280 }
+          }}
+          transition={{ type: "spring", stiffness: 300, damping: 30 }}
           sx={{
-            width: 280,
             display: { xs: "none", md: "flex" },
             flexDirection: "column",
-            borderRight: "1px solid #e2e8f0",
-            borderRadius: 0,
+            borderRight: "1px solid #E5E7EB",
+            bgcolor: "white",
             position: "fixed",
             height: "100vh",
             zIndex: 1200,
+            overflow: "hidden",
+            boxShadow: "4px 0 24px rgba(0,0,0,0.02)"
           }}
         >
-          <Box sx={{ p: 3, display: "flex", alignItems: "center", gap: 2 }}>
+          <Box sx={{ p: 3, display: "flex", alignItems: "center", gap: 0, minWidth: 280 }}>
             <Box
               sx={{
                 width: 40,
@@ -279,56 +394,85 @@ const AdminDashboardPage = () => {
                 alignItems: "center",
                 justifyContent: "center",
                 color: "white",
+                flexShrink: 0
               }}
             >
               <FitnessCenter />
             </Box>
-            <Typography variant="h6" fontWeight={800} color="primary.main">
-              GymAdmin
-            </Typography>
+            <motion.div
+              variants={{
+                collapsed: { opacity: 0, width: 0 },
+                expanded: { opacity: 1, width: "auto" }
+              }}
+              transition={{ duration: 0.2 }}
+              style={{ overflow: "hidden", whiteSpace: "nowrap" }}
+            >
+                <Typography variant="h6" fontWeight={800} color="primary.main" sx={{ ml: 2 }}>
+                  GymAdmin
+                </Typography>
+            </motion.div>
           </Box>
           
-          <Box sx={{ px: 2, py: 2 }}>
-            {["Dashboard", "Members", "Trainers", "Attendance", "Finance", "Settings"].map((text, index) => (
+          <Box sx={{ px: 2, py: 2, flexGrow: 1 }}>
+            {["Dashboard", "Gyms", "Members", "Trainers", "Attendance", "Finance", "Settings"].map((text, index) => (
               <Box
                 key={text}
                 sx={{
                   p: 1.5,
                   mb: 1,
-                  borderRadius: "10px",
+                  borderRadius: "12px",
                   cursor: "pointer",
-                  bgcolor: index === 0 ? "primary.light" : "transparent",
                   color: index === 0 ? "primary.main" : "text.secondary",
+                  bgcolor: index === 0 ? "primary.50" : "transparent",
                   fontWeight: index === 0 ? 600 : 500,
-                  "&:hover": { bgcolor: "primary.50", color: "primary.main" },
                   display: "flex",
                   alignItems: "center",
-                  gap: 2,
+                  gap: 0,
+                  minWidth: 240,
+                  transition: "all 0.2s ease",
+                  "&:hover": { 
+                    bgcolor: "primary.50", 
+                    color: "primary.main",
+                    transform: "translateX(4px)"
+                  },
                 }}
                 onClick={() => {
+                   if (text === "Gyms") navigate("/admin/gyms");
                    if (text === "Members") navigate("/admin/members/add");
                    if (text === "Trainers") navigate("/admin/trainers/add");
                 }}
               >
-                {index === 0 && <TrendingUp />}
-                {index === 1 && <People />}
-                {index === 2 && <FitnessCenter />}
-                {index === 3 && <EventNote />}
-                {index === 4 && <AttachMoney />}
-                {index === 5 && <MenuIcon />}
-                <Typography>{text}</Typography>
+                <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: 24, height: 24, flexShrink: 0 }}>
+                    {index === 0 && <TrendingUp />}
+                    {index === 1 && <Business />}
+                    {index === 2 && <People />}
+                    {index === 3 && <FitnessCenter />}
+                    {index === 4 && <EventNote />}
+                    {index === 5 && <AttachMoney />}
+                    {index === 6 && <MenuIcon />}
+                </Box>
+                <motion.div
+                    variants={{
+                        collapsed: { opacity: 0, width: 0 },
+                        expanded: { opacity: 1, width: "auto" }
+                    }}
+                    transition={{ duration: 0.2 }}
+                    style={{ overflow: "hidden", whiteSpace: "nowrap" }}
+                >
+                    <Typography sx={{ ml: 2 }}>{text}</Typography>
+                </motion.div>
               </Box>
             ))}
           </Box>
-        </Paper>
+        </Box>
 
         {/* MAIN CONTENT */}
-        <Box sx={{ flexGrow: 1, ml: { md: "280px" }, p: { xs: 2, md: 4 } }}>
+        <Box sx={{ flexGrow: 1, ml: { md: "80px" }, p: { xs: 2, md: 4 } }}>
           
           {/* TOP NAVBAR */}
           <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
             <Box>
-              <Typography variant="h4" color="text.primary">
+              <Typography variant="h4" color="text.primary" fontWeight={800}>
                 Dashboard
               </Typography>
               <Typography variant="body1" color="text.secondary">
@@ -336,12 +480,21 @@ const AdminDashboardPage = () => {
               </Typography>
             </Box>
             <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-              <IconButton sx={{ bgcolor: "white", boxShadow: 1 }}>
+              <IconButton 
+                sx={{ 
+                  bgcolor: "white", 
+                  boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+                  "&:hover": { bgcolor: "#f1f5f9" }
+                }} 
+                onClick={logout}
+              >
                 <Logout color="action" />
               </IconButton>
-              <Avatar sx={{ bgcolor: "primary.main" }}>A</Avatar>
+              <Avatar sx={{ bgcolor: "primary.main", width: 45, height: 45, boxShadow: "0 4px 12px rgba(99, 102, 241, 0.3)" }}>A</Avatar>
             </Box>
           </Box>
+
+          <WelcomeBanner />
 
           {/* DASHBOARD TABS */}
           <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 4 }}>
@@ -364,7 +517,7 @@ const AdminDashboardPage = () => {
                     title="Total Revenue"
                     value={`₹${data.totalRevenue.toLocaleString()}`}
                     icon={AttachMoney}
-                    gradient="linear-gradient(135deg, #f59e0b 0%, #d97706 100%)"
+                    gradient="linear-gradient(135deg, #14b8a6 0%, #0d9488 100%)" // Teal
                   />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
@@ -372,7 +525,7 @@ const AdminDashboardPage = () => {
                     title="Monthly Revenue"
                     value={`₹${Math.round(data.monthlyRevenue).toLocaleString()}`}
                     icon={TrendingUp}
-                    gradient="linear-gradient(135deg, #ec4899 0%, #db2777 100%)"
+                    gradient="linear-gradient(135deg, #f97316 0%, #ea580c 100%)" // Orange
                   />
                 </Grid>
                 <Grid item xs={12} sm={6} md={3}>
@@ -380,7 +533,7 @@ const AdminDashboardPage = () => {
                     title="Total Members"
                     value={data.totalMembers}
                     icon={People}
-                    gradient="linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)"
+                    gradient="linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)" // Blue
                   />
                 </Grid>
                  <Grid item xs={12} sm={6} md={3}>
@@ -388,7 +541,7 @@ const AdminDashboardPage = () => {
                     title="Total Trainers"
                     value={data.totalTrainers}
                     icon={FitnessCenter}
-                    gradient="linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)"
+                    gradient="linear-gradient(135deg, #ec4899 0%, #db2777 100%)" // Pink
                   />
                 </Grid>
               </Grid>
