@@ -1,4 +1,3 @@
-// src/main/java/com/gymmanagement/usermanagement/Request/UpdateMemberRequest.java
 package com.gymmanagement.usermanagement.Request;
 
 import lombok.Data;
@@ -6,25 +5,13 @@ import java.time.LocalDate;
 
 @Data
 public class UpdateMemberRequest {
-    private String fullName;
+    private String name;
     private String email;
-    private String phoneNo;
-
-    private Integer monthsPaid;
-    private Integer monthsFree;
-
-    // Timing fields (String to allow "1", "12", etc.)
-    private String fromHour;
-    private String fromMinute;
-    private String fromPeriod; // AM/PM
-    private String toHour;
-    private String toMinute;
-    private String toPeriod;
-
-    private Double registrationFee;
-    private Double planPrice;
-    private Double discount;
-
-    private String paymentMethod;
+    private String gender;
+    private String fitnessGoal;
+    private String membershipPlan;
     private LocalDate joiningDate;
+    private Double amountPaid;
+    private String paymentMethod;
+    private String workoutTimeSlot;
 }

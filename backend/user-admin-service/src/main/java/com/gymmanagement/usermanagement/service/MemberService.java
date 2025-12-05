@@ -4,30 +4,17 @@ import com.gymmanagement.commonservices.entity.Member;
 import com.gymmanagement.usermanagement.Request.AdminAddMemberRequest;
 import com.gymmanagement.usermanagement.Request.CompleteRegistrationRequest;
 import com.gymmanagement.usermanagement.Request.UpdateMemberRequest;
-import com.gymmanagement.usermanagement.Response.AddMemberResponse;
 
 import java.util.List;
 
 public interface MemberService {
-
-    List<AddMemberResponse> addMultipleMembersByAdmin(List<AdminAddMemberRequest> requests);
-
-    void resendRegistrationLink(Integer userId);
-
-    void completeRegistration(CompleteRegistrationRequest request);
-
+    Member addMemberByAdmin(AdminAddMemberRequest request);        // admin adds
+    void resendRegistrationLink(Integer userId);                   // admin resend invite
+    void completeRegistration(CompleteRegistrationRequest request); // member completes
     Member getMemberById(Integer memberId);
-
     Member getMemberByUserId(Integer userId);
-
     List<Member> getAllMembers();
-
     Member updateMember(Integer memberId, UpdateMemberRequest request);
-
-    void deleteMember(Integer memberId);          // soft delete
-
+    void deleteMember(Integer memberId);
     List<Member> searchMembers(String keyword);
-    
-    List<Member> getMembersByGymId(Long gymId);
-
 }
