@@ -52,9 +52,12 @@ const LoginPage = () => {
         if (role === 'TRAINER') {
             return { redirect: '/trainer/dashboard' };
         }
+        if (role === 'MEMBER' || role === 'GYM_MEMBER') {
+             return { redirect: '/member/dashboard' };
+        }
         
-        // Default fallback (e.g. for members or unknown roles)
-        return { redirect: '/' };
+        // Default fallback
+        return { redirect: '/member/dashboard' };
       }
       return null;
     }, { username: true, password: true }, payload);

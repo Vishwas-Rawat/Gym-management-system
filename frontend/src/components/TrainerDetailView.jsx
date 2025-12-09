@@ -161,7 +161,7 @@ export const TrainerDetailView = ({ trainer, onClose, onAssignMembers, style }) 
                 </Box>
                 <Box>
                   <Typography variant="caption" color="text.secondary">Gym</Typography>
-                  <Typography variant="h6" fontWeight={600}>{trainer.gymName || "—"}</Typography>
+                  <Typography variant="h6" fontWeight={600}>{trainer.gym?.gymName || trainer.gymName || "—"}</Typography>
                 </Box>
               </Stack>
             </Stack>

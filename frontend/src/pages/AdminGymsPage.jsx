@@ -16,25 +16,12 @@ import {
   TextField,
   CircularProgress,
   Alert,
-  ThemeProvider,
-  createTheme,
-  CssBaseline
 } from '@mui/material';
 import { Edit, Delete, Add, Business, AccessTime, Phone, Email, LocationOn } from '@mui/icons-material';
 import { useGym } from '../context/GymContext';
 import { useNavigate } from 'react-router-dom';
 
-const theme = createTheme({
-  palette: {
-    mode: 'light',
-    primary: { main: '#6366f1' },
-    secondary: { main: '#ec4899' },
-    background: { default: '#f8fafc', paper: '#ffffff' },
-  },
-  typography: {
-    fontFamily: "'Inter', sans-serif",
-  },
-});
+
 
 const AdminGymsPage = () => {
   const { gyms, loading, error, getMyGyms, updateGym, deleteGym } = useGym();
@@ -103,9 +90,7 @@ const AdminGymsPage = () => {
   }
 
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Box sx={{ p: 4, minHeight: '100vh', bgcolor: 'background.default' }}>
+      <Box>
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4 }}>
           <Typography variant="h4" fontWeight={700} color="text.primary">
             My Gyms
@@ -217,7 +202,6 @@ const AdminGymsPage = () => {
           </DialogActions>
         </Dialog>
       </Box>
-    </ThemeProvider>
   );
 };
 

@@ -1,6 +1,6 @@
 // src/context/TrainerRegistrationContext.jsx
 import React, { createContext, useState, useContext, useCallback } from 'react';
-import api from '../services/api';
+import api, { userApi } from '../services/api'; // userApi is 8083
 
 const TrainerRegistrationContext = createContext();
 
@@ -33,7 +33,7 @@ export const TrainerRegistrationProvider = ({ children }) => {
     setIsLoading(true);
     clearMessages();
     try {
-      const { data } = await api.get('/gym/my-gyms');
+      const { data } = await userApi.get('/gym/my-gyms');
       const gymList = Array.isArray(data) ? data : [];
       setGyms(gymList);
       return gymList;
@@ -54,7 +54,7 @@ export const TrainerRegistrationProvider = ({ children }) => {
     setIsLoading(true);
     clearMessages();
     try {
-      const { data } = await api.post('/trainer/admin/add-trainers', trainersArray);
+      const { data } = await userApi.post('/trainer/admin/add-trainers', trainersArray);
       setSuccessMessage(data[0]?.message || `${trainersArray.length} trainers added`);
       return data;
     } catch (err) {
@@ -79,7 +79,7 @@ export const TrainerRegistrationProvider = ({ children }) => {
     setIsLoading(true);
     clearMessages();
     try {
-      const { data } = await api.post(`/trainer/admin/trainer/${userId}/resend`);
+      const { data } = await userApi.post(`/trainer/admin/trainer/${userId}/resend`);
       setSuccessMessage(data.message || 'Invite resent successfully');
       return data;
     } catch (err) {
@@ -124,6 +124,13 @@ export const TrainerRegistrationProvider = ({ children }) => {
               data.phoneNumber = data.user.phoneNumber;
           }
       }
+      
+      // Map nested gym data
+      if (data.gym) {
+          if (!data.gymId) data.gymId = data.gym.gymId;
+          if (!data.gymName) data.gymName = data.gym.gymName;
+      }
+
       return data;
   };
 
@@ -135,7 +142,7 @@ export const TrainerRegistrationProvider = ({ children }) => {
       const id = validateId(trainerId);
       setIsLoading(true);
       clearMessages();
-      const { data } = await api.get(`/trainer/${id}`);
+      const { data } = await userApi.get(`/trainer/${id}`);
       return mapTrainerData(data);
     } catch (err) {
       const msg = err.response?.data?.message || err.message || 'Trainer not found';
@@ -157,7 +164,7 @@ export const TrainerRegistrationProvider = ({ children }) => {
       if (gymId) {
         endpoint = `/trainer/gym/${gymId}`;
       }
-      const { data } = await api.get(endpoint);
+      const { data } = await userApi.get(endpoint);
       const list = data || [];
       return mapTrainerData(list);
     } catch (err) {
@@ -177,7 +184,7 @@ export const TrainerRegistrationProvider = ({ children }) => {
     setIsLoading(true);
     clearMessages();
     try {
-      const { data } = await api.get(`/trainer/search?keyword=${encodeURIComponent(keyword)}`);
+      const { data } = await userApi.get(`/trainer/search?keyword=${encodeURIComponent(keyword)}`);
       
       let results = data || [];
       if (gymId) {
@@ -200,7 +207,7 @@ export const TrainerRegistrationProvider = ({ children }) => {
       const id = validateId(trainerId);
       setIsLoading(true);
       clearMessages();
-      const { data } = await api.put(`/trainer/${id}`, payload);
+      const { data } = await userApi.put(`/trainer/${id}`, payload);
       setSuccessMessage(data.message || 'Trainer updated successfully');
       return data;
     } catch (err) {
@@ -220,7 +227,7 @@ export const TrainerRegistrationProvider = ({ children }) => {
       const id = validateId(trainerId);
       setIsLoading(true);
       clearMessages();
-      const { data } = await api.delete(`/trainer/${id}`);
+      const { data } = await userApi.delete(`/trainer/${id}`);
       setSuccessMessage(data.message || 'Trainer deleted');
       return true;
     } catch (err) {
@@ -243,7 +250,7 @@ export const TrainerRegistrationProvider = ({ children }) => {
       setIsLoading(true);
       clearMessages();
       const payload = { trainerId: Number(trainerId), memberIds: memberIds.map(Number) };
-      const { data } = await api.post('/trainer/admin/assign-members', payload);
+      const { data } = await userApi.post('/trainer/admin/assign-members', payload);
       setSuccessMessage(data.message || 'Members assigned successfully');
       return true;
     } catch (err) {
@@ -296,7 +303,7 @@ export const TrainerRegistrationProvider = ({ children }) => {
         dateOfBirth: completeRegForm.dateOfBirth,
       };
 
-      const { data } = await api.post('/trainer/complete-registration', payload);
+      const { data } = await userApi.post('/trainer/complete-registration', payload);
       setSuccessMessage(data.message || 'Registration completed successfully!');
       setIsRedirecting(true);
       setTimeout(() => {

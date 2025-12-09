@@ -7,7 +7,7 @@ import {
 } from "@mui/material";
 import { Add, Delete, ChevronLeft, ChevronRight, FitnessCenter } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import api from "../services/api";
+import api, { userApi } from "../services/api";
 import { motion } from "framer-motion";
 
 const statuses = ["FULL_TIME", "PART_TIME", "CONTRACT", "ON_LEAVE"];
@@ -61,7 +61,7 @@ export default function TrainerAddForm({ onSuccess, multiple = false, trainer = 
     const fetchGyms = async () => {
       try {
         setLoadingGyms(true);
-        const response = await api.get("/gym/my-gyms");
+        const response = await userApi.get("/gym/my-gyms");
         const gyms = Array.isArray(response.data) ? response.data : [];
         if (gyms.length === 0) setShowNoGymMessage(true);
         else setGymOptions(gyms.map(g => ({ id: g.gymId, name: g.gymName })));
@@ -98,7 +98,8 @@ export default function TrainerAddForm({ onSuccess, multiple = false, trainer = 
       // If editing, we might want to set the gym ID from the trainer if available
       // But for now we let the user select or keep it global if editing implies moving gyms?
       // Usually edit keeps the gym. Let's assume globalGymId handles it or we set it.
-      if (trainer.gymId) setGlobalGymId(trainer.gymId);
+      const gId = trainer.gymId || trainer.gym?.gymId;
+      if (gId) setGlobalGymId(String(gId));
     } else {
       setTrainers([emptyTrainer]);
       setGlobalGymId("");

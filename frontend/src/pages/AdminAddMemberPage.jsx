@@ -25,8 +25,8 @@ import {
   PersonAdd,
   Search,
   Group,
-  People,
   Close,
+  FitnessCenter,
 } from "@mui/icons-material";
 import { motion, AnimatePresence } from "framer-motion";
 import { ThemeProvider, CssBaseline, createTheme } from "@mui/material";
@@ -34,6 +34,8 @@ import MemberAddForm from "../components/MemberAddForm";
 import { MemberDetailView } from "../components/MemberDetailModal";
 import { MemberRegistrationProvider, useMemberRegistration } from "../context/MemberRegistrationContext";
 import MemberRow from "../components/MemberRow";
+import { userApi } from "../services/api";
+import ConfirmationDialog from "../components/ConfirmationDialog";
 
 const dashboardTheme = createTheme({
   palette: {
@@ -48,67 +50,59 @@ const dashboardTheme = createTheme({
     text: { primary: "#1F2937", secondary: "#6B7280" },
   },
   typography: {
-    fontFamily: "'Outfit', 'Inter', sans-serif",
-    h4: { fontWeight: 700, letterSpacing: '-0.02em' },
-    h6: { fontWeight: 600, letterSpacing: '-0.01em' },
-    subtitle2: { fontWeight: 500, fontSize: '0.875rem' },
+    fontFamily: "'Inter', 'Roboto', 'Helvetica', 'Arial', sans-serif",
+    h4: { fontWeight: 700 },
+    h6: { fontWeight: 600 },
+    subtitle2: { fontWeight: 600 },
+    button: { textTransform: "none", fontWeight: 600 },
   },
   components: {
     MuiCard: {
       styleOverrides: {
         root: {
-          borderRadius: "12px",
-          boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
+          borderRadius: 16,
+          boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
           border: "1px solid #E5E7EB",
         },
       },
     },
     MuiPaper: {
       styleOverrides: {
-        root: { 
-            borderRadius: "12px", 
-            boxShadow: "0 2px 4px rgba(0,0,0,0.05)", 
-            border: "1px solid #E5E7EB" 
-        },
+        root: { borderRadius: 16, boxShadow: "0 4px 20px rgba(0,0,0,0.05)" },
       },
     },
     MuiButton: {
       styleOverrides: {
-        root: { 
-            borderRadius: "6px", 
-            textTransform: "none", 
-            fontWeight: 600,
-            boxShadow: "none",
-            "&:hover": { boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }
+        root: {
+          borderRadius: 10,
+          padding: "10px 24px",
+          boxShadow: "none",
+          "&:hover": { boxShadow: "0 4px 12px rgba(0,0,0,0.1)" },
         },
         containedPrimary: {
-            backgroundColor: "#007BFF",
-            color: "white",
-            "&:hover": { backgroundColor: "#0069d9" }
+          background: "#007BFF",
+          "&:hover": { background: "#0056b3" },
         },
-        outlined: {
-            borderColor: "#E5E7EB",
-            color: "#1F2937",
-            backgroundColor: "#FFFFFF",
-            "&:hover": { backgroundColor: "#F4F6F9", borderColor: "#D1D5DB" }
-        }
       },
     },
     MuiTableCell: {
       styleOverrides: {
-        root: { borderBottom: "1px solid #E5E7EB", padding: "16px 24px", color: "#1F2937" },
-        head: { backgroundColor: "#FFFFFF", color: "#1F2937", fontWeight: 600, borderBottom: "2px solid #E5E7EB" },
+        root: {
+          borderBottom: "1px solid #E5E7EB",
+          padding: "16px 24px",
+        },
+        head: {
+          fontWeight: 600,
+          color: "#6B7280",
+          backgroundColor: "#F9FAFB",
+        },
       },
     },
     MuiChip: {
-        styleOverrides: {
-            root: { fontWeight: 600 },
-            colorSuccess: { backgroundColor: "#D1FAE5", color: "#27C499" },
-            colorWarning: { backgroundColor: "#FEF3C7", color: "#F6A23E" },
-            colorError: { backgroundColor: "#FEE2E2", color: "#E53935" },
-            colorInfo: { backgroundColor: "#E0F2F1", color: "#17A2B8" }
-        }
-    }
+      styleOverrides: {
+        root: { fontWeight: 600, borderRadius: 8 },
+      },
+    },
   },
 });
 
@@ -121,37 +115,48 @@ const AdminLayout = ({ title, subtitle, children }) => (
       overflowX: "hidden",
     }}
   >
-    <Box sx={{ maxWidth: "1400px", mx: "auto", px: { xs: 2, sm: 3, md: 4 }, pt: 4 }}>
-      {/* Header Section */}
-      <Box sx={{ textAlign: "center", mb: 6 }}>
+    {/* HEADER */}
+    <Box
+      sx={{
+        bgcolor: "white",
+        borderBottom: "1px solid #E5E7EB",
+        py: 2,
+        px: { xs: 2, sm: 3, md: 4 },
+        mb: 4,
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "space-between",
+        boxShadow: "0 2px 10px rgba(0,0,0,0.02)",
+      }}
+    >
+      <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
         <Box
           sx={{
-            display: "inline-flex",
+            width: 48,
+            height: 48,
+            borderRadius: "12px",
+            bgcolor: "primary.main",
+            display: "flex",
             alignItems: "center",
-            gap: 1,
-            bgcolor: "white",
-            boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-            px: 2,
-            py: 0.5,
-            borderRadius: "20px",
-            mb: 2,
-            border: "1px solid #E5E7EB",
-            color: "primary.main"
+            justifyContent: "center",
+            color: "white",
+            boxShadow: "0 4px 12px rgba(0, 123, 255, 0.2)",
           }}
         >
-          <People fontSize="small" />
-          <Typography variant="subtitle2" fontWeight={600}>
-            Members Dashboard
+          <FitnessCenter />
+        </Box>
+        <Box>
+          <Typography variant="h5" fontWeight={800} color="text.primary">
+            {title}
+          </Typography>
+          <Typography variant="body2" color="text.secondary" fontWeight={500}>
+            {subtitle}
           </Typography>
         </Box>
-        <Typography variant="h3" fontWeight={800} sx={{ mb: 1, letterSpacing: "-0.02em", color: "text.primary" }}>
-          {title}
-        </Typography>
-        <Typography variant="h6" sx={{ opacity: 0.9, fontWeight: 400, color: "text.secondary" }}>
-          {subtitle}
-        </Typography>
       </Box>
+    </Box>
 
+    <Box sx={{ maxWidth: "1400px", mx: "auto", px: { xs: 2, sm: 3, md: 4 } }}>
       {children}
     </Box>
   </Box>
@@ -214,13 +219,13 @@ const AdminAddMemberPageContent = () => {
     getMemberById,
   } = useMemberRegistration();
 
-  const isMobile = useMediaQuery("(max-width:900px)"); // Treat tablets as mobile for split view
+  const isMobile = useMediaQuery("(max-width:900px)");
 
-  // Side Panel State
   const [sidePanel, setSidePanel] = useState({
     open: false,
     view: "none", // 'add', 'edit', 'detail'
     data: null,
+    loading: false,
   });
 
   const [originalMembers, setOriginalMembers] = useState([]);
@@ -230,6 +235,21 @@ const AdminAddMemberPageContent = () => {
   const [isSearchingAPI, setIsSearchingAPI] = useState(false);
   const [selectedGymId, setSelectedGymId] = useState(null);
   const searchTimeoutRef = useRef(null);
+
+  const [stats, setStats] = useState(null);
+
+  useEffect(() => {
+    userApi.get("/admin/dashboard/18").then((res) => setStats(res.data)).catch(console.error);
+  }, []);
+
+  // Confirmation Dialog State
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    title: "",
+    message: "",
+    severity: "warning",
+    onConfirm: null,
+  });
 
   // Load members
   useEffect(() => {
@@ -245,7 +265,7 @@ const AdminAddMemberPageContent = () => {
     return () => (mounted = false);
   }, [fetchMembers, selectedGymId]);
 
-  // Search + Gym Filter
+  // Search
   useEffect(() => {
     if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
 
@@ -291,19 +311,25 @@ const AdminAddMemberPageContent = () => {
   };
 
   const closePanel = () => {
-    setSidePanel({ open: false, view: "none", data: null });
+    setSidePanel({ open: false, view: "none", data: null, loading: false });
     clearMessages();
   };
 
   const handleAddSuccess = async (payloadArray) => {
     const arr = Array.isArray(payloadArray) ? payloadArray : [payloadArray];
     await addMultipleMembers(arr);
+    const updated = await fetchMembers(selectedGymId);
+    setOriginalMembers(updated || []);
+    setMembers(updated || []);
     closePanel();
   };
 
   const handleEditSuccess = async (payload) => {
     if (sidePanel.data) {
       await updateMember(sidePanel.data.id, payload);
+      const updated = await fetchMembers(selectedGymId);
+      setOriginalMembers(updated || []);
+      setMembers(updated || []);
       closePanel();
     }
   };
@@ -313,9 +339,14 @@ const AdminAddMemberPageContent = () => {
   };
 
   const openEdit = async (memberId) => {
-    const mem = await getMemberById(memberId);
+    setSidePanel({ open: true, view: "edit", data: null, loading: true });
+    // Pass true to prevent global loading spinner
+    const mem = await getMemberById(memberId, true);
+    
     if (mem) {
-      setSidePanel({ open: true, view: "edit", data: mem });
+      setSidePanel({ open: true, view: "edit", data: mem, loading: false });
+    } else {
+      setSidePanel(prev => ({ ...prev, loading: false }));
     }
   };
 
@@ -327,24 +358,51 @@ const AdminAddMemberPageContent = () => {
     }
   };
 
-  const handleResend = async (userId) => {
-    if (!window.confirm("Resend registration link?")) return;
-    await resendInvite(userId);
+  const handleResend = (userId) => {
+    setConfirmDialog({
+      open: true,
+      title: "Resend Invite?",
+      message: "This will regenerate the registration token and send a new link to the user.",
+      severity: "info",
+      confirmText: "Resend",
+      onConfirm: async () => {
+        setConfirmDialog(prev => ({ ...prev, open: false }));
+        await resendInvite(userId);
+      }
+    });
   };
 
-  const handleDelete = async (memberId) => {
-    if (!window.confirm("Soft-delete this member?")) return;
-    const ok = await deleteMember(memberId);
-    if (ok) {
-      const updated = await fetchMembers(selectedGymId);
-      setOriginalMembers(updated || []);
-      setMembers(updated || []);
-    }
+  const handleDelete = (memberId) => {
+    setConfirmDialog({
+      open: true,
+      title: "Delete Member?",
+      message: "Are you sure you want to soft-delete this member?",
+      severity: "error", // Use error color for delete
+      confirmText: "Delete",
+      onConfirm: async () => {
+        setConfirmDialog(prev => ({ ...prev, open: false }));
+        const ok = await deleteMember(memberId);
+        if (ok) {
+          const updated = await fetchMembers(selectedGymId);
+          setOriginalMembers(updated || []);
+          setMembers(updated || []);
+        }
+      }
+    });
   };
 
-  const handlePaymentReminder = async (memberId) => {
-    if (!window.confirm("Send payment reminder to this member?")) return;
-    await sendPaymentReminder(memberId);
+  const handlePaymentReminder = (memberId) => {
+    setConfirmDialog({
+      open: true,
+      title: "Send Reminder?",
+      message: "Send a payment reminder notification to this member?",
+      severity: "info",
+      confirmText: "Send",
+      onConfirm: async () => {
+        setConfirmDialog(prev => ({ ...prev, open: false }));
+        await sendPaymentReminder(memberId);
+      }
+    });
   };
 
   const renderMembersList = () => {
@@ -420,6 +478,7 @@ const AdminAddMemberPageContent = () => {
               {displayMembers.map((m, index) => {
                 const id = m.memberId || m.id || m.gymMemberId;
                 const isSelected = sidePanel.open && sidePanel.data && (sidePanel.data.memberId === id || sidePanel.data.id === id);
+
                 return (
                   <MemberRow
                     key={id || index}
@@ -445,15 +504,8 @@ const AdminAddMemberPageContent = () => {
     <AdminLayout title="Manage Members" subtitle="Real-time member management">
       <AnimatePresence>
         {successMessage && (
-          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}>
-            <Alert
-              severity="success"
-              sx={{
-                mb: 3,
-                borderRadius: "12px",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.1)",
-              }}
-            >
+          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
+            <Alert severity="success" sx={{ mb: 3, borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
               {successMessage}
             </Alert>
           </motion.div>
@@ -467,9 +519,7 @@ const AdminAddMemberPageContent = () => {
         )}
       </AnimatePresence>
 
-      {/* SPLIT SCREEN CONTAINER */}
       <Box sx={{ position: "relative", display: "flex", alignItems: "flex-start", gap: 2 }}>
-        
         {/* LEFT PANEL: MEMBER LIST */}
         <motion.div
           layout
@@ -478,60 +528,43 @@ const AdminAddMemberPageContent = () => {
             width: sidePanel.open ? (isMobile ? "100%" : "60%") : "100%",
             x: sidePanel.open && isMobile ? "-100%" : "0%",
             opacity: sidePanel.open && isMobile ? 0 : 1,
+            display: sidePanel.open && isMobile ? "none" : "block",
           }}
           transition={{ type: "spring", stiffness: 300, damping: 30 }}
           style={{ flexShrink: 0, width: "100%" }}
         >
-          <Paper
-            sx={{
-              overflow: "hidden",
-              border: "1px solid #e5e7eb",
-              borderRadius: "24px",
-              boxShadow: "0 10px 40px -10px rgba(0,0,0,0.1)",
-              minHeight: "70vh",
-            }}
-          >
-            {/* TOOLBAR */}
+          <Paper sx={{ overflow: "hidden", border: "1px solid #E5E7EB", borderRadius: "24px", boxShadow: "0 10px 40px -10px rgba(0,0,0,0.1)", minHeight: "70vh" }}>
             <Box
               sx={{
                 p: 4,
-                borderBottom: "1px solid #e5e7eb",
+                borderBottom: "1px solid #E5E7EB",
                 display: "flex",
-                flexDirection: { xs: "column", lg: sidePanel.open ? "column" : "row", xl: "row" },
+                flexDirection: { xs: "column", lg: "row" },
                 justifyContent: "space-between",
-                alignItems: { xs: "stretch", lg: sidePanel.open ? "stretch" : "center", xl: "center" },
+                alignItems: "center",
                 gap: 3,
                 bgcolor: "white",
               }}
             >
               <Box sx={{ display: "flex", alignItems: "center", gap: 2.5 }}>
-                <Box
-                  sx={{
-                    width: 56,
-                    height: 56,
-                    borderRadius: "16px",
-                    bgcolor: "primary.50",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                    color: "primary.main",
-                  }}
-                >
+                <Box sx={{ width: 56, height: 56, borderRadius: "16px", bgcolor: "rgba(0, 123, 255, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "primary.main" }}>
                   <Group sx={{ fontSize: 30 }} />
                 </Box>
                 <Box>
-                  <Typography variant="h5" fontWeight={700}>
-                    All Members
-                  </Typography>
+                  <Typography variant="h5" fontWeight={700}>All Members</Typography>
                   <Typography variant="body1" color="text.secondary">
                     {displayMembers.length} members found
                   </Typography>
+                   {stats && (
+                    <Typography variant="body2" color="success.main" fontWeight={600} sx={{ mt: 0.5 }}>
+                      Active: {stats.activeMembers} | Monthly Revenue: ₹{stats.monthlyRevenue?.toLocaleString()}
+                    </Typography>
+                  )}
                 </Box>
               </Box>
 
               <Box sx={{ display: "flex", gap: 2, flexDirection: { xs: "column", sm: "row" }, flexWrap: "wrap" }}>
                 <SelectGym onGymChange={handleGymChange} />
-                
                 <Box
                   sx={{
                     display: "flex",
@@ -540,22 +573,20 @@ const AdminAddMemberPageContent = () => {
                     borderRadius: "12px",
                     px: 2.5,
                     py: 1.5,
-                    border: "1px solid #e5e7eb",
+                    border: "1px solid #E5E7EB",
                     flexGrow: 1,
                     minWidth: { xs: "100%", sm: "250px" },
-                    maxWidth: { xs: "100%", sm: "350px" },
                     "&:focus-within": { borderColor: "#007BFF", boxShadow: "0 0 0 4px rgba(0, 123, 255, 0.1)" },
                   }}
                 >
                   <Search sx={{ color: "text.secondary", mr: 1.5, fontSize: 24 }} />
                   <InputBase
-                    placeholder="Search..."
+                    placeholder="Search members..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                     sx={{ width: "100%", fontSize: "1.05rem" }}
                   />
                 </Box>
-
                 <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
                   <Button
                     variant="contained"
@@ -568,7 +599,6 @@ const AdminAddMemberPageContent = () => {
                       py: 1.5,
                       fontSize: "1rem",
                       borderRadius: "12px",
-                      whiteSpace: "nowrap",
                     }}
                   >
                     Add Member
@@ -596,28 +626,15 @@ const AdminAddMemberPageContent = () => {
                 width: isMobile ? "100%" : "40%",
                 height: "100%",
                 minHeight: "70vh",
-                flexShrink: 0,
                 zIndex: 10,
               }}
             >
-              <Paper
-                sx={{
-                  height: "100%",
-                  borderRadius: "24px",
-                  overflow: "hidden",
-                  boxShadow: "-10px 0 30px rgba(0,0,0,0.1)",
-                  bgcolor: "white",
-                  display: "flex",
-                  flexDirection: "column",
-                }}
-              >
-                {/* Close Button for Mobile/Desktop */}
-                <Box sx={{ p: 2, display: "flex", justifyContent: "flex-end", borderBottom: "1px solid #f3f4f6" }}>
+              <Paper sx={{ height: "100%", borderRadius: "24px", overflow: "hidden", boxShadow: "-10px 0 30px rgba(0,0,0,0.1)", bgcolor: "white", display: "flex", flexDirection: "column" }}>
+                <Box sx={{ p: 2, display: "flex", justifyContent: "flex-end", borderBottom: "1px solid #E5E7EB" }}>
                   <IconButton onClick={closePanel}>
                     <Close />
                   </IconButton>
                 </Box>
-
                 <Box sx={{ flexGrow: 1, overflowY: "auto" }}>
                   {sidePanel.view === "add" && (
                     <Box sx={{ p: 2 }}>
@@ -627,18 +644,39 @@ const AdminAddMemberPageContent = () => {
                       <MemberAddForm onSuccess={handleAddSuccess} multiple onCancel={closePanel} />
                     </Box>
                   )}
-
-                  {sidePanel.view === "edit" && sidePanel.data && (
+                  {sidePanel.view === "edit" && (
                     <Box sx={{ p: 2 }}>
                       <Typography variant="h5" fontWeight={700} sx={{ mb: 3, px: 2, color: "primary.dark" }}>
                         Edit Member
                       </Typography>
-                      <MemberAddForm onSuccess={handleEditSuccess} member={sidePanel.data} onCancel={closePanel} />
+                      {sidePanel.loading ? (
+                         <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+                            <CircularProgress />
+                         </Box>
+                      ) : (
+                         sidePanel.data && <MemberAddForm onSuccess={handleEditSuccess} member={sidePanel.data} onCancel={closePanel} />
+                      )}
                     </Box>
                   )}
-
                   {sidePanel.view === "detail" && sidePanel.data && (
-                    <MemberDetailView member={sidePanel.data} />
+
+                    <MemberDetailView 
+                        member={sidePanel.data} 
+                        onClose={closePanel} 
+                        onAssignSuccess={async () => {
+                            // Refresh member details and list
+                            const updated = await fetchMembers(selectedGymId);
+                            setOriginalMembers(updated || []);
+                            setMembers(updated || []);
+                            
+                            // Also refresh opened detail view if needed (optional, or close)
+                            // We close it for simplicity or re-fetch member detail
+                            if (sidePanel.data) {
+                                const mem = await getMemberDetail(sidePanel.data.memberId || sidePanel.data.id);
+                                if (mem) setSidePanel(prev => ({ ...prev, data: mem }));
+                            }
+                        }}
+                    />
                   )}
                 </Box>
               </Paper>
@@ -647,6 +685,15 @@ const AdminAddMemberPageContent = () => {
         </AnimatePresence>
 
       </Box>
+      <ConfirmationDialog 
+        open={confirmDialog.open}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        severity={confirmDialog.severity}
+        confirmText={confirmDialog.confirmText}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog(prev => ({ ...prev, open: false }))}
+      />
     </AdminLayout>
   );
 };

@@ -24,6 +24,7 @@ import {
   Email,
   Event,
   CreditCard,
+  AssignmentInd
 } from "@mui/icons-material";
 import { motion } from "framer-motion";
 
@@ -149,6 +150,25 @@ export const MemberDetailView = ({ member: rawMember, onClose, style }) => {
               <InfoRow label="Full Name" value={member.fullName} />
               <InfoRow label="Email" value={member.email} icon={Email} />
               <InfoRow label="Phone" value={member.phoneNo || member.phoneNumber} icon={Phone} />
+
+              {/* Assigned Trainer */}
+              <Box sx={{ mt: 2, p: 1.5, bgcolor: '#f0f9ff', borderRadius: 2, border: '1px dashed #bae6fd', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                 <Box>
+                    <Typography variant="caption" color="text.secondary">Assigned Trainer</Typography>
+                    <Typography variant="subtitle2" fontWeight={700} color="primary.main">
+                        {member.trainerName || member.trainer?.fullName || "No Trainer Assigned"}
+                    </Typography>
+                 </Box>
+                 <Button 
+                    size="small" 
+                    variant="text" 
+                    startIcon={<AssignmentInd />}
+                    onClick={() => window.location.href = '/admin/assignments'}
+                    sx={{ textTransform: 'none', fontWeight: 600 }}
+                 >
+                    Manage
+                 </Button>
+              </Box>
             </Stack>
           </Paper>
         </motion.div>

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import api from '../services/api';
+import { userApi } from '../services/api';
 import {
   ThemeProvider,
   createTheme,
@@ -174,7 +174,7 @@ const RegisterPage = () => {
     setSuccessMessage('');
 
     try {
-      const response = await api.post('/user/register', formData);
+      const response = await userApi.post('/user/register', formData);
       const data = response.data;
 
       if (data?.status === 'success' && data.userId) {
@@ -205,7 +205,7 @@ const RegisterPage = () => {
 
     setIsLoading(true);
     try {
-      const response = await api.post(`/user/verify-otp?userId=${userId}&otpCode=${otpCode}`);
+      const response = await userApi.post(`/user/verify-otp?userId=${userId}&otpCode=${otpCode}`);
       if (response.data?.status === 'success') {
         setSuccessMessage('Email verified! Redirecting...');
         setIsRedirecting(true);
@@ -223,7 +223,7 @@ const RegisterPage = () => {
   const handleResendOtp = async () => {
     setIsLoading(true);
     try {
-      await api.post(`/user/resend-otp?userId=${userId}`);
+      await userApi.post(`/user/resend-otp?userId=${userId}`);
       setSuccessMessage('OTP resent successfully!');
       setResendTimer(60);
     } catch (err) {

@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext } from 'react';
-import api from '../services/api';
+import api, { userApi } from '../services/api';
 
 const GymContext = createContext();
 
@@ -15,7 +15,7 @@ export const GymProvider = ({ children }) => {
     setLoading(true);
     setError(null);
     try {
-      const response = await api.post('/gym/create', gymData);
+      const response = await userApi.post('/gym/create', gymData);
       return { success: true, data: response.data };
     } catch (err) {
       const msg = err.response?.data?.message || "Failed to create gyms.";
@@ -30,7 +30,7 @@ export const GymProvider = ({ children }) => {
   const getMyGyms = async () => {
     setLoading(true);
     try {
-      const response = await api.get('/gym/my-gyms');
+      const response = await userApi.get('/gym/my-gyms');
       setGyms(response.data || []);
       return { success: true, data: response.data };
     } catch (err) {
@@ -46,7 +46,7 @@ export const GymProvider = ({ children }) => {
   const updateGym = async (gymId, updateData) => {
     setLoading(true);
     try {
-      const response = await api.put(`/gym/update/${gymId}`, updateData);
+      const response = await userApi.put(`/gym/update/${gymId}`, updateData);
       // Update local state
       setGyms(prev => prev.map(g => g.gymId === gymId ? response.data : g));
       return { success: true, data: response.data };
@@ -63,7 +63,7 @@ export const GymProvider = ({ children }) => {
   const deleteGym = async (gymId) => {
     setLoading(true);
     try {
-      await api.delete(`/gym/delete/${gymId}`);
+      await userApi.delete(`/gym/delete/${gymId}`);
       // Update local state
       setGyms(prev => prev.filter(g => g.gymId !== gymId));
       return { success: true };

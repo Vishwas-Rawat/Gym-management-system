@@ -36,6 +36,10 @@ import { TrainerDetailView } from "../components/TrainerDetailView";
 import { TrainerRegistrationProvider, useTrainerRegistration } from "../context/TrainerRegistrationContext";
 import TrainerRow from "../components/TrainerRow";
 import AssignMembersDialog from "../components/AssignMembersDialog";
+import { userApi } from "../services/api";
+import ConfirmationDialog from "../components/ConfirmationDialog";
+
+
 
 const dashboardTheme = createTheme({
   palette: {
@@ -234,6 +238,23 @@ const AdminAddTrainerPageContent = () => {
   const [selectedGymId, setSelectedGymId] = useState(null);
   const searchTimeoutRef = useRef(null);
 
+  const [stats, setStats] = useState(null);
+
+  // Confirmation Dialog State
+  const [confirmDialog, setConfirmDialog] = useState({
+    open: false,
+    title: "",
+    message: "",
+    severity: "warning",
+    onConfirm: null,
+  });
+
+  useEffect(() => {
+    userApi.get("/admin/dashboard/18").then((res) => setStats(res.data)).catch(console.error);
+  }, []);
+
+
+
   // Assign Dialog State
   const [assignDialogOpen, setAssignDialogOpen] = useState(false);
   const [trainerForAssign, setTrainerForAssign] = useState(null);
@@ -359,20 +380,38 @@ const AdminAddTrainerPageContent = () => {
     }
   };
 
-  const handleResend = async (userId) => {
-    if (!window.confirm("Resend registration link?")) return;
-    await resendInvite(userId);
+  const handleResend = (userId) => {
+    setConfirmDialog({
+      open: true,
+      title: "Resend Invite?",
+      message: "Resend the registration invitation link to this trainer?",
+      severity: "info",
+      confirmText: "Resend",
+      onConfirm: async () => {
+        setConfirmDialog(prev => ({ ...prev, open: false }));
+        await resendInvite(userId);
+      }
+    });
   };
 
-  const handleDelete = async (trainerId) => {
-    if (!window.confirm("Soft-delete this trainer?")) return;
-    const ok = await deleteTrainer(trainerId);
-    if (ok) {
-      const updated = await fetchTrainers(selectedGymId);
-      const list = Array.isArray(updated) ? updated : [];
-      setOriginalTrainers(list);
-      setTrainers(list);
-    }
+  const handleDelete = (trainerId) => {
+    setConfirmDialog({
+      open: true,
+      title: "Delete Trainer?",
+      message: "Are you sure you want to soft-delete this trainer?",
+      severity: "error",
+      confirmText: "Delete",
+      onConfirm: async () => {
+        setConfirmDialog(prev => ({ ...prev, open: false }));
+        const ok = await deleteTrainer(trainerId);
+        if (ok) {
+          const updated = await fetchTrainers(selectedGymId);
+          const list = Array.isArray(updated) ? updated : [];
+          setOriginalTrainers(list);
+          setTrainers(list);
+        }
+      }
+    });
   };
 
   // Assign Members Handlers
@@ -537,6 +576,12 @@ const AdminAddTrainerPageContent = () => {
                   <Typography variant="body1" color="text.secondary">
                     {displayTrainers.length} trainers found
                   </Typography>
+                   {stats && (
+                    <Typography variant="body2" color="success.main" fontWeight={600} sx={{ mt: 0.5 }}>
+                      Trainers Present Today: {stats.trainersPresentToday}
+                    </Typography>
+                  )}
+
                 </Box>
               </Box>
 
@@ -648,6 +693,16 @@ const AdminAddTrainerPageContent = () => {
         onClose={() => setAssignDialogOpen(false)}
         trainer={trainerForAssign}
         onAssign={handleAssignMembers}
+      />
+      
+      <ConfirmationDialog 
+        open={confirmDialog.open}
+        title={confirmDialog.title}
+        message={confirmDialog.message}
+        severity={confirmDialog.severity}
+        confirmText={confirmDialog.confirmText}
+        onConfirm={confirmDialog.onConfirm}
+        onCancel={() => setConfirmDialog(prev => ({ ...prev, open: false }))}
       />
     </AdminLayout>
   );

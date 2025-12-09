@@ -33,7 +33,10 @@ import {
   EventNote,
   Menu as MenuIcon,
   Chat as ChatIcon,
-  Send as SendIcon
+  Send as SendIcon,
+  Restaurant,
+  Assignment,
+  NotificationsActive // Added
 } from '@mui/icons-material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -42,8 +45,24 @@ import { MemberRegistrationProvider, useMemberRegistration } from '../context/Me
 import { WorkoutProvider, useWorkout } from '../context/WorkoutContext';
 import { useAuth } from '../context/AuthContext';
 import { ChatProvider, useChat } from '../context/ChatContext';
+import { useAttendance } from '../context/AttendanceContext';
 import AssignWorkoutForm from '../components/AssignWorkoutForm';
+import AttendanceWidget from '../components/AttendanceWidget';
+import { 
+    getMyStats, 
+    getTodayAttendance, 
+    getInactiveMembers, 
+    getUpcomingBirthdays,
+    getDietCompliance,
+    getWorkoutCompliance
+} from '../services/trainerDashboardService';
+import { trainerService } from '../services/trainerService'; // Added
+import { PieChart, Pie, Cell, Tooltip as RechartsTooltip, ResponsiveContainer } from 'recharts';
+
 import WorkoutPlanView from '../components/WorkoutPlanView';
+import AssignDietForm from '../components/AssignDietForm';
+import DietPlanView from '../components/DietPlanView';
+import { getMemberDietPlan, assignDietPlan } from '../services/dietService';
 
 // --- THEME SETUP (Copied from AdminDashboardPage) ---
 const dashboardTheme = createTheme({
@@ -115,7 +134,326 @@ const dashboardTheme = createTheme({
   },
 });
 
+const AttendanceView = () => {
+    const { history, getAttendanceHistory, historyLoading } = useAttendance();
+    
+    useEffect(() => {
+        getAttendanceHistory();
+    }, []);
+
+    return (
+        <Box>
+            <Typography variant="h5" fontWeight={700} gutterBottom>My Attendance</Typography>
+            <Grid container spacing={3}>
+                <Grid item xs={12} md={4}>
+                    <AttendanceWidget />
+                </Grid>
+                <Grid item xs={12} md={8}>
+                    <Paper sx={{ p: 3, borderRadius: 4 }}>
+                        <Typography variant="h6" gutterBottom>History</Typography>
+                        {historyLoading ? <CircularProgress /> : (
+                            <List>
+                                {history.length === 0 ? (
+                                    <Typography color="text.secondary">No attendance history found.</Typography>
+                                ) : (
+                                    history.map((record) => (
+                                        <ListItem key={record.id} divider>
+                                            <ListItemText 
+                                                primary={new Date(record.date).toLocaleDateString(undefined, { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+                                                secondary={record.status}
+                                            />
+                                            <Badge color="success" variant="dot" />
+                                        </ListItem>
+                                    ))
+                                )}
+                            </List>
+                        )}
+                    </Paper>
+                </Grid>
+            </Grid>
+        </Box>
+    );
+};
+
+
+
+const StatCard = ({ title, value, icon, color, subtitle }) => (
+  <Paper sx={{ p: 3, borderRadius: 4, height: '100%', position: 'relative', overflow: 'hidden' }}>
+    <Box sx={{ position: 'absolute', right: -20, top: -20, opacity: 0.1, transform: 'rotate(15deg)' }}>
+      {React.cloneElement(icon, { sx: { fontSize: 100, color: color } })}
+    </Box>
+    <Box sx={{ position: 'relative', zIndex: 1 }}>
+        <Typography variant="body2" color="text.secondary" fontWeight={600} gutterBottom>
+            {title}
+        </Typography>
+        <Typography variant="h4" fontWeight={800} sx={{ color: color, mb: 0.5 }}>
+            {value}
+        </Typography>
+        {subtitle && (
+             <Typography variant="caption" color="text.secondary">
+                {subtitle}
+             </Typography>
+        )}
+    </Box>
+  </Paper>
+);
+
+const ComplianceChart = ({ title, data, total }) => {
+    const chartData = [
+        { name: 'Compliant', value: data },
+        { name: 'Non-Compliant', value: total - data }
+    ];
+    const COLORS = ['#10B981', '#E5E7EB']; // Success Green and Gray
+
+    return (
+        <Paper sx={{ p: 3, borderRadius: 4, height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <Typography variant="h6" fontWeight={700} gutterBottom>{title}</Typography>
+            <Box sx={{ width: '100%', height: 200, position: 'relative' }}>
+                <ResponsiveContainer>
+                    <PieChart>
+                        <Pie
+                            data={chartData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={60}
+                            outerRadius={80}
+                            paddingAngle={5}
+                            dataKey="value"
+                            startAngle={90}
+                            endAngle={-270}
+                        >
+                            {chartData.map((entry, index) => (
+                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                            ))}
+                        </Pie>
+                        <RechartsTooltip />
+                    </PieChart>
+                </ResponsiveContainer>
+                <Box sx={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', textAlign: 'center' }}>
+                    <Typography variant="h5" fontWeight={800}>{Math.round((data / total) * 100) || 0}%</Typography>
+                    <Typography variant="caption" color="text.secondary">Compliance</Typography>
+                </Box>
+            </Box>
+        </Paper>
+    );
+};
+
+const DashboardStats = ({ onSelectMember }) => {
+    const [stats, setStats] = useState(null);
+    const [attendance, setAttendance] = useState([]);
+    const [inactive, setInactive] = useState([]);
+    const [birthdays, setBirthdays] = useState([]);
+    const [dietComp, setDietComp] = useState(null);
+    const [workoutComp, setWorkoutComp] = useState(null);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const fetchAll = async () => {
+            try {
+                const [s, a, i, b, d, w] = await Promise.all([
+                    getMyStats(),
+                    getTodayAttendance(),
+                    getInactiveMembers(),
+                    getUpcomingBirthdays(),
+                    getDietCompliance(),
+                    getWorkoutCompliance()
+                ]);
+                setStats(s);
+                setAttendance(a);
+                setInactive(i);
+                setBirthdays(b);
+                setDietComp(d);
+                setWorkoutComp(w);
+            } catch (err) {
+                console.error("Failed to load dashboard stats", err);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchAll();
+    }, []);
+
+    if (loading) return <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}><CircularProgress /></Box>;
+
+    return (
+        <Grid container spacing={3}>
+            {/* Top Row Stats */}
+            <Grid item xs={12} sm={6} md={3}>
+                <StatCard 
+                    title="Total Members" 
+                    value={stats?.totalMembers || 0} 
+                    icon={<People />} 
+                    color="#007BFF" 
+                    subtitle={`${stats?.activeToday || 0} active today`}
+                />
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+                <StatCard 
+                    title="Earnings (Month)" 
+                    value={`₹${(stats?.totalEarningsThisMonth || 0).toLocaleString()}`} 
+                    icon={<Assignment />} 
+                    color="#27C499"
+                />
+            </Grid>
+             <Grid item xs={12} sm={6} md={3}>
+                <StatCard 
+                    title="Pending Diets" 
+                    value={stats?.pendingDietRequests || 0} 
+                    icon={<Restaurant />} 
+                    color="#F6A23E"
+                />
+            </Grid>
+             <Grid item xs={12} sm={6} md={3}>
+                <StatCard 
+                    title="User Rating" 
+                    value={stats?.rating || 0} 
+                    icon={<TrendingUp />} 
+                    color="#6f42c1"
+                />
+            </Grid>
+
+            {/* Compliance Charts */}
+             <Grid item xs={12} md={6}>
+                 <Grid container spacing={3} sx={{ height: '100%' }}>
+                     {dietComp && (
+                         <Grid item xs={12} sm={6}>
+                             <ComplianceChart title="Diet Adherence" data={dietComp.todayLogged} total={dietComp.totalMembers} />
+                         </Grid>
+                     )}
+                     {workoutComp && (
+                         <Grid item xs={12} sm={6}>
+                             <ComplianceChart title="Workout Consistency" data={workoutComp.todayLogged} total={workoutComp.totalMembers} />
+                         </Grid>
+                     )}
+                 </Grid>
+             </Grid>
+
+             {/* Attendance & Inactive */}
+             <Grid item xs={12} md={6}>
+                 <Paper sx={{ p: 3, borderRadius: 4, height: '100%', overflowY: 'auto', maxHeight: 300 }}>
+                    <Typography variant="h6" fontWeight={700} gutterBottom>Today's Attendance</Typography>
+                    <List dense>
+                        {attendance.length === 0 ? <Typography variant="body2" color="text.secondary">No one checked in yet.</Typography> : 
+                            attendance.map(m => (
+                                <ListItem key={m.memberId}>
+                                    <ListItemText 
+                                        primary={m.name} 
+                                        secondary={`Checked in: ${m.checkInTime}`}
+                                    />
+                                     <Box sx={{ display: 'flex', gap: 1 }}>
+                                        {m.workoutLogged && <FitnessCenter sx={{ fontSize: 16, color: 'success.main' }} />}
+                                        {m.dietLogged && <Restaurant sx={{ fontSize: 16, color: 'success.main' }} />}
+                                     </Box>
+                                </ListItem>
+                            ))
+                        }
+                    </List>
+                 </Paper>
+             </Grid>
+
+             {/* Inactive Members Alert */}
+              {inactive.length > 0 && (
+                 <Grid item xs={12}>
+                     <Paper sx={{ p: 2, borderRadius: 3, bgcolor: '#FEF2F2', border: '1px solid #FECACA' }}>
+                         <Typography variant="subtitle1" color="error.main" fontWeight={700} sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                             <Typography component="span" fontSize={20}>⚠️</Typography> Follow-up Required ({inactive.length})
+                         </Typography>
+                         <Box sx={{ display: 'flex', gap: 2, mt: 1, overflowX: 'auto', pb: 1 }}>
+                             {inactive.map(m => (
+                                 <Paper key={m.memberId} sx={{ p: 1.5, minWidth: 200, borderRadius: 2 }}>
+                                     <Typography variant="subtitle2" fontWeight={700}>{m.name}</Typography>
+                                     <Typography variant="caption" color="text.secondary" display="block">Absent: {m.daysAbsent} days</Typography>
+                                     <Button size="small" sx={{ mt: 0.5 }} onClick={() => console.log("Call", m.phone)}>Call {m.phone}</Button>
+                                 </Paper>
+                             ))}
+                         </Box>
+                     </Paper>
+                 </Grid>
+             )}
+        </Grid>
+    );
+};
+
 // --- COMPONENTS ---
+
+const DietPlanTab = ({ memberId }) => {
+  const [dietPlan, setDietPlan] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isAssigning, setIsAssigning] = useState(false);
+  const [error, setError] = useState('');
+
+  const fetchDiet = async () => {
+    try {
+      setIsLoading(true);
+      setError('');
+      const data = await getMemberDietPlan(memberId);
+      setDietPlan(data);
+    } catch (err) {
+      if (err.status !== 404 && err.response?.status !== 404) {
+          setError('Failed to fetch diet plan.');
+      }
+      setDietPlan(null);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDiet();
+  }, [memberId]);
+
+  const handleAssignSuccess = async (planData) => {
+    try {
+      setIsLoading(true);
+      await assignDietPlan(planData);
+      setIsAssigning(false);
+      fetchDiet();
+    } catch (err) {
+      console.error(err);
+      setError('Failed to assign diet plan.');
+      setIsLoading(false);
+    }
+  };
+
+  return (
+    <Box>
+       <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
+        <Typography variant="h5" fontWeight={700}>
+          Current Diet Plan
+        </Typography>
+        {!isAssigning && (
+          <Button 
+            variant="contained" 
+            startIcon={<Restaurant />}
+            onClick={() => setIsAssigning(true)}
+            sx={{ borderRadius: 2 }}
+          >
+            Assign New Diet
+          </Button>
+        )}
+      </Box>
+
+      {error && (
+        <Typography color="error" sx={{ mb: 2 }}>{error}</Typography>
+      )}
+
+      {isAssigning ? (
+        <Paper sx={{ p: 4, borderRadius: 4 }}>
+          <AssignDietForm 
+            memberId={memberId} 
+            onSubmit={handleAssignSuccess} 
+            onCancel={() => setIsAssigning(false)} 
+          />
+        </Paper>
+      ) : (
+        <Box>
+          {isLoading ? <CircularProgress /> : <DietPlanView plan={dietPlan} />}
+        </Box>
+      )}
+    </Box>
+  );
+};
+
 
 const ChatWindow = ({ memberId, memberName }) => {
   const { messages, sendMessage, sendTyping, typingStatus, loadHistory, userId, isConnected } = useChat();
@@ -289,6 +627,9 @@ const MemberList = ({ onSelectMember }) => {
               <Button size="small" variant="outlined" startIcon={<ChatIcon />}>
                 Chat
               </Button>
+              <Button size="small" variant="outlined" startIcon={<Restaurant />}>
+                Diet
+              </Button>
             </Box>
           </Paper>
         </Grid>
@@ -335,6 +676,7 @@ const MemberDetail = ({ member, onBack }) => {
 
       <Tabs value={tab} onChange={(_, v) => setTab(v)} sx={{ mb: 4, borderBottom: 1, borderColor: 'divider' }}>
         <Tab label="Workout Plan" icon={<FitnessCenter />} iconPosition="start" />
+        <Tab label="Diet Plan" icon={<Restaurant />} iconPosition="start" />
         <Tab label="Chat" icon={<ChatIcon />} iconPosition="start" />
         <Tab label="Profile" icon={<Person />} iconPosition="start" />
       </Tabs>
@@ -378,12 +720,16 @@ const MemberDetail = ({ member, onBack }) => {
       )}
 
       {tab === 1 && (
+        <DietPlanTab memberId={member.memberId} />
+      )}
+
+      {tab === 2 && (
         <Box>
           <ChatWindow memberId={member.memberId} memberName={member.fullName} />
         </Box>
       )}
 
-      {tab === 2 && (
+      {tab === 3 && (
         <Paper sx={{ p: 4, borderRadius: 4 }}>
           <Typography variant="h6" gutterBottom>Member Details</Typography>
           <Grid container spacing={2}>
@@ -403,10 +749,96 @@ const MemberDetail = ({ member, onBack }) => {
   );
 };
 
+const RequestsView = ({ onViewMember }) => {
+    const [workoutRequests, setWorkoutRequests] = useState([]);
+    const [dietRequests, setDietRequests] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const { user } = useAuth(); 
+
+    useEffect(() => {
+        const load = async () => {
+            try {
+                if (user?.id) {
+                    const [w, d] = await Promise.all([
+                        trainerService.getWorkoutRequests(user.id),
+                        trainerService.getDietRequests(user.id)
+                    ]);
+                    setWorkoutRequests(w || []);
+                    setDietRequests(d || []);
+                }
+            } catch (e) { console.error("Failed to load requests", e); }
+            finally { setLoading(false); }
+        };
+        load();
+    }, [user]);
+
+    const renderList = (title, items, type) => (
+        <Paper sx={{ p: 4, borderRadius: 4, mb: 4 }}>
+             <Typography variant="h5" fontWeight={700} gutterBottom>{title}</Typography>
+             {items.length === 0 ? (
+                 <Box sx={{ py: 4, textAlign: 'center' }}>
+                     <Typography color="text.secondary">No pending requests.</Typography>
+                 </Box>
+             ) : (
+                 <List>
+                     {items.map((req) => (
+                         <ListItem key={req.requestId} alignItems="flex-start" divider sx={{ flexDirection: { xs: 'column', sm: 'row' }, gap: 2 }}>
+                             <ListItemText 
+                                 primary={
+                                     <Typography variant="subtitle1" fontWeight={700}>
+                                        Request from Member ID: {req.memberId}
+                                     </Typography>
+                                 }
+                                 secondary={
+                                     <React.Fragment>
+                                         <Typography component="span" variant="body2" color="text.primary">
+                                            "{req.message}"
+                                         </Typography>
+                                         <br />
+                                         <Typography component="span" variant="caption">
+                                            {new Date(req.createdAt).toLocaleString()}
+                                         </Typography>
+                                     </React.Fragment>
+                                 }
+                             />
+                             <Button 
+                                variant="contained" 
+                                color={type === 'diet' ? "success" : "primary"}
+                                onClick={() => onViewMember(req.memberId)} 
+                            >
+                                View Member & Assign {type === 'diet' ? 'Diet' : 'Workout'}
+                            </Button>
+                         </ListItem>
+                     ))}
+                 </List>
+             )}
+        </Paper>
+    );
+
+    if (loading) return <CircularProgress />;
+
+    return (
+        <Box>
+            {renderList("Workout Plan Requests", workoutRequests, 'workout')}
+            {renderList("Diet Plan Requests", dietRequests, 'diet')}
+        </Box>
+    );
+};
+
 const TrainerDashboardContent = () => {
   const { logout } = useAuth();
   const [selectedMember, setSelectedMember] = useState(null);
   const [currentView, setCurrentView] = useState('dashboard'); // dashboard, profile
+  const { fetchMembers } = useMemberRegistration();
+
+  const handleRequestMemberSelect = async (memberId) => {
+      try {
+        const members = await fetchMembers();
+        const member = members.find(m => m.memberId === memberId);
+        if (member) setSelectedMember(member);
+        else alert('Member not found in your gym.');
+      } catch (e) { console.error(e); }
+  };
 
   return (
     <ThemeProvider theme={dashboardTheme}>
@@ -468,6 +900,9 @@ const TrainerDashboardContent = () => {
           <Box sx={{ px: 2, py: 2, flexGrow: 1 }}>
             {[
               { text: "Dashboard", icon: <TrendingUp />, id: 'dashboard' },
+              { text: "My Members", icon: <People />, id: 'members' },
+              { text: "Requests", icon: <NotificationsActive />, id: 'requests' },
+              { text: "Attendance", icon: <EventNote />, id: 'attendance' },
               { text: "My Profile", icon: <Person />, id: 'profile' },
               { text: "Logout", icon: <Logout />, id: 'logout', action: logout }
             ].map((item, index) => (
@@ -574,9 +1009,10 @@ const TrainerDashboardContent = () => {
                       transition={{ duration: 0.3 }}
                     >
                       <Box>
-                        <Box sx={{ mb: 4 }}>
+                        <DashboardStats onSelectMember={setSelectedMember} />
+                        <Box sx={{ mb: 4, mt: 4 }}>
                           <Typography variant="h5" fontWeight={700} gutterBottom>
-                            My Members
+                            All Members
                           </Typography>
                         </Box>
                         <MemberList onSelectMember={setSelectedMember} />
@@ -585,6 +1021,46 @@ const TrainerDashboardContent = () => {
                   )}
                 </AnimatePresence>
               </motion.div>
+            )}
+
+            {currentView === 'requests' && (
+                <motion.div
+                    key="requests"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                >
+                    <RequestsView onViewMember={handleRequestMemberSelect} />
+                </motion.div>
+            )}
+
+            {currentView === 'members' && (
+                <motion.div
+                    key="members"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                >
+                    {selectedMember ? (
+                         <MemberDetail 
+                           member={selectedMember} 
+                           onBack={() => setSelectedMember(null)} 
+                         />
+                    ) : (
+                         <MemberList onSelectMember={setSelectedMember} />
+                    )}
+                </motion.div>
+            )}
+
+            {currentView === 'attendance' && (
+                <motion.div
+                    key="attendance"
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -20 }}
+                >
+                    <AttendanceView />
+                </motion.div>
             )}
 
             {currentView === 'profile' && (

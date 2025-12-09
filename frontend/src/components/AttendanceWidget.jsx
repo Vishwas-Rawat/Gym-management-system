@@ -4,15 +4,16 @@ import { CheckCircle, Cancel, AccessTime } from '@mui/icons-material';
 import { useAttendance } from '../context/AttendanceContext';
 import { motion } from 'framer-motion';
 
-const AttendanceWidget = () => {
+const AttendanceWidget = ({ onAttendanceUpdate }) => {
   const { loading, error, todayStatus, markAttendance, checkTodayAttendance } = useAttendance();
 
   useEffect(() => {
     checkTodayAttendance();
   }, []);
 
-  const handleMarkAttendance = async () => {
-    await markAttendance();
+  const handleMarkAttendance = async (status = 'PRESENT') => {
+    await markAttendance(status);
+    if (onAttendanceUpdate) onAttendanceUpdate();
   };
 
   return (
@@ -40,6 +41,34 @@ const AttendanceWidget = () => {
                   <Typography variant="body2" color="text.secondary">
                     Marked for today
                   </Typography>
+                  <Button 
+                    size="small" 
+                    variant="text" 
+                    color="error" 
+                    onClick={() => handleMarkAttendance('ABSENT')}
+                    sx={{ mt: 1, fontSize: '0.75rem', opacity: 0.7, '&:hover': { opacity: 1, bgcolor: 'error.50' } }}
+                  >
+                    Mark Absent
+                  </Button>
+                </Box>
+              ) : todayStatus === 'ABSENT' ? (
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: 'error.main' }}>
+                  <Cancel sx={{ fontSize: 60, mb: 1 }} />
+                  <Typography variant="h5" fontWeight={700}>
+                    Absent
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    Marked for today
+                  </Typography>
+                  <Button 
+                    size="small" 
+                    variant="text" 
+                    color="primary" 
+                    onClick={() => handleMarkAttendance('PRESENT')}
+                    sx={{ mt: 1, fontSize: '0.75rem' }}
+                  >
+                    Mark Present
+                  </Button>
                 </Box>
               ) : (
                 <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', color: 'text.disabled' }}>
@@ -54,11 +83,11 @@ const AttendanceWidget = () => {
               )}
             </motion.div>
 
-            {todayStatus !== 'PRESENT' && (
+            {todayStatus !== 'PRESENT' && todayStatus !== 'ABSENT' && (
               <Button
                 variant="contained"
                 size="large"
-                onClick={handleMarkAttendance}
+                onClick={() => handleMarkAttendance('PRESENT')}
                 disabled={loading}
                 sx={{
                   mt: 2,

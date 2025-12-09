@@ -66,7 +66,7 @@ export const ChatProvider = ({ children }) => {
 
         // B. Connect WebSocket
         // Try passing token in query param for handshake auth if headers aren't supported
-        const socket = new SockJS(`http://localhost:8085/ws?token=${token}`); 
+        const socket = new SockJS(`http://localhost:8084/ws?token=${token}`); 
         const stompClient = Stomp.over(socket);
         stompClient.debug = () => {}; // Disable debug logs
 
