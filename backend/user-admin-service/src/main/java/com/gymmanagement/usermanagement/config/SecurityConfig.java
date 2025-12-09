@@ -46,8 +46,8 @@ public class SecurityConfig {
                         .requestMatchers("/user/register").permitAll()
                         .requestMatchers("/user/verify-otp").permitAll()
                         .requestMatchers("/user/resend-otp").permitAll()
+                        .requestMatchers("/auth/**").permitAll()
                         .requestMatchers("/member/active/**").permitAll()
-
 
                         // Registration
                         .requestMatchers("/member/complete-registration").permitAll()
@@ -55,8 +55,7 @@ public class SecurityConfig {
 
                         // ⭐ REQUIRED for Feign Client to work
                         .requestMatchers("/user/email/**").permitAll()
-                        .requestMatchers("/error").permitAll()   // ⭐ FIX — allow Spring error page
-
+                        .requestMatchers("/error").permitAll() // ⭐ FIX — allow Spring error page
 
                         // If you want to call without JWT, use:
                         // .requestMatchers("/user/email/**").permitAll()
@@ -71,8 +70,7 @@ public class SecurityConfig {
                         .requestMatchers("/workout/viewExercise").authenticated()
 
                         // Everything else
-                        .anyRequest().authenticated()
-                )
+                        .anyRequest().authenticated())
 
                 // JWT Filter
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
@@ -88,8 +86,7 @@ public class SecurityConfig {
                             res.setContentType("application/json");
                             res.setStatus(HttpServletResponse.SC_FORBIDDEN);
                             res.getWriter().write("{\"error\": \"Forbidden: You do not have permission\"}");
-                        })
-                );
+                        }));
 
         return http.build();
     }

@@ -24,12 +24,18 @@ import java.util.Optional;
 @Service
 public class UserServiceImpl implements UserService {
 
-    @Autowired private UserRepository userRepository;
-    @Autowired private UserProfileRepository userProfileRepository;
-    @Autowired private UserVerificationRepository userVerificationRepository;
-    @Autowired private TrainerRepository trainerRepository;
-    @Autowired private EmailService emailService;
-    @Autowired private JwtUtil jwtUtil;
+    @Autowired
+    private UserRepository userRepository;
+    @Autowired
+    private UserProfileRepository userProfileRepository;
+    @Autowired
+    private UserVerificationRepository userVerificationRepository;
+    @Autowired
+    private TrainerRepository trainerRepository;
+    @Autowired
+    private EmailService emailService;
+    @Autowired
+    private JwtUtil jwtUtil;
 
     private final BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
     private static final SecureRandom secureRandom = new SecureRandom();
@@ -37,7 +43,7 @@ public class UserServiceImpl implements UserService {
     private static final int OTP_RESEND_INTERVAL_SECONDS = 60;
 
     // ============================================================
-    //  REGISTER USER
+    // REGISTER USER
     // ============================================================
     @Override
     @Transactional
@@ -50,7 +56,7 @@ public class UserServiceImpl implements UserService {
             User existingUser = existingUserOpt.get();
 
             if (Boolean.TRUE.equals(existingUser.getIsActive()) &&
-                Boolean.TRUE.equals(existingUser.getIsEmailVerified())) {
+                    Boolean.TRUE.equals(existingUser.getIsEmailVerified())) {
 
                 throw new UserAlreadyExistsException("Email already registered and verified");
             } else {
@@ -59,8 +65,7 @@ public class UserServiceImpl implements UserService {
                         "success",
                         "You already started registration. A new OTP has been sent.",
                         existingUser.getUserId(),
-                        existingUser.getEmail()
-                );
+                        existingUser.getEmail());
             }
         }
 
@@ -101,13 +106,11 @@ public class UserServiceImpl implements UserService {
                 "success",
                 "Registration successful. Please check your email for OTP.",
                 user.getUserId(),
-                user.getEmail()
-        );
+                user.getEmail());
     }
 
-
     // ============================================================
-    //  SEND OTP
+    // SEND OTP
     // ============================================================
     private void sendOtp(User user) {
 
@@ -134,7 +137,7 @@ public class UserServiceImpl implements UserService {
     }
 
     // ============================================================
-    //  VERIFY OTP
+    // VERIFY OTP
     // ============================================================
     @Override
     public RegisterResponse verifyOtp(Integer userId, String otpCode) {
@@ -144,10 +147,9 @@ public class UserServiceImpl implements UserService {
             return new RegisterResponse("error", "Invalid user", userId, null);
         }
 
-        Optional<UserVerification> otpOpt =
-                userVerificationRepository.findByUser_UserIdAndOtpCodeAndIsUsedFalseAndExpiresAtAfter(
-                        userId, otpCode, LocalDateTime.now()
-                );
+        Optional<UserVerification> otpOpt = userVerificationRepository
+                .findByUser_UserIdAndOtpCodeAndIsUsedFalseAndExpiresAtAfter(
+                        userId, otpCode, LocalDateTime.now());
 
         if (otpOpt.isEmpty()) {
             return new RegisterResponse("error", "Invalid or expired OTP", userId, null);
@@ -166,8 +168,7 @@ public class UserServiceImpl implements UserService {
                 "success",
                 "Account activated successfully!",
                 userId,
-                user.getEmail()
-        );
+                user.getEmail());
     }
 
     @Override
@@ -191,13 +192,11 @@ public class UserServiceImpl implements UserService {
                 "success",
                 "New OTP sent!",
                 userId,
-                user.getEmail()
-        );
+                user.getEmail());
     }
 
-
     // ============================================================
-    //  LOGIN + JWT WITH TRAINER ID
+    // LOGIN + JWT WITH TRAINER ID
     // ============================================================
     @Override
     public LoginResponse login(String identifier, String password) {
@@ -217,13 +216,12 @@ public class UserServiceImpl implements UserService {
         User user = userOpt.get();
 
         if (!Boolean.TRUE.equals(user.getIsActive()) ||
-            !Boolean.TRUE.equals(user.getIsEmailVerified())) {
+                !Boolean.TRUE.equals(user.getIsEmailVerified())) {
             return new LoginResponse(
                     user.getUserId(),
                     user.getEmail(),
                     null,
-                    "You are not registered"
-            );
+                    "You are not registered");
         }
 
         if (!passwordEncoder.matches(password, user.getPassword())) {
@@ -243,17 +241,50 @@ public class UserServiceImpl implements UserService {
         String token = jwtUtil.generateToken(
                 user.getEmail(),
                 user.getRole().name(),
-                trainerId        // ⭐ trainerId embedded in JWT
+                trainerId // ⭐ trainerId embedded in JWT
         );
 
         return new LoginResponse(
                 user.getUserId(),
                 user.getEmail(),
                 token,
-                "Login successful"
-        );
+                "Login successful");
     }
 
+    @Override
+    @Transactional
+    public void forgotPassword(String email) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+
+        String otp = generateOtp();
+        user.setPasswordResetToken(otp);
+        user.setPasswordResetTokenExpiry(LocalDateTime.now().plusMinutes(15));
+        userRepository.save(user);
+
+        emailService.sendForgotPasswordEmail(email, otp);
+    }
+
+    @Override
+    @Transactional
+    public void resetPassword(String email, String otp, String newPassword) {
+        User user = userRepository.findByEmail(email)
+                .orElseThrow(() -> new RuntimeException("User not found with email: " + email));
+
+        if (user.getPasswordResetToken() == null ||
+                !user.getPasswordResetToken().equals(otp)) {
+            throw new RuntimeException("Invalid OTP");
+        }
+
+        if (user.getPasswordResetTokenExpiry().isBefore(LocalDateTime.now())) {
+            throw new RuntimeException("OTP has expired");
+        }
+
+        user.setPassword(passwordEncoder.encode(newPassword));
+        user.setPasswordResetToken(null);
+        user.setPasswordResetTokenExpiry(null);
+        userRepository.save(user);
+    }
 
     private String generateOtp() {
         return String.format("%06d", 100000 + secureRandom.nextInt(900000));

@@ -27,6 +27,21 @@ public class GlobalExceptionHandler {
         return buildResponse(HttpStatus.BAD_REQUEST, ex.getMessage());
     }
 
+    @ExceptionHandler(org.springframework.dao.DataIntegrityViolationException.class)
+    public ResponseEntity<?> handleDataIntegrityViolation(org.springframework.dao.DataIntegrityViolationException ex) {
+        String message = ex.getMostSpecificCause().getMessage();
+        if (message.contains("users_phone_number_key")) {
+            return buildResponse(HttpStatus.CONFLICT, "Phone number already exists");
+        }
+        if (message.contains("users_email_key")) {
+            return buildResponse(HttpStatus.CONFLICT, "Email already exists");
+        }
+        if (message.contains("users_username_key")) {
+            return buildResponse(HttpStatus.CONFLICT, "Username already exists");
+        }
+        return buildResponse(HttpStatus.CONFLICT, "Duplicate entry violated unique constraint: " + message);
+    }
+
     @ExceptionHandler(Exception.class)
     public ResponseEntity<?> handleOtherExceptions(Exception ex) {
         return buildResponse(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());

@@ -18,6 +18,8 @@ public class ViewMemberResponse {
     private Integer monthsPaid;
     private Integer monthsFree;
     private Long gymId;
+    private Integer trainerId;
+    private String trainerName; // Added trainer name field
     private String timing; // e.g., "6:30 AM to 8:00 AM"
     private Double registrationFee;
     private Double planPrice;
@@ -62,6 +64,10 @@ public class ViewMemberResponse {
             this.startDate = member.getJoiningDate();
             this.createdAt = member.getCreatedAt();
             this.updatedAt = member.getUpdatedAt();
+            this.trainerId = member.getTrainer() != null ? member.getTrainer().getTrainerId() : null;
+            this.trainerName = (member.getTrainer() != null && member.getTrainer().getUser() != null)
+                    ? getFullName(member.getTrainer().getUser().getUserProfile())
+                    : "No Trainer Assigned";
         }
 
         this.message = message;

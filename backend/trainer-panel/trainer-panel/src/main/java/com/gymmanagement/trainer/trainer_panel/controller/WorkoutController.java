@@ -8,6 +8,7 @@ import com.gymmanagement.trainer.trainer_panel.client.UserManagementClient;
 import com.gymmanagement.trainer.trainer_panel.repository.MemberRepository;
 
 import com.gymmanagement.commonservices.entity.Member;
+import com.gymmanagement.commonservices.enumeration.ExerciseName; // Added
 
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -25,15 +26,15 @@ public class WorkoutController {
     private final MemberRepository memberRepo;
 
     public WorkoutController(TrainerWorkoutServiceImpl workoutService,
-                             UserManagementClient userClient,
-                             MemberRepository memberRepo) {
+            UserManagementClient userClient,
+            MemberRepository memberRepo) {
         this.workoutService = workoutService;
         this.userClient = userClient;
         this.memberRepo = memberRepo;
     }
 
     // -------------------------
-    //  ASSIGN WORKOUT PLAN
+    // ASSIGN WORKOUT PLAN
     // -------------------------
     @PostMapping("/assign")
     @PreAuthorize("hasRole('TRAINER')")
@@ -97,7 +98,7 @@ public class WorkoutController {
         }
         // Correct member principal
         else if (principal instanceof MemberPrincipal mp) {
-        	userId = mp.userId();
+            userId = mp.userId();
         }
         // Fallback (rare)
         else {
@@ -112,5 +113,80 @@ public class WorkoutController {
         WorkoutPlanResponse resp = workoutService.getLatestPlanForMember(member.getMemberId());
 
         return ResponseEntity.ok(resp);
+    }
+
+    private Member getMember(Authentication auth) {
+        Object principal = auth.getPrincipal();
+        Integer userId;
+        if (principal instanceof MemberPrincipal mp) {
+            userId = mp.userId();
+        } else {
+            throw new RuntimeException("Not authorized as member");
+        }
+        return memberRepo.findByUser_UserId(userId)
+                .orElseThrow(() -> new IllegalArgumentException("Member not found"));
+    }
+
+    @PostMapping("/log")
+    @PreAuthorize("hasRole('MEMBER')")
+    public ResponseEntity<?> logWorkout(@RequestBody WorkoutLogRequest req, Authentication auth) {
+        Member member = getMember(auth);
+        workoutService.logWorkout(member.getMemberId(), req);
+        return ResponseEntity.ok("Workout logged");
+    }
+
+    @DeleteMapping("/log/{logId}")
+    @PreAuthorize("hasRole('MEMBER')")
+    public ResponseEntity<?> deleteLog(@PathVariable Long logId, Authentication auth) {
+        Member member = getMember(auth);
+        workoutService.deleteWorkoutLog(member.getMemberId(), logId);
+        return ResponseEntity.ok("Workout log deleted");
+    }
+
+    @PutMapping("/log/{logId}")
+    @PreAuthorize("hasRole('MEMBER')")
+    public ResponseEntity<?> updateLog(@PathVariable Long logId, @RequestBody WorkoutLogRequest req,
+            Authentication auth) {
+        Member member = getMember(auth);
+        workoutService.updateWorkoutLog(member.getMemberId(), logId, req);
+        return ResponseEntity.ok("Workout log updated");
+    }
+
+    @GetMapping("/today")
+    @PreAuthorize("hasRole('MEMBER')")
+    public ResponseEntity<?> getTodayLogs(Authentication auth) {
+        Member member = getMember(auth);
+        return ResponseEntity.ok(workoutService.getTodayWorkoutLogs(member.getMemberId()));
+    }
+
+    // -------------------------
+    // GET UNIQUE MUSCLE GROUPS
+    // -------------------------
+    @GetMapping("/muscle-groups")
+    public ResponseEntity<List<String>> getAllMuscleGroups() {
+        List<String> muscleGroups = java.util.Arrays.stream(ExerciseName.values())
+                .map(ExerciseName::getMuscleGroup)
+                .distinct()
+                .sorted()
+                .collect(java.util.stream.Collectors.toList());
+        return ResponseEntity.ok(muscleGroups);
+    }
+
+    // -------------------------
+    // GET ALL EXERCISES (ENUMS) - Filterable by Muscle Group
+    // -------------------------
+    @GetMapping("/exercises")
+    public ResponseEntity<List<ExerciseReferenceResponse>> getAllExercises(
+            @RequestParam(required = false) String muscleGroup) {
+
+        List<ExerciseReferenceResponse> list = java.util.Arrays.stream(ExerciseName.values())
+                .filter(e -> muscleGroup == null || e.getMuscleGroup().equalsIgnoreCase(muscleGroup))
+                .map(e -> ExerciseReferenceResponse.builder()
+                        .code(e.name())
+                        .displayName(e.getDisplayName())
+                        .muscleGroup(e.getMuscleGroup())
+                        .build())
+                .collect(java.util.stream.Collectors.toList());
+        return ResponseEntity.ok(list);
     }
 }

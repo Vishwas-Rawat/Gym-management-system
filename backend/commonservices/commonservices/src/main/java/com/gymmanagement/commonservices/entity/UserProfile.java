@@ -36,6 +36,12 @@ public class UserProfile {
     @Column(name = "address")
     private String address;
 
+    @Column(name = "weight")
+    private Double weight;
+
+    @Column(name = "height")
+    private Double height;
+
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
 

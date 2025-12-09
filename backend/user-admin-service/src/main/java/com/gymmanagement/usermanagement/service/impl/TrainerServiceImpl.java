@@ -176,6 +176,16 @@ public class TrainerServiceImpl implements TrainerService {
         Trainer trainer = trainerRepository.findActiveById(trainerId)
                 .orElseThrow(() -> new IllegalArgumentException("Trainer not found or deleted"));
 
+        if (request.getGymId() != null) {
+            Gym newGym = gymRepository.findById(request.getGymId())
+                    .orElseThrow(() -> new IllegalArgumentException("Gym not found"));
+            trainer.setGym(newGym);
+            // When trainer moves gyms, logic for their members?
+            // Usually members stay at old gym, so trainer loses them.
+            // But existing logic doesn't explicitly clear them unless we want to.
+            // For now, simple gym switch.
+        }
+
         if (request.getSpecialization() != null)
             trainer.setSpecialization(request.getSpecialization());
         if (request.getExperienceYears() != null)
@@ -263,5 +273,45 @@ public class TrainerServiceImpl implements TrainerService {
         return memberRepository.findActiveMembersByTrainerId(trainerId).stream()
                 .map(com.gymmanagement.usermanagement.Response.GymMemberResponse::new)
                 .toList();
+    }
+
+    @Override
+    public List<com.gymmanagement.usermanagement.Response.GymMemberResponse> getPotentialMembersForTrainer(
+            Integer trainerId) {
+        // Find the trainer to get its gym ID
+        Trainer trainer = trainerRepository.findActiveById(trainerId)
+                .orElseThrow(() -> new IllegalArgumentException("Trainer not found"));
+        Long gymId = trainer.getGym().getGymId();
+
+        // Use the repository query that returns members that are either un‑assigned or
+        // already assigned to this trainer
+        return memberRepository.findMembersForTrainerAssignment(gymId, trainerId).stream()
+                .map(com.gymmanagement.usermanagement.Response.GymMemberResponse::new)
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public void removeMemberFromTrainer(Integer trainerId, Integer memberId) {
+        // Verify trainer exists
+        Trainer trainer = trainerRepository.findActiveById(trainerId)
+                .orElseThrow(() -> new IllegalArgumentException("Trainer not found"));
+
+        // Find the member
+        Member member = memberRepository.findActiveById(memberId)
+                .orElseThrow(() -> new IllegalArgumentException("Member not found"));
+
+        // Verify member is assigned to this trainer
+        if (member.getTrainer() == null) {
+            throw new IllegalArgumentException("Member has no trainer assigned");
+        }
+
+        if (!member.getTrainer().getTrainerId().equals(trainerId)) {
+            throw new IllegalArgumentException("Member is not assigned to this trainer");
+        }
+
+        // Remove trainer assignment
+        member.setTrainer(null);
+        memberRepository.save(member);
     }
 }

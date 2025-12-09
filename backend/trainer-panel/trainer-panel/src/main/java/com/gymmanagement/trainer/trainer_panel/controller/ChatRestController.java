@@ -6,17 +6,30 @@ import com.gymmanagement.trainer.trainer_panel.service.ChatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.CrossOrigin;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @RestController
 @RequestMapping("/chat")
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 @RequiredArgsConstructor
 public class ChatRestController {
 
     private final PublicKeyRepository keyRepo;
     private final ChatService chatService;
+    private final com.gymmanagement.trainer.trainer_panel.client.UserManagementClient userClient;
+
+    @GetMapping("/search")
+    public ResponseEntity<?> searchUsers(@RequestParam String query) {
+        try {
+            return ResponseEntity.ok(userClient.searchUsers(query));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(500).body("Error searching users: " + e.getMessage());
+        }
+    }
 
     @PostMapping("/keys")
     public ResponseEntity<?> uploadPublicKey(@RequestBody PublicKeyEntity dto) {

@@ -8,4 +8,8 @@ import java.util.Optional;
 
 public interface WorkoutPlanRepository extends JpaRepository<WorkoutPlan, Integer> {
     Optional<WorkoutPlan> findFirstByMemberIdOrderByCreatedAtDesc(Integer memberId);
+
+    long countByTrainerId(Integer trainerId);
+
+    boolean existsByMemberId(Integer memberId);
 }

@@ -1,4 +1,3 @@
-// src/main/java/com/gymmanagement/usermanagement/Request/UpdateMemberRequest.java
 package com.gymmanagement.usermanagement.Request;
 
 import lombok.Data;
@@ -27,4 +26,7 @@ public class UpdateMemberRequest {
 
     private String paymentMethod;
     private LocalDate joiningDate;
+
+    // Support Gym Transfer
+    private Long gymId;
 }

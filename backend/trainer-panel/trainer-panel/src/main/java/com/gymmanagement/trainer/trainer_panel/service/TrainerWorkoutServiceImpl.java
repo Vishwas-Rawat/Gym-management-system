@@ -40,19 +40,73 @@ public class TrainerWorkoutServiceImpl implements TrainerWorkoutService {
     private final WorkoutPlanItemRepository itemRepo;
     private final MemberRepository memberRepo;
     private final TrainerRepository trainerRepo;
+    private final com.gymmanagement.trainer.trainer_panel.repository.WorkoutLogRepository workoutLogRepo;
 
     public TrainerWorkoutServiceImpl(
             UserManagementClient userClient,
             WorkoutPlanRepository planRepo,
             WorkoutPlanItemRepository itemRepo,
             MemberRepository memberRepo,
-            TrainerRepository trainerRepo
-    ) {
+            TrainerRepository trainerRepo,
+            com.gymmanagement.trainer.trainer_panel.repository.WorkoutLogRepository workoutLogRepo) {
         this.userClient = userClient;
         this.planRepo = planRepo;
         this.itemRepo = itemRepo;
         this.memberRepo = memberRepo;
         this.trainerRepo = trainerRepo;
+        this.workoutLogRepo = workoutLogRepo;
+    }
+
+    @Override
+    public void logWorkout(Integer memberId, com.gymmanagement.trainer.trainer_panel.dto.WorkoutLogRequest req) {
+        com.gymmanagement.commonservices.entity.WorkoutLog log = new com.gymmanagement.commonservices.entity.WorkoutLog();
+        log.setMemberId(memberId);
+        log.setDate(java.time.LocalDate.now());
+        log.setExerciseName(req.getExerciseName());
+        log.setSetsCount(req.getSetsCount());
+        log.setRepsCount(req.getRepsCount());
+        log.setWeight(req.getWeight());
+        log.setDurationMinutes(req.getDurationMinutes());
+        log.setCompleted(req.getCompleted());
+        log.setLoggedAt(LocalDateTime.now());
+        workoutLogRepo.save(log);
+    }
+
+    @Override
+    public void deleteWorkoutLog(Integer memberId, Long logId) {
+        com.gymmanagement.commonservices.entity.WorkoutLog log = workoutLogRepo.findById(logId)
+                .orElseThrow(() -> new IllegalArgumentException("Log not found"));
+
+        if (!log.getMemberId().equals(memberId)) {
+            throw new RuntimeException("Unauthorized to delete this log");
+        }
+        workoutLogRepo.delete(log);
+    }
+
+    @Override
+    public void updateWorkoutLog(Integer memberId, Long logId,
+            com.gymmanagement.trainer.trainer_panel.dto.WorkoutLogRequest req) {
+        com.gymmanagement.commonservices.entity.WorkoutLog log = workoutLogRepo.findById(logId)
+                .orElseThrow(() -> new IllegalArgumentException("Log not found"));
+
+        if (!log.getMemberId().equals(memberId)) {
+            throw new RuntimeException("Unauthorized to update this log");
+        }
+
+        // Update fields
+        log.setExerciseName(req.getExerciseName());
+        log.setSetsCount(req.getSetsCount());
+        log.setRepsCount(req.getRepsCount());
+        log.setWeight(req.getWeight());
+        log.setDurationMinutes(req.getDurationMinutes());
+        log.setCompleted(req.getCompleted());
+
+        workoutLogRepo.save(log);
+    }
+
+    @Override
+    public List<com.gymmanagement.commonservices.entity.WorkoutLog> getTodayWorkoutLogs(Integer memberId) {
+        return workoutLogRepo.findByMemberIdAndDate(memberId, java.time.LocalDate.now());
     }
 
     @Override
@@ -94,8 +148,8 @@ public class TrainerWorkoutServiceImpl implements TrainerWorkoutService {
                 item.setRestSeconds(ex.getRestSeconds());
                 item.setNotes(ex.getNotes());
 
-                Set<DayOfWeek> days = ex.getDays() == null ? Collections.emptySet() :
-                        ex.getDays().stream()
+                Set<DayOfWeek> days = ex.getDays() == null ? Collections.emptySet()
+                        : ex.getDays().stream()
                                 .map(String::toUpperCase)
                                 .map(DayOfWeek::valueOf)
                                 .collect(Collectors.toSet());
@@ -117,7 +171,6 @@ public class TrainerWorkoutServiceImpl implements TrainerWorkoutService {
         return resp;
     }
 
-
     @Override
     public WorkoutPlanResponse getLatestPlanForMember(Integer memberId) {
 
@@ -132,10 +185,9 @@ public class TrainerWorkoutServiceImpl implements TrainerWorkoutService {
         return mapToResponse(plan, plan.getTrainerId(), memberUser);
     }
 
-
     private WorkoutPlanResponse mapToResponse(WorkoutPlan plan,
-                                              Integer trainerId,
-                                              UserResponse ignoredUserResponse) {
+            Integer trainerId,
+            UserResponse ignoredUserResponse) {
 
         WorkoutPlanResponse res = new WorkoutPlanResponse();
         res.setPlanId(plan.getPlanId());
@@ -185,8 +237,7 @@ public class TrainerWorkoutServiceImpl implements TrainerWorkoutService {
     private String safe(String s) {
         return s == null ? "" : s;
     }
-    
-    
+
     @Override
     public List<ViewMemberResponse> getAssignedMembers(Long gymId, Integer trainerId) {
         return userClient.getMembersByTrainer(gymId, trainerId);

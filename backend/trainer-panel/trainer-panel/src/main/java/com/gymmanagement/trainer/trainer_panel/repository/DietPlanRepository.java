@@ -7,4 +7,8 @@ import java.util.Optional;
 
 public interface DietPlanRepository extends JpaRepository<DietPlan, Integer> {
     Optional<DietPlan> findFirstByMemberIdOrderByCreatedAtDesc(Integer memberId);
+
+    long countByTrainerId(Integer trainerId);
+
+    boolean existsByMemberId(Integer memberId);
 }

@@ -36,12 +36,12 @@ public class MemberServiceImpl implements MemberService {
     private static final long TOKEN_VALIDITY_HOURS = 24;
 
     public MemberServiceImpl(MemberRepository memberRepository,
-                             UserRepository userRepository,
-                             EmailService emailService,
-                             GymRepository gymRepository,
-                             PasswordEncoder passwordEncoder,
-                             UserVerificationRepository userVerificationRepository,
-                             UserProfileRepository userProfileRepository) {
+            UserRepository userRepository,
+            EmailService emailService,
+            GymRepository gymRepository,
+            PasswordEncoder passwordEncoder,
+            UserVerificationRepository userVerificationRepository,
+            UserProfileRepository userProfileRepository) {
         this.memberRepository = memberRepository;
         this.userRepository = userRepository;
         this.emailService = emailService;
@@ -136,7 +136,8 @@ public class MemberServiceImpl implements MemberService {
     }
 
     private String buildWorkoutTimeSlot(AdminAddMemberRequest r) {
-        if (r.getFromHour() == null || r.getToHour() == null) return "";
+        if (r.getFromHour() == null || r.getToHour() == null)
+            return "";
         String from = String.format("%d:%s %s",
                 r.getFromHour(),
                 r.getFromMinute() != null ? r.getFromMinute() : "00",
@@ -179,7 +180,7 @@ public class MemberServiceImpl implements MemberService {
                 .orElseThrow(() -> new IllegalArgumentException("Invalid or expired registration token"));
 
         if (user.getTokenGeneratedAt() == null ||
-            Duration.between(user.getTokenGeneratedAt(), LocalDateTime.now()).toHours() > TOKEN_VALIDITY_HOURS) {
+                Duration.between(user.getTokenGeneratedAt(), LocalDateTime.now()).toHours() > TOKEN_VALIDITY_HOURS) {
             throw new IllegalArgumentException("Registration link has expired");
         }
 
@@ -210,8 +211,10 @@ public class MemberServiceImpl implements MemberService {
             profile.setUser(user);
             user.setUserProfile(profile);
         }
-        if (request.getDateOfBirth() != null) profile.setDateOfBirth(request.getDateOfBirth());
-        if (request.getGender() != null) profile.setGender(request.getGender());
+        if (request.getDateOfBirth() != null)
+            profile.setDateOfBirth(request.getDateOfBirth());
+        if (request.getGender() != null)
+            profile.setGender(request.getGender());
 
         userProfileRepository.save(profile);
         userRepository.save(user);
@@ -225,8 +228,10 @@ public class MemberServiceImpl implements MemberService {
         userVerificationRepository.save(verification);
 
         memberRepository.findByUser(user).ifPresent(member -> {
-            if (request.getFitnessGoal() != null) member.setFitnessGoal(request.getFitnessGoal());
-            if (request.getWorkoutTimeSlot() != null) member.setWorkoutTimeSlot(request.getWorkoutTimeSlot());
+            if (request.getFitnessGoal() != null)
+                member.setFitnessGoal(request.getFitnessGoal());
+            if (request.getWorkoutTimeSlot() != null)
+                member.setWorkoutTimeSlot(request.getWorkoutTimeSlot());
             member.setUpdatedAt(LocalDateTime.now());
             memberRepository.save(member);
         });
@@ -239,12 +244,14 @@ public class MemberServiceImpl implements MemberService {
     /* --------------------------------------------------------------------- */
     /* 4. READ OPERATIONS */
     /* --------------------------------------------------------------------- */
-    @Override public Member getMemberById(Integer memberId) {
+    @Override
+    public Member getMemberById(Integer memberId) {
         return memberRepository.findActiveById(memberId)
                 .orElseThrow(() -> new IllegalArgumentException("Member not found or deleted"));
     }
 
-    @Override public Member getMemberByUserId(Integer userId) {
+    @Override
+    public Member getMemberByUserId(Integer userId) {
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         return memberRepository.findByUser(user)
@@ -252,9 +259,13 @@ public class MemberServiceImpl implements MemberService {
                 .orElseThrow(() -> new IllegalArgumentException("Member not found or deleted"));
     }
 
-    @Override public List<Member> getAllMembers() { return memberRepository.findAllActive(); }
+    @Override
+    public List<Member> getAllMembers() {
+        return memberRepository.findAllActive();
+    }
 
-    @Override public List<Member> searchMembers(String keyword) {
+    @Override
+    public List<Member> searchMembers(String keyword) {
         return keyword == null || keyword.trim().isEmpty()
                 ? memberRepository.findAllActive()
                 : memberRepository.searchActiveMembers(keyword);
@@ -295,6 +306,21 @@ public class MemberServiceImpl implements MemberService {
             user.setPhoneNumber(request.getPhoneNo());
         }
 
+        // GYM TRANSFER (New Logic)
+        if (request.getGymId() != null && !request.getGymId().equals(member.getGym().getGymId())) {
+            Gym newGym = gymRepository.findById(request.getGymId())
+                    .orElseThrow(() -> new IllegalArgumentException("Gym not found with ID: " + request.getGymId()));
+
+            // Optional: Check if admin has authority over new gym (if needed)
+
+            member.setGym(newGym);
+            // If gym changes, trainer might need to be removed?
+            // Often yes, because trainer belongs to old gym.
+            if (member.getTrainer() != null && !member.getTrainer().getGym().getGymId().equals(newGym.getGymId())) {
+                member.setTrainer(null); // Unassign trainer from old gym
+            }
+        }
+
         // PLAN RENEWAL / EXTENSION
         if (request.getMonthsPaid() != null && request.getMonthsPaid() > 0) {
             member.setMonthsPaid(request.getMonthsPaid());
@@ -318,26 +344,33 @@ public class MemberServiceImpl implements MemberService {
         }
 
         // Money
-        if (request.getRegistrationFee() != null) member.setRegistrationFee(request.getRegistrationFee());
-        if (request.getPlanPrice() != null) member.setPlanPrice(request.getPlanPrice());
-        if (request.getDiscount() != null) member.setDiscount(request.getDiscount());
+        if (request.getRegistrationFee() != null)
+            member.setRegistrationFee(request.getRegistrationFee());
+        if (request.getPlanPrice() != null)
+            member.setPlanPrice(request.getPlanPrice());
+        if (request.getDiscount() != null)
+            member.setDiscount(request.getDiscount());
         double total = member.getRegistrationFee() + member.getPlanPrice() - member.getDiscount();
         member.setTotalAmount(Math.max(0, total));
         member.setAmountPaid(total);
 
         // Misc
-        if (request.getPaymentMethod() != null) member.setPaymentMethod(request.getPaymentMethod());
-        if (request.getJoiningDate() != null) member.setJoiningDate(request.getJoiningDate());
+        if (request.getPaymentMethod() != null)
+            member.setPaymentMethod(request.getPaymentMethod());
+        if (request.getJoiningDate() != null)
+            member.setJoiningDate(request.getJoiningDate());
 
         member.setUpdatedAt(LocalDateTime.now());
 
-        if (profile != null) userProfileRepository.save(profile);
+        if (profile != null)
+            userProfileRepository.save(profile);
         userRepository.save(user);
         return memberRepository.save(member);
     }
 
     private String buildWorkoutTimeSlot(UpdateMemberRequest r) {
-        if (r.getFromHour() == null || r.getToHour() == null) return "";
+        if (r.getFromHour() == null || r.getToHour() == null)
+            return "";
         String from = String.format("%d:%s %s",
                 safeParseInt(r.getFromHour()),
                 r.getFromMinute() != null ? r.getFromMinute() : "00",
@@ -380,18 +413,21 @@ public class MemberServiceImpl implements MemberService {
         memberRepository.save(member);
     }
 
-    @Override public List<Member> getMembersByGymId(Long gymId) {
+    @Override
+    public List<Member> getMembersByGymId(Long gymId) {
         return memberRepository.findActiveMembersByGymId(gymId);
     }
 
-    @Override public List<Member> getMembersByTrainerAndGym(Integer trainerId, Long gymId) {
+    @Override
+    public List<Member> getMembersByTrainerAndGym(Integer trainerId, Long gymId) {
         return memberRepository.findActiveMembersByTrainerIdAndGymId(trainerId, gymId);
     }
 
-    @Override @Transactional
+    @Override
+    @Transactional
     public void removeMemberFromTrainer(Integer memberId, Long gymId) {
         Member member = memberRepository.findActiveById(memberId)
-            .orElseThrow(() -> new IllegalArgumentException("Member not found or inactive"));
+                .orElseThrow(() -> new IllegalArgumentException("Member not found or inactive"));
 
         if (!member.getGym().getGymId().equals(gymId)) {
             throw new IllegalArgumentException("Member does not belong to gym ID: " + gymId);
@@ -414,15 +450,15 @@ public class MemberServiceImpl implements MemberService {
     /* 7. ACCURATE EXPIRY CALCULATION LOGIC */
     /* --------------------------------------------------------------------- */
     private LocalDate getEffectivePlanStartDate(Member member) {
-        return member.getPlanStartDate() != null 
-                ? member.getPlanStartDate() 
+        return member.getPlanStartDate() != null
+                ? member.getPlanStartDate()
                 : member.getJoiningDate();
     }
 
     private LocalDate calculateExpiryDate(Member member) {
         LocalDate start = getEffectivePlanStartDate(member);
-        int totalMonths = member.getMonthsPaid() 
-                        + (member.getMonthsFree() != null ? member.getMonthsFree() : 0);
+        int totalMonths = member.getMonthsPaid()
+                + (member.getMonthsFree() != null ? member.getMonthsFree() : 0);
         return start.plusMonths(totalMonths).minusDays(1);
     }
 
@@ -474,8 +510,7 @@ public class MemberServiceImpl implements MemberService {
                 member.getUser().getEmail(),
                 firstName,
                 expiryDate,
-                daysRemaining
-        );
+                daysRemaining);
 
         return true;
     }

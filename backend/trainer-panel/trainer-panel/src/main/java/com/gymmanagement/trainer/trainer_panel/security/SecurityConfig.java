@@ -34,6 +34,7 @@ public class SecurityConfig {
 
                         // Allow chat REST APIs
                         .requestMatchers("/chat/**").permitAll()
+                        .requestMatchers("/error").permitAll()
 
                         // Trainer routes
                         .requestMatchers("/trainer/**").hasRole("TRAINER")
@@ -44,7 +45,7 @@ public class SecurityConfig {
                         // All workout authenticated
                         .requestMatchers("/api/workout/**").authenticated()
 
-                        .requestMatchers("/attendance/**").authenticated()
+                        .requestMatchers("/api/attendance/**").authenticated()
 
                         .requestMatchers("/auth/check-status").authenticated()
 

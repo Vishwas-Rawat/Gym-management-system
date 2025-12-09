@@ -28,18 +28,19 @@ public class EmailService {
         String verifyUrl = "http://localhost:3000/verify?userId=" + userId + "&otp=" + otpCode;
 
         String body = """
-            <p>Hello,</p>
-            <p>Thank you for registering! Please verify your email address by clicking the button below:</p>
-            <div style="text-align:center; margin:30px 0;">
-                <a href="%s" style="display:inline-block; padding:14px 32px; font-size:16px; color:white; background-color:#28a745; text-decoration:none; border-radius:8px; font-weight:bold;">
-                    Verify Email Address
-                </a>
-            </div>
-            <p>If the button doesn't work, copy and paste this link:</p>
-            <p><a href="%s">%s</a></p>
-            <p>Or use this OTP directly: <strong style="font-size:18px; color:#d32f2f;">%s</strong></p>
-            <p>This OTP expires in 10 minutes.</p>
-            """.formatted(verifyUrl, verifyUrl, verifyUrl, otpCode);
+                <p>Hello,</p>
+                <p>Thank you for registering! Please verify your email address by clicking the button below:</p>
+                <div style="text-align:center; margin:30px 0;">
+                    <a href="%s" style="display:inline-block; padding:14px 32px; font-size:16px; color:white; background-color:#28a745; text-decoration:none; border-radius:8px; font-weight:bold;">
+                        Verify Email Address
+                    </a>
+                </div>
+                <p>If the button doesn't work, copy and paste this link:</p>
+                <p><a href="%s">%s</a></p>
+                <p>Or use this OTP directly: <strong style="font-size:18px; color:#d32f2f;">%s</strong></p>
+                <p>This OTP expires in 10 minutes.</p>
+                """
+                .formatted(verifyUrl, verifyUrl, verifyUrl, otpCode);
 
         sendHtmlEmail(toEmail, subject, body);
     }
@@ -49,17 +50,18 @@ public class EmailService {
         String subject = "Complete Your Gym Registration";
 
         String body = """
-            <p>Hello,</p>
-            <p>Welcome to the gym! Your account has been created. Please complete your registration by setting your password.</p>
-            <div style="text-align:center; margin:30px 0;">
-                <a href="%s" style="display:inline-block; padding:14px 32px; font-size:16px; color:white; background-color:#007bff; text-decoration:none; border-radius:8px; font-weight:bold;">
-                    Complete Registration
-                </a>
-            </div>
-            <p>If the button doesn't work, please copy and paste this link into your browser:</p>
-            <p><a href="%s">%s</a></p>
-            <p>This link expires in 24 hours.</p>
-            """.formatted(link, link, link);
+                <p>Hello,</p>
+                <p>Welcome to the gym! Your account has been created. Please complete your registration by setting your password.</p>
+                <div style="text-align:center; margin:30px 0;">
+                    <a href="%s" style="display:inline-block; padding:14px 32px; font-size:16px; color:white; background-color:#007bff; text-decoration:none; border-radius:8px; font-weight:bold;">
+                        Complete Registration
+                    </a>
+                </div>
+                <p>If the button doesn't work, please copy and paste this link into your browser:</p>
+                <p><a href="%s">%s</a></p>
+                <p>This link expires in 24 hours.</p>
+                """
+                .formatted(link, link, link);
 
         sendHtmlEmail(toEmail, subject, body);
     }
@@ -79,6 +81,22 @@ public class EmailService {
 
         String htmlBody = templateEngine.process(templateName, context);
         sendHtmlEmail(toEmail, subject, htmlBody);
+    }
+
+    // 5. Send Forgot Password OTP
+    public void sendForgotPasswordEmail(String toEmail, String otpCode) {
+        String subject = "Reset Your Password";
+        String body = """
+                <p>Hello,</p>
+                <p>You have requested to reset your password. Use the OTP below to proceed:</p>
+                <div style="text-align:center; margin:30px 0;">
+                    <strong style="font-size:24px; color:#d32f2f; letter-spacing: 2px;">%s</strong>
+                </div>
+                <p>This OTP expires in 15 minutes.</p>
+                <p>If you did not request a password reset, please ignore this email.</p>
+                """.formatted(otpCode);
+
+        sendHtmlEmail(toEmail, subject, body);
     }
 
     // 4. Core HTML Email Sender

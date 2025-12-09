@@ -62,7 +62,7 @@ public class GymServiceImpl implements GymService {
 
         List<Gym> gyms = gymRepository.findByCreatedByAdminAndIsActiveTrue(admin);
         if (gyms.isEmpty()) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "No active gyms found for this admin");
+            return java.util.Collections.emptyList();
         }
 
         return gyms.stream().map(gym -> toResponse(gym, admin, null)).collect(Collectors.toList());
@@ -107,12 +107,12 @@ public class GymServiceImpl implements GymService {
 
     // Validate uniqueness
     private void validateUniqueGym(Gym gym, User admin) {
-        boolean exists = gymRepository.existsByGymNameIgnoreCaseAndAddressIgnoreCaseAndCityIgnoreCaseAndCreatedByAdmin_UserId(
-                gym.getGymName().trim(),
-                gym.getAddress().trim(),
-                gym.getCity().trim(),
-                admin.getUserId()
-        );
+        boolean exists = gymRepository
+                .existsByGymNameIgnoreCaseAndAddressIgnoreCaseAndCityIgnoreCaseAndCreatedByAdmin_UserId(
+                        gym.getGymName().trim(),
+                        gym.getAddress().trim(),
+                        gym.getCity().trim(),
+                        admin.getUserId());
         if (exists) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Gym already exists: " + gym.getGymName() + " at " + gym.getAddress());
@@ -121,13 +121,20 @@ public class GymServiceImpl implements GymService {
 
     // Update only available fields
     private void updateFields(Gym existing, Gym updated) {
-        if (updated.getGymName() != null) existing.setGymName(updated.getGymName().trim());
-        if (updated.getAddress() != null) existing.setAddress(updated.getAddress().trim());
-        if (updated.getCity() != null) existing.setCity(updated.getCity().trim());
-        if (updated.getState() != null) existing.setState(updated.getState());
-        if (updated.getContactNumber() != null) existing.setContactNumber(updated.getContactNumber());
-        if (updated.getEmail() != null) existing.setEmail(updated.getEmail());
-        if (updated.getOpeningHours() != null) existing.setOpeningHours(updated.getOpeningHours());
+        if (updated.getGymName() != null)
+            existing.setGymName(updated.getGymName().trim());
+        if (updated.getAddress() != null)
+            existing.setAddress(updated.getAddress().trim());
+        if (updated.getCity() != null)
+            existing.setCity(updated.getCity().trim());
+        if (updated.getState() != null)
+            existing.setState(updated.getState());
+        if (updated.getContactNumber() != null)
+            existing.setContactNumber(updated.getContactNumber());
+        if (updated.getEmail() != null)
+            existing.setEmail(updated.getEmail());
+        if (updated.getOpeningHours() != null)
+            existing.setOpeningHours(updated.getOpeningHours());
     }
 
     // Admin lookup

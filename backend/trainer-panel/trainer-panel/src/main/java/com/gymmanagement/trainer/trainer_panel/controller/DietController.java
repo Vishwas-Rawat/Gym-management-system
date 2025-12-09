@@ -40,8 +40,7 @@ public class DietController {
     @GetMapping("/member/{memberId}/plan")
     public ResponseEntity<DietPlanResponse> getMemberDiet(@PathVariable Integer memberId) {
         return ResponseEntity.ok(
-                dietService.getLatestDietForMember(memberId)
-        );
+                dietService.getLatestDietForMember(memberId));
     }
 
     // -----------------------------
@@ -64,5 +63,31 @@ public class DietController {
 
         // 4️⃣ Return diet assigned to memberId
         return ResponseEntity.ok(dietService.getLatestDietForMember(memberId));
+    }
+
+    private Integer getMemberId(Authentication auth) {
+        String email = auth.getName();
+        UserResponse user = userClient.getUserByEmail(email);
+        ViewMemberResponse m = userClient.getMemberByUserId(user.getUserId());
+        return m.getMemberId();
+    }
+
+    @PostMapping("/log")
+    @PreAuthorize("hasRole('MEMBER')")
+    public ResponseEntity<?> logDiet(@RequestBody DietLogRequest req, Authentication auth) {
+        dietService.logDiet(getMemberId(auth), req);
+        return ResponseEntity.ok("Diet logged successfully");
+    }
+
+    @GetMapping("/today")
+    @PreAuthorize("hasRole('MEMBER')")
+    public ResponseEntity<?> getTodayLogs(Authentication auth) {
+        return ResponseEntity.ok(dietService.getTodayLogs(getMemberId(auth)));
+    }
+
+    @GetMapping("/history")
+    @PreAuthorize("hasRole('MEMBER')")
+    public ResponseEntity<?> getHistoryLogs(Authentication auth) {
+        return ResponseEntity.ok(dietService.getHistory(getMemberId(auth)));
     }
 }

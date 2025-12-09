@@ -128,4 +128,28 @@ public class TrainerController {
         return ResponseEntity.ok(trainerService.getMembersUnderTrainer(trainerId));
     }
 
+    // NEW ENDPOINT – potential members for assignment
+    @PreAuthorize("hasRole('ADMIN')")
+    @GetMapping("/{trainerId}/potential-members")
+    public ResponseEntity<List<com.gymmanagement.usermanagement.Response.GymMemberResponse>> getPotentialMembers(
+            @PathVariable Integer trainerId) {
+        List<com.gymmanagement.usermanagement.Response.GymMemberResponse> members = trainerService
+                .getPotentialMembersForTrainer(trainerId);
+        return ResponseEntity.ok(members);
+    }
+
+    // Remove specific member from trainer (for trainer table view)
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/{trainerId}/remove-member/{memberId}")
+    public ResponseEntity<ApiResponse> removeMemberFromTrainer(
+            @PathVariable Integer trainerId,
+            @PathVariable Integer memberId) {
+        try {
+            trainerService.removeMemberFromTrainer(trainerId, memberId);
+            return ResponseEntity.ok(new ApiResponse(true, "Member removed from trainer successfully"));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(new ApiResponse(false, ex.getMessage()));
+        }
+    }
+
 }

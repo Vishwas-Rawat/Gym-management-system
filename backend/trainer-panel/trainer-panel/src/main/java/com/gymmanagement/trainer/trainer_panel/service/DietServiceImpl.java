@@ -16,6 +16,7 @@ import java.time.LocalDateTime;
 public class DietServiceImpl implements DietService {
 
     private final DietPlanRepository dietPlanRepo;
+    private final DietLogRepository dietLogRepo;
     private final DietMealRepository mealRepo;
     private final DietFoodRepository foodRepo;
     private final DietProteinRepository proteinRepo;
@@ -86,15 +87,44 @@ public class DietServiceImpl implements DietService {
         return buildResponse(plan);
     }
 
+    @Override
+    public void logDiet(Integer memberId, DietLogRequest req) {
+        DietLog log = new DietLog();
+        log.setMemberId(memberId);
+        log.setDate(java.time.LocalDate.now());
+        log.setMealName(req.getMealName());
+        log.setFoodName(req.getFoodName());
+        log.setQuantity(req.getQuantity());
+        log.setCalories(req.getCalories());
+        log.setProtein(req.getProtein());
+        log.setCarbs(req.getCarbs());
+        log.setFat(req.getFat());
+        log.setLoggedAt(LocalDateTime.now());
+        dietLogRepo.save(log);
+    }
+
+    @Override
+    public java.util.List<DietLog> getTodayLogs(Integer memberId) {
+        return dietLogRepo.findByMemberIdAndDate(memberId, java.time.LocalDate.now());
+    }
+
+    @Override
+    public java.util.List<DietLog> getHistory(Integer memberId) {
+        return dietLogRepo.findByMemberIdAndDateBetween(memberId, java.time.LocalDate.now().minusDays(30),
+                java.time.LocalDate.now());
+    }
 
     @Override
     public DietPlanResponse getLatestDietForMember(Integer memberId) {
         DietPlan plan = dietPlanRepo.findFirstByMemberIdOrderByCreatedAtDesc(memberId)
-                .orElseThrow(() -> new IllegalArgumentException("No diet plan found!"));
+                .orElse(null);
+
+        if (plan == null) {
+            return null;
+        }
 
         return buildResponse(plan);
     }
-
 
     private DietPlanResponse buildResponse(DietPlan plan) {
 
@@ -107,23 +137,29 @@ public class DietServiceImpl implements DietService {
         res.setCreatedAt(plan.getCreatedAt());
 
         // trainer name
-        var trainer = trainerRepo.findById(plan.getTrainerId()).orElse(null);
-        if (trainer != null) {
-        	UserProfileResponse profile = userClient.getUserProfile(trainer.getUser().getUserId());
-        	if (profile != null) {
-        	    res.setTrainerName(profile.getFirstName() + " " + profile.getLastName());
-        	}
-
+        try {
+            var trainer = trainerRepo.findById(plan.getTrainerId()).orElse(null);
+            if (trainer != null) {
+                UserProfileResponse profile = userClient.getUserProfile(trainer.getUser().getUserId());
+                if (profile != null) {
+                    res.setTrainerName(profile.getFirstName() + " " + profile.getLastName());
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to fetch trainer profile: " + e.getMessage());
         }
 
         // member name
-        var member = memberRepo.findById(plan.getMemberId()).orElse(null);
-        if (member != null) {
-        	UserProfileResponse profile = userClient.getUserProfile(member.getUser().getUserId());
-        	if (profile != null) {
-        	    res.setMemberName(profile.getFirstName() + " " + profile.getLastName());
-        	}
-
+        try {
+            var member = memberRepo.findById(plan.getMemberId()).orElse(null);
+            if (member != null) {
+                UserProfileResponse profile = userClient.getUserProfile(member.getUser().getUserId());
+                if (profile != null) {
+                    res.setMemberName(profile.getFirstName() + " " + profile.getLastName());
+                }
+            }
+        } catch (Exception e) {
+            System.err.println("Failed to fetch member profile: " + e.getMessage());
         }
 
         // meals

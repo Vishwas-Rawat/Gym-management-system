@@ -11,7 +11,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/attendance")
+@RequestMapping("/api/attendance")
 @RequiredArgsConstructor
 public class AttendanceController {
 
@@ -36,9 +36,10 @@ public class AttendanceController {
     }
 
     @PostMapping("/mark")
-    public ResponseEntity<?> markAttendance(Authentication auth) {
+    public ResponseEntity<?> markAttendance(@RequestParam(defaultValue = "PRESENT") String status,
+            Authentication auth) {
         var ctx = extractUser(auth);
-        AttendanceMarkResponse res = attendanceService.markToday(ctx.userId(), ctx.role);
+        AttendanceMarkResponse res = attendanceService.markToday(ctx.userId(), ctx.role, status);
         return ResponseEntity.ok(res);
     }
 
@@ -52,6 +53,18 @@ public class AttendanceController {
     public ResponseEntity<?> history(Authentication auth) {
         var ctx = extractUser(auth);
         return ResponseEntity.ok(attendanceService.getHistory(ctx.userId()));
+    }
+
+    @GetMapping("/streak")
+    public ResponseEntity<Integer> getStreak(Authentication auth) {
+        var ctx = extractUser(auth);
+        return ResponseEntity.ok(attendanceService.getStreak(ctx.userId()));
+    }
+
+    @GetMapping("/max-streak")
+    public ResponseEntity<Integer> getMaxStreak(Authentication auth) {
+        var ctx = extractUser(auth);
+        return ResponseEntity.ok(attendanceService.getMaxStreak(ctx.userId()));
     }
 
     // ADMIN ENDPOINTS (use admin JWT)

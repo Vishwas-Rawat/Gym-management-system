@@ -10,4 +10,13 @@ public interface TrainerWorkoutService {
     WorkoutPlanResponse getLatestPlanForMember(Integer memberId);
 
     List<ViewMemberResponse> getAssignedMembers(Long gymId, Integer trainerId);
+
+    void logWorkout(Integer memberId, WorkoutLogRequest req);
+
+    List<com.gymmanagement.commonservices.entity.WorkoutLog> getTodayWorkoutLogs(Integer memberId);
+
+    // New methods
+    void deleteWorkoutLog(Integer memberId, Long logId);
+
+    void updateWorkoutLog(Integer memberId, Long logId, WorkoutLogRequest req);
 }

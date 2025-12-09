@@ -26,7 +26,7 @@ import java.util.stream.Collectors;
 public class MemberController {
 
     private final MemberService memberService;
-    
+
     private final MemberRepository memberRepository;
 
     public MemberController(MemberService memberService, MemberRepository memberRepository) {
@@ -35,20 +35,13 @@ public class MemberController {
     }
 
     // Admin adds member → generates invite link
+    // Admin adds member → generates invite link
     @PostMapping("/admin/add-multiple")
     public ResponseEntity<ApiResponse> addMultipleMembersByAdmin(@RequestBody List<AdminAddMemberRequest> requests) {
-        try {
-            List<AddMemberResponse> responses = memberService.addMultipleMembersByAdmin(requests);
-            return ResponseEntity.ok(new ApiResponse(true,
-                    responses.size() + " members added successfully and registration links sent"));
-        } catch (RuntimeException ex) {
-            return ResponseEntity.badRequest().body(new ApiResponse(false, ex.getMessage()));
-        }
+        List<AddMemberResponse> responses = memberService.addMultipleMembersByAdmin(requests);
+        return ResponseEntity.ok(new ApiResponse(true,
+                responses.size() + " members added successfully and registration links sent"));
     }
-
-
-
-
 
     // Admin resends registration link
     @PostMapping("/admin/{userId}/resend-invite")
@@ -97,7 +90,7 @@ public class MemberController {
     // Update member details
     @PutMapping("/{memberId}")
     public ResponseEntity<UpdateMemberResponse> updateMember(@PathVariable Integer memberId,
-                                                             @RequestBody UpdateMemberRequest request) {
+            @RequestBody UpdateMemberRequest request) {
         try {
             Member member = memberService.updateMember(memberId, request);
             return ResponseEntity.ok(new UpdateMemberResponse(member, "Member updated successfully"));
@@ -124,8 +117,8 @@ public class MemberController {
                 .map(member -> new ViewMemberResponse(member, "Member retrieved successfully"))
                 .collect(Collectors.toList());
     }
-    
- // Get all members for a specific gym
+
+    // Get all members for a specific gym
     @GetMapping("/gym/{gymId}")
     public ResponseEntity<List<GymMemberResponse>> getMembersByGym(@PathVariable Long gymId) {
         List<GymMemberResponse> responses = memberService.getMembersByGymId(gymId).stream()
@@ -134,8 +127,8 @@ public class MemberController {
 
         return ResponseEntity.ok(responses);
     }
-    
- // 1. Get all members under a trainer (gym-specific)
+
+    // 1. Get all members under a trainer (gym-specific)
     @GetMapping("/gym/{gymId}/trainer/{trainerId}/members")
     public ResponseEntity<List<ViewMemberResponse>> getMembersByTrainer(
             @PathVariable Long gymId,
@@ -161,15 +154,30 @@ public class MemberController {
             return ResponseEntity.badRequest().body(new ApiResponse(false, ex.getMessage()));
         }
     }
-    
+
+    // 3. Remove trainer from member (simpler - for member-based view)
+    @PreAuthorize("hasRole('ADMIN')")
+    @PostMapping("/{memberId}/remove-trainer")
+    public ResponseEntity<ApiResponse> removeTrainerFromMember(@PathVariable Integer memberId) {
+        try {
+            Member member = memberService.getMemberById(memberId);
+            if (member.getTrainer() == null) {
+                return ResponseEntity.ok(new ApiResponse(true, "Member has no trainer assigned"));
+            }
+            memberService.removeMemberFromTrainer(memberId, member.getGym().getGymId());
+            return ResponseEntity.ok(new ApiResponse(true, "Trainer removed from member successfully"));
+        } catch (IllegalArgumentException ex) {
+            return ResponseEntity.badRequest().body(new ApiResponse(false, ex.getMessage()));
+        }
+    }
+
     @PreAuthorize("hasRole('ADMIN')")
     @GetMapping("/all-with-expiry")
     public ResponseEntity<List<MemberWithExpiryResponse>> getAllMembersWithExpiry() {
         return ResponseEntity.ok(memberService.getAllMembersWithExpiry());
     }
-    
-    
- // Send reminder to ONE member (perfect for frontend button click)
+
+    // Send reminder to ONE member (perfect for frontend button click)
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/send-reminder/{memberId}")
     public ResponseEntity<ApiResponse> sendSingleReminder(@PathVariable Integer memberId) {
@@ -181,12 +189,13 @@ public class MemberController {
 
             if (daysRemaining > 10) {
                 return ResponseEntity.ok(new ApiResponse(true,
-                    "No reminder sent — membership is still active (" + daysRemaining + " days remaining)"));
+                        "No reminder sent — membership is still active (" + daysRemaining + " days remaining)"));
             }
 
             memberService.sendSingleExpiryReminder(memberId);
-            return ResponseEntity.ok(new ApiResponse(true, 
-                    "Reminder email sent successfully (" + (daysRemaining < 0 ? "expired" : daysRemaining + " days left") + ")"));
+            return ResponseEntity.ok(new ApiResponse(true,
+                    "Reminder email sent successfully ("
+                            + (daysRemaining < 0 ? "expired" : daysRemaining + " days left") + ")"));
 
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(new ApiResponse(false, e.getMessage()));
@@ -203,8 +212,8 @@ public class MemberController {
             int greenMembers = totalMembers - totalSent;
 
             if (totalSent == 0) {
-                return ResponseEntity.ok(new ApiResponse(true, 
-                    "No reminders sent — all " + totalMembers + " members have more than 10 days remaining"));
+                return ResponseEntity.ok(new ApiResponse(true,
+                        "No reminders sent — all " + totalMembers + " members have more than 10 days remaining"));
             }
 
             return ResponseEntity.ok(new ApiResponse(true,
@@ -215,25 +224,25 @@ public class MemberController {
     }
 
     private LocalDate calculateExpiryDate(Member member) {
-        LocalDate startDate = member.getPlanStartDate() != null 
-                ? member.getPlanStartDate() 
+        LocalDate startDate = member.getPlanStartDate() != null
+                ? member.getPlanStartDate()
                 : member.getJoiningDate();
 
-        int totalMonths = member.getMonthsPaid() 
-                        + (member.getMonthsFree() != null ? member.getMonthsFree() : 0);
+        int totalMonths = member.getMonthsPaid()
+                + (member.getMonthsFree() != null ? member.getMonthsFree() : 0);
 
         return startDate.plusMonths(totalMonths).minusDays(1);
     }
-    
- // =========================
- // GET ACTIVE MEMBER (For Feign Client)
- // =========================
- @GetMapping("/active/{memberId}")
- public ResponseEntity<ViewMemberResponse> getActiveMember(@PathVariable Integer memberId) {
-     Member member = memberRepository.findActiveById(memberId)
-             .orElseThrow(() -> new RuntimeException("Active member not found"));
 
-     return ResponseEntity.ok(new ViewMemberResponse(member, "Active member retrieved successfully"));
- }
+    // =========================
+    // GET ACTIVE MEMBER (For Feign Client)
+    // =========================
+    @GetMapping("/active/{memberId}")
+    public ResponseEntity<ViewMemberResponse> getActiveMember(@PathVariable Integer memberId) {
+        Member member = memberRepository.findActiveById(memberId)
+                .orElseThrow(() -> new RuntimeException("Active member not found"));
+
+        return ResponseEntity.ok(new ViewMemberResponse(member, "Active member retrieved successfully"));
+    }
 
 }

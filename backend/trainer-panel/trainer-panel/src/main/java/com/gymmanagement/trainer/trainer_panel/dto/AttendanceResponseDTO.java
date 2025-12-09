@@ -8,6 +8,7 @@ public class AttendanceResponseDTO {
     private Long id;
     private Integer userId;
     private String role;
+    private String fullName;
     private LocalDate date;
     private String status;
 }

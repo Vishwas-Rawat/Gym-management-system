@@ -32,4 +32,8 @@ public interface TrainerService {
     void assignMembersToTrainer(AssignMembersToTrainerRequest request);
 
     List<com.gymmanagement.usermanagement.Response.GymMemberResponse> getMembersUnderTrainer(Integer trainerId);
+
+    List<com.gymmanagement.usermanagement.Response.GymMemberResponse> getPotentialMembersForTrainer(Integer trainerId);
+    
+    void removeMemberFromTrainer(Integer trainerId, Integer memberId);
 }
