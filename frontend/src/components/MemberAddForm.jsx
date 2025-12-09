@@ -7,7 +7,7 @@ import {
 } from "@mui/material";
 import { Add, Delete, ChevronLeft, ChevronRight, FitnessCenter } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import api from "../services/api";
+import api, { userApi } from "../services/api";
 import { motion } from "framer-motion";
 
 const hours = Array.from({ length: 12 }, (_, i) => i + 1);
@@ -50,6 +50,7 @@ export default function MemberAddForm({ onSuccess, multiple = false, member = nu
   const [globalGymId, setGlobalGymId] = useState("");
   const [dropdownWidth, setDropdownWidth] = useState(160);
   const labelRef = useRef(null);
+  const containerRef = useRef(null);
 
   const [gymOptions, setGymOptions] = useState([]);
   const [loadingGyms, setLoadingGyms] = useState(true);
@@ -60,7 +61,7 @@ export default function MemberAddForm({ onSuccess, multiple = false, member = nu
     const fetchGyms = async () => {
       try {
         setLoadingGyms(true);
-        const response = await api.get("/gym/my-gyms");
+        const response = await userApi.get("/gym/my-gyms");
         const gyms = Array.isArray(response.data) ? response.data : [];
         if (gyms.length === 0) setShowNoGymMessage(true);
         else setGymOptions(gyms.map(g => ({ id: g.gymId, name: g.gymName })));
@@ -89,10 +90,16 @@ export default function MemberAddForm({ onSuccess, multiple = false, member = nu
       const [fromPart = "", toPart = ""] = timeSlot.split(" to ");
       const [fromTime = "", fromP = ""] = fromPart.trim().split(" ");
       const [toTime = "", toP = ""] = toPart.trim().split(" ");
-      [fromHour, fromMinute] = fromTime.split(":");
-      [toHour, toMinute] = toTime.split(":");
-      fromPeriod = fromP;
-      toPeriod = toP;
+      
+      const [fh, fm] = fromTime.split(":");
+      const [th, tm] = toTime.split(":");
+
+      fromHour = fh || "";
+      fromMinute = fm || "";
+      fromPeriod = fromP || "";
+      toHour = th || "";
+      toMinute = tm || "";
+      toPeriod = toP || "";
     } else {
       fromHour = member.fromHour ?? "";
       fromMinute = member.fromMinute ?? "";
@@ -120,7 +127,7 @@ export default function MemberAddForm({ onSuccess, multiple = false, member = nu
     };
 
     setMembers([init]);
-    setGlobalGymId("");
+    setGlobalGymId(member.gymId ? String(member.gymId) : "");
   } else {
     setMembers([emptyMember]);
     setGlobalGymId("");
@@ -169,11 +176,19 @@ export default function MemberAddForm({ onSuccess, multiple = false, member = nu
     const payload = multiple || members.length > 1 ? members : members[0];
     const required = ["fullName","email","phoneNo","monthsPaid","paymentMethod","startDate"];
 
-    if (!globalGymId) { alert("Please select a gym before submitting."); return; }
+    if (!globalGymId) { 
+        alert("Please select a gym before submitting."); 
+        if (containerRef.current) containerRef.current.scrollIntoView({ behavior: 'smooth' });
+        return; 
+    }
 
     for (const m of Array.isArray(payload) ? payload : [payload]) {
       const missing = required.filter(f => !m[f]);
-      if (missing.length) { alert(`Member ${members.indexOf(m)+1} missing: ${missing.join(", ")}`); return; }
+      if (missing.length) { 
+          alert(`Member ${members.indexOf(m)+1} missing: ${missing.join(", ")}`);
+          if (containerRef.current) containerRef.current.scrollIntoView({ behavior: 'smooth' });
+          return; 
+      }
     }
 
     const final = (Array.isArray(payload) ? payload : [payload]).map(m => {
@@ -270,7 +285,7 @@ export default function MemberAddForm({ onSuccess, multiple = false, member = nu
   const current = members[activeIdx] || {};
 
   return (
-    <Box sx={{
+    <Box ref={containerRef} sx={{
       p: isJioPhone ? 0.8 : { xs: 1.2, sm: 1.8, md: 2.5 },
       maxWidth: "100vw",
       overflowX: "hidden",
@@ -417,9 +432,9 @@ export default function MemberAddForm({ onSuccess, multiple = false, member = nu
           <Typography variant="subtitle2" sx={{ mb: 0.8, color: "primary.main", fontSize: isJioPhone ? "0.75rem" : "0.9rem" }}>Payment</Typography>
 
           <Grid container spacing={0.8}>
-            <Grid item xs={12} sm={6} component={motion.div} variants={itemVariants}><TextField fullWidth label="Reg Fee" type="number" value={current.registrationFee} onChange={e => handleChange(activeIdx, "registrationFee", e.target.value)} InputProps={{ startAdornment: "₹" }} sx={inputSx} /></Grid>
-            <Grid item xs={12} sm={6} component={motion.div} variants={itemVariants}><TextField fullWidth label="Plan" type="number" value={current.planPrice} onChange={e => handleChange(activeIdx, "planPrice", e.target.value)} InputProps={{ startAdornment: "₹" }} sx={inputSx} /></Grid>
-            <Grid item xs={12} sm={6} component={motion.div} variants={itemVariants}><TextField fullWidth label="Discount" type="number" value={current.discount} onChange={e => handleChange(activeIdx, "discount", e.target.value)} InputProps={{ startAdornment: "₹" }} sx={inputSx} /></Grid>
+            <Grid item xs={12} sm={6} component={motion.div} variants={itemVariants}><TextField fullWidth label="Reg Fee" type="number" value={current.registrationFee || ""} onChange={e => handleChange(activeIdx, "registrationFee", e.target.value)} InputProps={{ startAdornment: "₹" }} sx={inputSx} /></Grid>
+            <Grid item xs={12} sm={6} component={motion.div} variants={itemVariants}><TextField fullWidth label="Plan" type="number" value={current.planPrice || ""} onChange={e => handleChange(activeIdx, "planPrice", e.target.value)} InputProps={{ startAdornment: "₹" }} sx={inputSx} /></Grid>
+            <Grid item xs={12} sm={6} component={motion.div} variants={itemVariants}><TextField fullWidth label="Discount" type="number" value={current.discount || ""} onChange={e => handleChange(activeIdx, "discount", e.target.value)} InputProps={{ startAdornment: "₹" }} sx={inputSx} /></Grid>
             <Grid item xs={12} sm={6} component={motion.div} variants={itemVariants}><TextField fullWidth label="Total" value={Math.max(0, current.totalAmount || 0)} disabled InputProps={{ startAdornment: "₹" }} sx={inputSx} /></Grid>
 
             {/* PAYMENT METHOD – 100% FULL WIDTH */}
@@ -438,25 +453,28 @@ export default function MemberAddForm({ onSuccess, multiple = false, member = nu
             <Grid item xs={12} sm={6} component={motion.div} variants={itemVariants}><TextField fullWidth label="Start" type="date" value={current.startDate || ""} onChange={e => handleChange(activeIdx, "startDate", e.target.value)} InputLabelProps={{ shrink: true }} sx={inputSx} /></Grid>
           </Grid>
         </Paper>
+      </Stack>
 
-        {/* ACTION BUTTONS */}
-        <Stack direction={{ xs: "column", sm: "row" }} spacing={0.8} mt={1.2} justifyContent="flex-end">
-          <Button onClick={onCancel || (() => onSuccess(null))} fullWidth={isMobile}
-            size={isJioPhone ? "small" : "medium"}
-            sx={{ minHeight: 38, fontSize: isJioPhone ? "0.7rem" : "0.85rem" }}>
-            Cancel
-          </Button>
-          <Button variant="contained" onClick={submit} disabled={!globalGymId} fullWidth={isMobile}
-            size={isJioPhone ? "small" : "medium"}
-            sx={{
-              minHeight: 38,
-              background: "primary.main",
-              "&:hover": { background: "#0069d9" },
-              fontSize: isJioPhone ? "0.7rem" : "0.85rem"
-            }}>
-            {isEdit ? "Update" : multiple ? "Register All" : "Register"}
-          </Button>
-        </Stack>
+      {/* ACTION BUTTONS */}
+      <Stack direction={{ xs: "column", sm: "row" }} spacing={0.8} mt={1.2} justifyContent="flex-end">
+        <Button onClick={onCancel || (() => onSuccess(null))} fullWidth={isMobile}
+          size={isJioPhone ? "small" : "medium"}
+          sx={{ minHeight: 38, fontSize: isJioPhone ? "0.7rem" : "0.85rem" }}>
+          Cancel
+        </Button>
+        <Button variant="contained" onClick={submit} disabled={!globalGymId} fullWidth={isMobile}
+          size={isJioPhone ? "small" : "medium"}
+          sx={{
+            minHeight: 38,
+            borderRadius: "6px",
+            background: "primary.main",
+            "&:hover": { background: "#0069d9" },
+            textTransform: "none",
+            fontWeight: 600,
+            fontSize: isJioPhone ? "0.7rem" : "0.85rem"
+          }}>
+          {isEdit ? "Update Member" : multiple ? "Register All" : "Add Member"}
+        </Button>
       </Stack>
     </Box>
   );

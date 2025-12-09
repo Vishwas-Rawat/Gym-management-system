@@ -13,7 +13,7 @@ import {
   Avatar,
 } from "@mui/material";
 
-import { Visibility, Edit, AttachMoney, Delete, Person } from "@mui/icons-material";
+import { Visibility, Edit, AttachMoney, Delete, Person, RestaurantMenu, Assignment } from "@mui/icons-material";
 
 // ---- Framer Motion ----
 import { motion } from "framer-motion";
@@ -36,8 +36,9 @@ const buttonVariants = {
 };
 
 const MemberRow = React.memo(
-  ({ member, onDetail, onEdit, onPaymentReminder, onResend, onDelete, index, isSelected }) => {
-    const isMobile = useMediaQuery("(max-width:600px)");
+  ({ member, onDetail, onEdit, onPaymentReminder, onResend, onDelete, onAssignDiet, onViewDiet, index, isSelected }) => {
+    const isMobile = useMediaQuery("(max-width:900px)");
+
 
     const planText =
       member.membershipPlan ||
@@ -155,6 +156,7 @@ const MemberRow = React.memo(
                   <Delete fontSize="small" />
                 </IconButton>
               </motion.div>
+
             </Stack>
           </Stack>
         </MotionBox>
@@ -257,6 +259,7 @@ const MemberRow = React.memo(
                 </IconButton>
               </Tooltip>
             </motion.div>
+
           </Stack>
         </TableCell>
       </MotionTableRow>

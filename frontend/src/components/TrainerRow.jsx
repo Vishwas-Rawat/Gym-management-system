@@ -37,7 +37,8 @@ const buttonVariants = {
 
 const TrainerRow = React.memo(
   ({ trainer, onDetail, onEdit, onResend, onDelete, index, isSelected }) => {
-    const isMobile = useMediaQuery("(max-width:600px)");
+    const isMobile = useMediaQuery("(max-width:900px)");
+
 
     const singleLine = {
       whiteSpace: "nowrap",

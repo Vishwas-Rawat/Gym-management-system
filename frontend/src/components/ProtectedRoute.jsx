@@ -1,26 +1,33 @@
 import React, { useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { jwtDecode } from "jwt-decode";
+import { useAuth } from '../context/AuthContext';
 
 const ProtectedRoute = ({ children, allowedRoles }) => {
   const token = localStorage.getItem('token');
   const [userRole, setUserRole] = useState(null);
   const [isLoading, setIsLoading] = useState(true);
 
+  const { checkStatus } = useAuth(); // If available in context, or import useAuth
+  
   useEffect(() => {
-    if (token) {
-      try {
-        const decoded = jwtDecode(token);
-        // Assuming the role is stored in the token under 'role' or 'authorities'
-        // Adjust this based on your actual JWT structure
-        const role = decoded.role || decoded.authorities?.[0]?.authority || decoded.sub?.role; 
-        setUserRole(role);
-      } catch (error) {
-        console.error("Invalid token", error);
-        localStorage.removeItem('token');
-      }
-    }
-    setIsLoading(false);
+    const verifyUser = async () => {
+        if (token) {
+        try {
+            const decoded = jwtDecode(token);
+            const role = decoded.role || decoded.authorities?.[0]?.authority || decoded.sub?.role; 
+            setUserRole(role);
+            
+            // Optional: Check status on every route change if critical
+            // await checkStatus(); 
+        } catch (error) {
+            console.error("Invalid token", error);
+            localStorage.removeItem('token');
+        }
+        }
+        setIsLoading(false);
+    };
+    verifyUser();
   }, [token]);
 
   if (isLoading) {
