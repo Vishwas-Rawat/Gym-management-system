@@ -49,7 +49,8 @@ public class TrainerWorkoutServiceImpl implements TrainerWorkoutService {
             // swallow and fallback
         }
 
-        // 2) If memberResp is still null, try to get member-by-user endpoint or user by id
+        // 2) If memberResp is still null, try to get member-by-user endpoint or user by
+        // id
         if (memberResp == null) {
             try {
                 // try member by user id endpoint first (if implemented)
@@ -114,8 +115,8 @@ public class TrainerWorkoutServiceImpl implements TrainerWorkoutService {
                 item.setRestSeconds(ex.getRestSeconds());
                 item.setNotes(ex.getNotes());
 
-                Set<DayOfWeek> days = ex.getDays() == null ? Collections.emptySet() :
-                        ex.getDays().stream()
+                Set<DayOfWeek> days = ex.getDays() == null ? Collections.emptySet()
+                        : ex.getDays().stream()
                                 .map(String::toUpperCase)
                                 .map(DayOfWeek::valueOf)
                                 .collect(Collectors.toSet());
@@ -147,7 +148,8 @@ public class TrainerWorkoutServiceImpl implements TrainerWorkoutService {
 
         if (memberResp == null) {
             UserManagementClient.UserResponse userResp = userManagementClient.getUserById(memberId);
-            if (userResp == null) throw new IllegalArgumentException("Member/User not found");
+            if (userResp == null)
+                throw new IllegalArgumentException("Member/User not found");
             UserManagementClient.MemberResponse synthetic = new UserManagementClient.MemberResponse();
             synthetic.setMemberId(null);
             synthetic.setTrainerId(null);
@@ -160,24 +162,24 @@ public class TrainerWorkoutServiceImpl implements TrainerWorkoutService {
     }
 
     private WorkoutPlanResponse mapToResponse(WorkoutPlan plan,
-                                              UserManagementClient.UserResponse trainer,
-                                              UserManagementClient.UserResponse member) {
+            UserManagementClient.UserResponse trainer,
+            UserManagementClient.UserResponse member) {
 
         WorkoutPlanResponse res = new WorkoutPlanResponse();
         res.setPlanId(plan.getPlanId());
         res.setPlanName(plan.getPlanName());
-        res.setTrainerName(trainer != null ?
-                (trainer.getFirstName() + " " + (trainer.getLastName() == null ? "" : trainer.getLastName())).trim()
+        res.setTrainerName(trainer != null
+                ? (trainer.getFirstName() + " " + (trainer.getLastName() == null ? "" : trainer.getLastName())).trim()
                 : "Trainer");
-        res.setMemberName(member != null ?
-                (member.getFirstName() + " " + (member.getLastName() == null ? "" : member.getLastName())).trim()
+        res.setMemberName(member != null
+                ? (member.getFirstName() + " " + (member.getLastName() == null ? "" : member.getLastName())).trim()
                 : "Member");
         res.setCreatedAt(plan.getCreatedAt());
 
         List<WorkoutItemResponse> items = plan.getItems().stream().map(item -> {
             WorkoutItemResponse r = new WorkoutItemResponse();
-            r.setExerciseName(item.getExerciseName().name());
-            r.setDisplayName(item.getExerciseName().getDisplayName());
+            r.setExerciseName(item.getExerciseName());
+            r.setDisplayName(item.getExerciseName());
             r.setSets(item.getSets());
             r.setReps(item.getReps());
             r.setRestSeconds(item.getRestSeconds());

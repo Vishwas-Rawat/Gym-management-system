@@ -21,50 +21,45 @@ public class GymController {
 	@Autowired
 	private GymService gymService;
 
-	@Autowired
-	private UserRepository userRepository;
+	// @Autowired
+	// private UserRepository userRepository;
 
 	// ✅ Create multiple gyms (Admin only)
 	@PostMapping("/create")
 	public List<GymRegisterResponse> createGyms(@RequestBody List<Gym> gyms, Authentication authentication) {
-		String identity = authentication.getName(); // this is email from JWT
-
-		User admin = userRepository.findByEmail(identity).orElseThrow(() -> new RuntimeException("Admin not found"));
+		User admin = (User) authentication.getPrincipal();
 
 		return gymService.createGyms(gyms, admin.getUserId());
 	}
 
 	// ✅ Get all gyms by logged-in admin
 	@GetMapping("/my-gyms")
-//	public List<GymRegisterResponse> getGymsByAdmin(Authentication authentication) {
-//		String identity = authentication.getName(); // this is email from JWT
-//
-//		User admin = userRepository.findByEmail(identity).orElseThrow(() -> new RuntimeException("Admin not found"));
-//
-//		return gymService.getAllGymsByAdmin(admin.getUserId());
-//	}
+	// public List<GymRegisterResponse> getGymsByAdmin(Authentication
+	// authentication) {
+	// String identity = authentication.getName(); // this is email from JWT
+	//
+	// User admin = userRepository.findByEmail(identity).orElseThrow(() -> new
+	// RuntimeException("Admin not found"));
+	//
+	// return gymService.getAllGymsByAdmin(admin.getUserId());
+	// }
 	public List<GymRegisterResponse> getGymsByAdmin(Authentication authentication) {
-	    String email = authentication.getName(); // from JWT
-	    User admin = userRepository.findByEmail(email)
-	            .orElseThrow(() -> new RuntimeException("Admin not found"));
-	    return gymService.getAllGymsByAdmin(admin.getUserId());
+		User admin = (User) authentication.getPrincipal();
+		return gymService.getAllGymsByAdmin(admin.getUserId());
 	}
 
 	// ✅ Update gym by gymId (JWT + gymId)
 	@PutMapping("/update/{gymId}")
 	public GymRegisterResponse updateGym(@PathVariable Long gymId, @RequestBody Gym updatedGym,
 			Authentication authentication) {
-		String identity = authentication.getName(); // this is email from JWT
-
-		User admin = userRepository.findByEmail(identity).orElseThrow(() -> new RuntimeException("Admin not found"));
+		User admin = (User) authentication.getPrincipal();
 
 		return gymService.updateGym(gymId, updatedGym, admin.getUserId());
 	}
 
 	@DeleteMapping("/delete/{gymId}")
 	public ResponseEntity<String> softDeleteGym(@PathVariable Long gymId, Authentication authentication) {
-		User admin = userRepository.findByEmail(authentication.getName())
-				.orElseThrow(() -> new RuntimeException("Admin not found"));
+		User admin = (User) authentication.getPrincipal();
 
 		boolean deleted = gymService.softDeleteGym(gymId, admin.getUserId());
 
@@ -72,5 +67,15 @@ public class GymController {
 			return ResponseEntity.ok("Gym soft deleted successfully.");
 		else
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to delete gym.");
+	}
+
+	// ✅ FORCE DELETE: Deletes Gym + Members + Trainers
+	@DeleteMapping("/force-delete/{gymId}")
+	public ResponseEntity<String> forceDeleteGym(@PathVariable Long gymId, Authentication authentication) {
+		User admin = (User) authentication.getPrincipal();
+
+		gymService.forceDeleteGym(gymId, admin.getUserId());
+
+		return ResponseEntity.ok("Gym and all related members/trainers force deleted successfully.");
 	}
 }

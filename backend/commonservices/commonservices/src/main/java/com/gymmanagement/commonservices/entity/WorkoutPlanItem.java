@@ -21,9 +21,9 @@ public class WorkoutPlanItem {
     @JoinColumn(name = "plan_id", nullable = false)
     private WorkoutPlan workoutPlan;
 
-    @Enumerated(EnumType.STRING)
+    // @Enumerated(EnumType.STRING) -- Changed to String for custom exercises
     @Column(name = "exercise_name")
-    private ExerciseName exerciseName;
+    private String exerciseName;
 
     private Integer sets;
     private Integer reps;

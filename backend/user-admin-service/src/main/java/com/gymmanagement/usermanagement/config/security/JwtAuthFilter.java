@@ -26,14 +26,13 @@ public class JwtAuthFilter extends OncePerRequestFilter {
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+            HttpServletResponse response,
+            FilterChain filterChain) throws ServletException, IOException {
 
         String path = request.getRequestURI();
 
         // 🔥 SKIP JWT FOR FEIGN + PUBLIC APIs
         if (path.startsWith("/member/active")
-                || path.startsWith("/user/email")
                 || path.startsWith("/user/internal")
                 || path.startsWith("/user/login")
                 || path.startsWith("/user/register")
@@ -65,8 +64,7 @@ public class JwtAuthFilter extends OncePerRequestFilter {
                             var auth = new UsernamePasswordAuthenticationToken(
                                     user,
                                     null,
-                                    Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role))
-                            );
+                                    Collections.singletonList(new SimpleGrantedAuthority("ROLE_" + role)));
 
                             auth.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                             SecurityContextHolder.getContext().setAuthentication(auth);

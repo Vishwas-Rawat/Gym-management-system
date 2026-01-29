@@ -13,19 +13,11 @@ public class AdminAddMemberRequest {
     private Integer monthsPaid;
     private Integer monthsFree;
 
-    // CHANGE: String → Integer (1–12)
-    private Integer fromHour;
-    private String fromMinute;
-    private String fromPeriod;
-
-    private Integer toHour;
-    private String toMinute;
-    private String toPeriod;
+    private String workoutTimeSlot;
 
     private Double registrationFee;
     private Double planPrice;
     private Double discount;
-    private Double totalAmount;
     private String paymentMethod;
     private LocalDate joiningDate;
     private Integer gymId;

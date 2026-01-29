@@ -8,7 +8,8 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @NoArgsConstructor
 public class AttendanceMarkResponse {
-    private Long id;         // saved attendance id
-    private boolean marked;  // true if newly marked
-    private String message;  // human message
+    private Long id; // saved attendance id
+    private boolean marked; // true if newly marked
+    private String status; // "PRESENT" or "ABSENT"
+    private String message; // human message
 }

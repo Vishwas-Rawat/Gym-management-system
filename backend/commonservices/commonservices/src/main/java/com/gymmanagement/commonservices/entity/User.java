@@ -23,11 +23,11 @@ public class User {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
-    @ToString.Include                    // SAFE field
+    @ToString.Include // SAFE field
     private Integer userId;
 
     @Column(nullable = false, unique = true)
-    @ToString.Include                    // SAFE field
+    @ToString.Include // SAFE field
     private String email;
 
     @Column(name = "phone_number", unique = true)
@@ -38,7 +38,7 @@ public class User {
 
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)
-    @ToString.Include                    // SAFE field
+    @ToString.Include // SAFE field
     private Role role;
 
     @Column(name = "username", unique = true)
@@ -66,9 +66,15 @@ public class User {
     @Column(name = "token_generated_at")
     private LocalDateTime tokenGeneratedAt;
 
-    @Column(name = "registration_status")
     @Enumerated(EnumType.STRING)
     private RegistrationStatus registrationStatus = RegistrationStatus.PENDING;
+
+    // ⭐ CHAT KEYS (E2EE)
+    @Column(name = "public_key", columnDefinition = "TEXT")
+    private String publicKey;
+
+    @Column(name = "encrypted_private_key", columnDefinition = "TEXT")
+    private String encryptedPrivateKey;
 
     // ❌ EXCLUDE — Lazy fetch -> cause of LazyInitializationException
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)

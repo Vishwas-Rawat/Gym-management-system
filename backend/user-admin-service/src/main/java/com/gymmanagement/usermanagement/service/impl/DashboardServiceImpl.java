@@ -1,7 +1,6 @@
 package com.gymmanagement.usermanagement.service.impl;
 
-import com.gymmanagement.commonservices.entity.Member;
-import com.gymmanagement.commonservices.entity.Trainer;
+import com.gymmanagement.commonservices.entity.*;
 import com.gymmanagement.usermanagement.Response.*;
 import com.gymmanagement.usermanagement.repository.*;
 import com.gymmanagement.usermanagement.service.DashboardService;
@@ -19,6 +18,8 @@ public class DashboardServiceImpl implements DashboardService {
     private final MemberRepository memberRepo;
     private final TrainerRepository trainerRepo;
     private final AttendanceRepository attendanceRepo;
+    private final UserRepository userRepo;
+    private final GymRepository gymRepo;
 
     @Override
     public DashboardResponse getDashboard(Long gymId) {
@@ -66,8 +67,7 @@ public class DashboardServiceImpl implements DashboardService {
                     members.stream()
                             .filter(m -> m.getTrainer() != null &&
                                     m.getTrainer().getTrainerId().equals(t.getTrainerId()))
-                            .count()
-            );
+                            .count());
             return dto;
         }).toList();
 
@@ -81,6 +81,41 @@ public class DashboardServiceImpl implements DashboardService {
         // --- PENDING REQUESTS (if needed integrate workout/diet repos) ---
         res.setPendingDietRequests(0);
         res.setPendingWorkoutRequests(0);
+
+        return res;
+    }
+
+    @Override
+    public AdminProfileResponse getAdminProfile(Integer adminId) {
+        User user = userRepo.findById(adminId)
+                .orElseThrow(() -> new IllegalArgumentException("Admin not found"));
+
+        AdminProfileResponse res = new AdminProfileResponse();
+        res.setUserId(user.getUserId());
+        res.setEmail(user.getEmail());
+        res.setPhoneNo(user.getPhoneNumber());
+        res.setRole(user.getRole().name());
+
+        if (user.getUserProfile() != null) {
+            UserProfile p = user.getUserProfile();
+            res.setFullName(p.getFirstName() + (p.getLastName() != null ? " " + p.getLastName() : ""));
+            res.setAddress(p.getAddress());
+            res.setGender(p.getGender());
+            res.setDateOfBirth(p.getDateOfBirth());
+        }
+
+        List<Gym> gyms = gymRepo.findByCreatedByAdmin_UserId(adminId);
+        res.setGyms(gyms.stream()
+                .filter(g -> Boolean.TRUE.equals(g.getIsActive()))
+                .map(g -> {
+                    AdminProfileResponse.GymDto dto = new AdminProfileResponse.GymDto();
+                    dto.setGymId(g.getGymId());
+                    dto.setGymName(g.getGymName());
+                    dto.setAddress(g.getAddress());
+                    dto.setCity(g.getCity());
+                    dto.setIsActive(g.getIsActive());
+                    return dto;
+                }).toList());
 
         return res;
     }

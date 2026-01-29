@@ -1,0 +1,39 @@
+﻿[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------< com.gymmanagement.trainer:trainer-panel >---------------
+[INFO] Building trainer-panel 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:3.3.2:clean (default-clean) @ trainer-panel ---
+[INFO] Deleting E:\Gym management new version\Gym-management-system\backend\trainer-panel\trainer-panel\target
+[INFO] 
+[INFO] --- maven-resources-plugin:3.3.1:resources (default-resources) @ trainer-panel ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 0 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.13.0:compile (default-compile) @ trainer-panel ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 92 source files with javac [debug parameters release 17] to target\classes
+[INFO] -------------------------------------------------------------
+[ERROR] COMPILATION ERROR : 
+[INFO] -------------------------------------------------------------
+[ERROR] /E:/Gym management new version/Gym-management-system/backend/trainer-panel/trainer-panel/src/main/java/com/gymmanagement/trainer/trainer_panel/controller/MemberRequestController.java:[34,100] local variables referenced from a lambda expression must be final or effectively final
+[INFO] 1 error
+[INFO] -------------------------------------------------------------
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD FAILURE
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  7.609 s
+[INFO] Finished at: 2025-12-28T17:46:13+05:30
+[INFO] ------------------------------------------------------------------------
+[ERROR] Failed to execute goal org.apache.maven.plugins:maven-compiler-plugin:3.13.0:compile (default-compile) on project trainer-panel: Compilation failure
+[ERROR] /E:/Gym management new version/Gym-management-system/backend/trainer-panel/trainer-panel/src/main/java/com/gymmanagement/trainer/trainer_panel/controller/MemberRequestController.java:[34,100] local variables referenced from a lambda expression must be final or effectively final
+[ERROR] 
+[ERROR] -> [Help 1]
+[ERROR] 
+[ERROR] To see the full stack trace of the errors, re-run Maven with the -e switch.
+[ERROR] Re-run Maven using the -X switch to enable full debug logging.
+[ERROR] 
+[ERROR] For more information about the errors and possible solutions, please read the following articles:
+[ERROR] [Help 1] http://cwiki.apache.org/confluence/display/MAVEN/MojoFailureException

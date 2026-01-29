@@ -26,9 +26,11 @@ public class DietServiceImpl implements DietService {
     @Override
     public DietPlanResponse assignDietPlan(Integer trainerId, AssignDietRequest req) {
 
+        System.out.println("DEBUG: Assigning Diet Plan. memberId=" + req.getMemberId() + ", trainerId=" + trainerId);
+
         // validate member exists
         memberRepo.findById(req.getMemberId())
-                .orElseThrow(() -> new IllegalArgumentException("Member not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Member not found (ID: " + req.getMemberId() + ")"));
 
         DietPlan plan = dietPlanRepo.findFirstByMemberIdOrderByCreatedAtDesc(req.getMemberId())
                 .orElse(null);
@@ -39,8 +41,12 @@ public class DietServiceImpl implements DietService {
             plan.setTrainerId(trainerId);
             plan.setCreatedAt(LocalDateTime.now());
         } else {
-            mealRepo.deleteAll(plan.getMeals());
-            plan.getMeals().clear();
+            // STRATEGY CHECK: Only wipe if NOT "APPEND"
+            String strategy = req.getStrategy(); // "REPLACE" or "APPEND"
+            if (strategy == null || !strategy.equalsIgnoreCase("APPEND")) {
+                mealRepo.deleteAll(plan.getMeals());
+                plan.getMeals().clear();
+            }
         }
 
         plan.setPlanName(req.getPlanName());
@@ -86,7 +92,6 @@ public class DietServiceImpl implements DietService {
         return buildResponse(plan);
     }
 
-
     @Override
     public DietPlanResponse getLatestDietForMember(Integer memberId) {
         DietPlan plan = dietPlanRepo.findFirstByMemberIdOrderByCreatedAtDesc(memberId)
@@ -94,7 +99,6 @@ public class DietServiceImpl implements DietService {
 
         return buildResponse(plan);
     }
-
 
     private DietPlanResponse buildResponse(DietPlan plan) {
 
@@ -109,20 +113,20 @@ public class DietServiceImpl implements DietService {
         // trainer name
         var trainer = trainerRepo.findById(plan.getTrainerId()).orElse(null);
         if (trainer != null) {
-        	UserProfileResponse profile = userClient.getUserProfile(trainer.getUser().getUserId());
-        	if (profile != null) {
-        	    res.setTrainerName(profile.getFirstName() + " " + profile.getLastName());
-        	}
+            UserProfileResponse profile = userClient.getUserProfile(trainer.getUser().getUserId());
+            if (profile != null) {
+                res.setTrainerName(profile.getFirstName() + " " + profile.getLastName());
+            }
 
         }
 
         // member name
         var member = memberRepo.findById(plan.getMemberId()).orElse(null);
         if (member != null) {
-        	UserProfileResponse profile = userClient.getUserProfile(member.getUser().getUserId());
-        	if (profile != null) {
-        	    res.setMemberName(profile.getFirstName() + " " + profile.getLastName());
-        	}
+            UserProfileResponse profile = userClient.getUserProfile(member.getUser().getUserId());
+            if (profile != null) {
+                res.setMemberName(profile.getFirstName() + " " + profile.getLastName());
+            }
 
         }
 

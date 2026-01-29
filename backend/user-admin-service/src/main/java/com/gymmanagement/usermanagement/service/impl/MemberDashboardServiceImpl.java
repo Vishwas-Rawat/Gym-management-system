@@ -24,12 +24,13 @@ public class MemberDashboardServiceImpl implements MemberDashboardService {
     @Override
     public MemberDashboardResponse getDashboard(Integer userId) {
 
-    	User user = userRepo.findById(userId)
-    	        .orElseThrow(() -> new RuntimeException("User not found"));
+        User user = userRepo.findById(userId)
+                .orElseThrow(() -> new RuntimeException("User not found"));
 
-    	Member member = memberRepo.findByUser(user)
-    	        .orElseThrow(() -> new RuntimeException("Member not found"));
-
+        Member member = memberRepo.findByUser(user).stream()
+                .filter(m -> Boolean.TRUE.equals(m.getIsActive()))
+                .findFirst()
+                .orElseThrow(() -> new RuntimeException("Member not found"));
 
         MemberDashboardResponse res = new MemberDashboardResponse();
 

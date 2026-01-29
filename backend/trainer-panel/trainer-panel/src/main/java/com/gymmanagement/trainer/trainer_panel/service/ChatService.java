@@ -3,6 +3,8 @@ package com.gymmanagement.trainer.trainer_panel.service;
 import com.gymmanagement.commonservices.entity.ChatMessage;
 import com.gymmanagement.trainer.trainer_panel.repository.ChatMessageRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -13,8 +15,27 @@ import java.util.List;
 public class ChatService {
 
     private final ChatMessageRepository repo;
+    private final com.gymmanagement.trainer.trainer_panel.repository.PublicKeyRepository publicKeyRepo;
 
-    public ChatMessage saveMessage(Integer sender, Integer receiver, String cipher) {
+    public void syncKeys(Integer userId, String publicKey, String encryptedPrivate) {
+        var entity = publicKeyRepo.findByUserId(userId)
+                .orElse(new com.gymmanagement.commonservices.entity.PublicKeyEntity());
+        entity.setUserId(userId);
+        entity.setPublicKeyPem(publicKey);
+        entity.setEncryptedPrivateKey(encryptedPrivate);
+        entity.setUpdatedAt(java.time.LocalDateTime.now());
+        publicKeyRepo.save(entity);
+    }
+
+    public com.gymmanagement.commonservices.entity.PublicKeyEntity getKeys(Integer userId) {
+        return publicKeyRepo.findByUserId(userId).orElse(null);
+    }
+
+    public void resetKeys(Integer userId) {
+        publicKeyRepo.findByUserId(userId).ifPresent(publicKeyRepo::delete);
+    }
+
+    public ChatMessage saveMessage(Integer sender, Integer receiver, String cipher, String senderCipher) {
 
         System.out.println("🔥 ChatService.saveMessage CALLED");
         System.out.println("   Sender=" + sender + " Receiver=" + receiver + " Cipher=" + cipher);
@@ -23,6 +44,7 @@ public class ChatService {
         msg.setSenderUserId(sender);
         msg.setReceiverUserId(receiver);
         msg.setCiphertext(cipher);
+        msg.setSenderCiphertext(senderCipher); // Set the sender's copy
         msg.setCreatedAt(LocalDateTime.now());
         msg.setRead(false);
 
@@ -46,18 +68,15 @@ public class ChatService {
     }
 
     public List<ChatMessage> getConversation(Integer userA, Integer userB) {
-
-        var aToB = repo.findBySenderUserIdAndReceiverUserIdOrderByCreatedAtAsc(userA, userB);
-        var bToA = repo.findBySenderUserIdAndReceiverUserIdOrderByCreatedAtAsc(userB, userA);
-
-        aToB.addAll(bToA);
-
-        // sort combined list
-        aToB.sort((m1, m2) -> m1.getCreatedAt().compareTo(m2.getCreatedAt()));
-
-        return aToB;
+        // Fallback to unpaginated (limited to 100 recent)
+        return repo.findConversation(userA, userB, org.springframework.data.domain.PageRequest.of(0, 100))
+                .getContent();
     }
-    
+
+    public Page<ChatMessage> getConversationPaginated(Integer userA, Integer userB, Pageable pageable) {
+        return repo.findConversation(userA, userB, pageable);
+    }
+
     public void purgeOlderThan(LocalDateTime cutoff) {
         System.out.println("🧹 Purging messages older than: " + cutoff);
 
