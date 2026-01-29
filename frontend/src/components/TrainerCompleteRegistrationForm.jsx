@@ -31,22 +31,52 @@ const TrainerCompleteRegistrationForm = () => {
   const [showPassword, setShowPassword] = React.useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = React.useState(false);
 
-  return (
-    <Box component="form" onSubmit={(e) => { e.preventDefault(); handleCompleteRegistration(); }} sx={{ display: 'flex', flexDirection: 'column', gap: 3 }}>
-      {/* Token Field (Read-only) */}
-      <TextField
-        fullWidth
-        label="Registration Token"
-        name="token"
-        value={completeRegForm.token}
-        InputProps={{ readOnly: true }}
-        error={!!errors.token}
-        helperText={errors.token || "This token is automatically retrieved from your invite link."}
-        variant="outlined"
-        disabled
-        sx={{ bgcolor: 'action.hover' }}
-      />
+  // Custom Styles for Premium Look
+  const fieldStyle = {
+    mb: 2.5,
+    '& .MuiOutlinedInput-root': {
+      borderRadius: '12px',
+      backgroundColor: 'rgba(255, 255, 255, 0.03)',
+      transition: 'all 0.3s ease',
+      '& fieldset': { borderColor: 'var(--border-muted)' },
+      '&:hover fieldset': { borderColor: '#f97316' },
+      '&.Mui-focused fieldset': { borderColor: '#f97316', borderWidth: '2px' },
+    },
+    '& .MuiInputLabel-root': { color: '#f97316' }, // Orange by default
+    '& .MuiInputLabel-root.Mui-focused': { color: '#f97316' },
+    '& .MuiOutlinedInput-input': { color: 'var(--text-primary)' },
+  };
 
+  const sectionTitleStyle = {
+    color: '#f97316', // Vibrant Orange
+    fontWeight: 600,
+    fontSize: '0.9rem',
+    textTransform: 'uppercase',
+    letterSpacing: '1px',
+    mb: 2,
+    mt: 1,
+    display: 'flex',
+    itemsCenter: 'center',
+    gap: 1
+  };
+
+  return (
+    <Box 
+      component="form" 
+      onSubmit={(e) => { e.preventDefault(); handleCompleteRegistration(); }} 
+      sx={{ 
+        display: 'flex', 
+        flexDirection: 'column', 
+        gap: 1,
+        maxHeight: '70vh',
+        overflowY: 'auto',
+        pr: 1,
+        '&::-webkit-scrollbar': { width: '4px' },
+        '&::-webkit-scrollbar-thumb': { background: 'var(--border-muted)', borderRadius: '10px' }
+      }}
+    >
+      <Typography sx={sectionTitleStyle}>Account Security</Typography>
+      
       {/* Username Field */}
       <TextField
         fullWidth
@@ -58,54 +88,60 @@ const TrainerCompleteRegistrationForm = () => {
         helperText={errors.username}
         required
         variant="outlined"
+        sx={fieldStyle}
       />
 
       {/* Password Fields */}
-      <TextField
-        fullWidth
-        label="New Password"
-        name="password"
-        type={showPassword ? 'text' : 'password'}
-        value={completeRegForm.password}
-        onChange={handleCompleteRegChange}
-        error={!!errors.password}
-        helperText={errors.password}
-        required
-        variant="outlined"
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton onClick={() => setShowPassword(!showPassword)}>
-                {showPassword ? <VisibilityOff /> : <Visibility />}
-              </IconButton>
-            </InputAdornment>
-          ),
-        }}
-      />
+      <Box sx={{ display: 'flex', gap: 2, flexDirection: { xs: 'column', sm: 'row' } }}>
+        <TextField
+          fullWidth
+          label="New Password"
+          name="password"
+          type={showPassword ? 'text' : 'password'}
+          value={completeRegForm.password}
+          onChange={handleCompleteRegChange}
+          error={!!errors.password}
+          helperText={errors.password}
+          required
+          variant="outlined"
+          sx={fieldStyle}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton onClick={() => setShowPassword(!showPassword)} sx={{ color: 'var(--text-secondary)' }}>
+                  {showPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+        />
 
-      <TextField
-        fullWidth
-        label="Confirm Password"
-        name="confirmPassword"
-        type={showConfirmPassword ? 'text' : 'password'}
-        value={completeRegForm.confirmPassword}
-        onChange={handleCompleteRegChange}
-        error={!!errors.confirmPassword}
-        helperText={errors.confirmPassword}
-        required
-        variant="outlined"
-        InputProps={{
-          endAdornment: (
-            <InputAdornment position="end">
-              <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
-                {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
-              </IconButton>
-            </InputAdornment>
-          ),
-        }}
-      />
+        <TextField
+          fullWidth
+          label="Confirm Password"
+          name="confirmPassword"
+          type={showConfirmPassword ? 'text' : 'password'}
+          value={completeRegForm.confirmPassword}
+          onChange={handleCompleteRegChange}
+          error={!!errors.confirmPassword}
+          helperText={errors.confirmPassword}
+          required
+          variant="outlined"
+          sx={fieldStyle}
+          InputProps={{
+            endAdornment: (
+              <InputAdornment position="end">
+                <IconButton onClick={() => setShowConfirmPassword(!showConfirmPassword)} sx={{ color: 'var(--text-secondary)' }}>
+                  {showConfirmPassword ? <VisibilityOff /> : <Visibility />}
+                </IconButton>
+              </InputAdornment>
+            ),
+          }}
+        />
+      </Box>
 
-      {/* Optional Fields */}
+      <Typography sx={sectionTitleStyle}>Trainer Details</Typography>
+
       <TextField
         fullWidth
         label="Date of Birth"
@@ -115,16 +151,18 @@ const TrainerCompleteRegistrationForm = () => {
         onChange={handleCompleteRegChange}
         InputLabelProps={{ shrink: true }}
         variant="outlined"
+        sx={fieldStyle}
         required
       />
 
-      <FormControl fullWidth variant="outlined" required>
+      <FormControl fullWidth variant="outlined" sx={fieldStyle} required>
         <InputLabel>Gender</InputLabel>
         <Select
           name="gender"
           value={completeRegForm.gender}
           onChange={handleCompleteRegChange}
           label="Gender"
+          sx={{ borderRadius: '12px' }}
         >
           <MenuItem value="">Select Gender</MenuItem>
           <MenuItem value="Male">Male</MenuItem>
@@ -133,34 +171,48 @@ const TrainerCompleteRegistrationForm = () => {
         </Select>
       </FormControl>
 
-      {/* Error/Success Messages */}
-      {apiError && (
-        <Typography color="error.main" align="center" variant="body2" sx={{ my: 1 }}>
-          {apiError}
-        </Typography>
-      )}
-      {successMessage && (
-        <Typography color="success.main" align="center" variant="body2" sx={{ my: 1 }}>
-          {successMessage}
-          {isRedirecting && (
-            <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
-              <CircularProgress size={20} color="inherit" />
-            </Box>
-          )}
-        </Typography>
-      )}
+      {/* Status Messages */}
+      <Box sx={{ minHeight: '24px', mb: 1 }}>
+        {apiError && (
+          <Typography color="var(--text-danger)" align="center" variant="body2" sx={{ fontWeight: 500 }}>
+            {apiError}
+          </Typography>
+        )}
+        {successMessage && (
+          <Typography color="var(--text-success)" align="center" variant="body2" sx={{ fontWeight: 500 }}>
+            {successMessage}
+          </Typography>
+        )}
+      </Box>
 
       <Button
         type="submit"
         variant="contained"
-        color="primary"
         disabled={isLoading || isRedirecting || !completeRegForm.token}
-        startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : null}
         fullWidth
-        sx={{ borderRadius: '10px', fontWeight: 600, py: 1.5 }}
+        sx={{ 
+          borderRadius: '12px', 
+          fontWeight: 700, 
+          py: 1.8,
+          fontSize: '1rem',
+          backgroundColor: 'var(--primary)',
+          '&:hover': { backgroundColor: 'var(--primary-soft)' },
+          boxShadow: '0 4px 12px var(--primary-glow)',
+          transition: 'all 0.3s ease',
+          mt: 1
+        }}
       >
-        {isLoading ? 'Completing Registration...' : 'Complete Registration'}
+        {isLoading ? (
+          <CircularProgress size={24} sx={{ color: 'white' }} />
+        ) : isRedirecting ? (
+          'Redirecting to login...'
+        ) : (
+          'Complete Registration'
+        )}
       </Button>
+
+      {/* Hidden Token for context */}
+      <input type="hidden" name="token" value={completeRegForm.token} />
     </Box>
   );
 };

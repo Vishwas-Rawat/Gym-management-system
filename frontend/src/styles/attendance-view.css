@@ -1,0 +1,363 @@
+/* MemberAttendanceView.css */
+
+
+.attendance-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    color: var(--db-text-primary);
+    font-family: 'Inter', system-ui, sans-serif;
+    padding: 0 1rem;
+}
+
+/* History Modal Internal Styles */
+.history-modal-header {
+    padding: 1.5rem;
+    border-bottom: 1px solid var(--db-border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: var(--db-text-primary);
+}
+
+.history-close-btn {
+    background: none;
+    border: none;
+    color: var(--db-text-secondary);
+    cursor: pointer;
+    padding: 0.5rem;
+    border-radius: 50%;
+    display: flex;
+}
+
+.history-close-btn:hover {
+    background: rgba(255,255,255,0.05);
+}
+
+.light-theme .history-close-btn:hover {
+    background: rgba(0,0,0,0.05);
+}
+
+.history-item {
+    padding: 1.25rem;
+    margin-bottom: 0.75rem;
+    background-color: var(--db-card);
+    border-radius: 16px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    /* Border left is inline */
+    border: 1px solid transparent; /* Placeholder for light theme border */
+}
+
+.light-theme .history-item {
+    background-color: #f8fafc;
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+.history-date {
+    font-weight: 600;
+    font-size: 1rem;
+    color: var(--db-text-primary);
+}
+
+
+.attendance-header {
+    margin-bottom: 2.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.attendance-title {
+    font-size: 2.5rem;
+    font-weight: 900;
+    margin: 0 0 0.5rem 0;
+    letter-spacing: -1px;
+    background: linear-gradient(to right, #38bdf8, #818cf8);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.light-theme .attendance-title {
+    background: linear-gradient(to right, #0284c7, #4f46e5);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.attendance-subtitle {
+    margin: 0;
+    color: var(--db-text-secondary);
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.history-btn {
+    background: var(--db-card);
+    border: 1px solid var(--db-border);
+    color: var(--db-text-primary);
+    padding: 0.75rem 1.5rem;
+    border-radius: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.history-btn:hover {
+    border-color: var(--db-text-secondary);
+}
+
+.light-theme .history-btn {
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.1);
+    color: var(--db-text-primary);
+}
+
+.light-theme .history-btn:hover {
+    background: #f1f5f9;
+}
+
+.attendance-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 2rem;
+}
+
+/* Action Card */
+.action-card {
+    grid-column: span 1;
+    background: var(--db-card);
+    border-radius: 24px;
+    padding: 2.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    position: relative;
+    min-height: 350px;
+    border: 1px solid var(--db-border);
+}
+
+.light-theme .action-card {
+    background: #ffffff;
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
+}
+
+.status-icon-circle {
+    width: 100px;
+    height: 100px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 1.5rem;
+}
+
+.status-title {
+    font-size: 1.75rem;
+    font-weight: 800;
+    margin: 0 0 0.5rem 0;
+}
+
+.status-text-present {
+    color: #22c55e;
+}
+
+.status-text-absent {
+    color: var(--db-text-primary);
+}
+
+.light-theme .status-text-absent {
+    color: var(--db-text-primary); /* Dark in light theme */
+}
+
+.status-desc {
+    color: var(--db-text-secondary);
+    margin-bottom: 2rem;
+    max-width: 80%;
+    line-height: 1.5;
+}
+
+.action-btn {
+    padding: 1rem 2.5rem;
+    border-radius: 16px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    width: 100%;
+    max-width: 280px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: transform 0.1s ease;
+}
+
+.action-btn:active {
+    transform: scale(0.98);
+}
+
+/* Stats Area */
+.stats-column {
+    display: grid;
+    grid-template-columns: minmax(200px, 1fr);
+    gap: 1.5rem;
+    align-content: start;
+}
+
+.stats-row {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.stat-card {
+    flex: 1;
+    background-color: var(--db-card);
+    border-radius: 20px;
+    padding: 1.5rem;
+    border: 1px solid var(--db-border);
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    text-align: left;
+    min-width: 150px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.2s ease;
+}
+
+.light-theme .stat-card {
+    background-color: #ffffff;
+    border: 1px solid rgba(0,0,0,0.05);
+    box-shadow: 0 4px 12px -2px rgba(0,0,0,0.05);
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--db-text-primary);
+    margin: 0.5rem 0;
+}
+
+.total-checkins-card {
+    background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+    border-radius: 24px;
+    padding: 2rem;
+    color: white;
+    position: relative;
+    overflow: hidden;
+    min-height: 180px;
+}
+
+.total-checkins-value {
+    font-size: 3.5rem;
+    font-weight: 900;
+    line-height: 1;
+    margin-bottom: 0.5rem;
+}
+
+/* History Modal */
+.modal-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background-color: rgba(0,0,0,0.8);
+    backdrop-filter: blur(8px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+}
+
+.light-theme .modal-overlay {
+    background-color: rgba(0,0,0,0.2);
+    backdrop-filter: blur(4px);
+}
+
+.modal-content {
+    width: 100%;
+    max-width: 480px;
+    background-color: var(--db-card);
+    border: 1px solid var(--db-border);
+    border-radius: 24px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    max-height: 80vh;
+}
+
+.light-theme .modal-content {
+    background-color: #ffffff;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(0,0,0,0.05);
+    /* Ensure text inside is dark by default */
+    color: var(--db-text-primary);
+}
+
+.light-theme .modal-content {
+    background-color: #ffffff;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(0,0,0,0.05);
+}
+
+/* Responsive Media Queries */
+
+@media (max-width: 768px) {
+    .attendance-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .history-btn {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .attendance-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .status-title {
+        font-size: 1.5rem;
+    }
+
+    .stat-value {
+        font-size: 2rem;
+    }
+
+    .total-checkins-value {
+        font-size: 3rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .attendance-title {
+        font-size: 2rem;
+    }
+
+    .stats-row {
+        flex-direction: column;
+    }
+
+    .status-icon-circle {
+        width: 80px;
+        height: 80px;
+    }
+    
+    .action-card {
+        padding: 1.5rem;
+    }
+}

@@ -1,34 +1,23 @@
-// src/components/MemberRow.jsx
 import React from "react";
-import {
-  TableRow,
-  TableCell,
-  Box,
-  Typography,
-  Chip,
-  IconButton,
-  Tooltip,
-  Stack,
-  useMediaQuery,
-  Avatar,
-} from "@mui/material";
-
-import { Visibility, Edit, AttachMoney, Delete, Person, RestaurantMenu, Assignment } from "@mui/icons-material";
-
-// ---- Framer Motion ----
 import { motion } from "framer-motion";
+import '../styles/dashboard.css';
 
-// Motion components for readability
-const MotionBox = motion(Box);
-const MotionTableRow = motion(TableRow);
-
-// ---- Animation Variants ----
-const rowVariants = {
-  hidden: { opacity: 0, y: 8 },
-  visible: { opacity: 1, y: 0 },
-  hover: { scale: 1.01 },
-  exit: { opacity: 0, y: -8 },
-};
+// Custom SVG Icons
+const IconEye = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+);
+const IconEdit = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+);
+const IconMoney = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+);
+const IconTrash = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+);
+const IconPerson = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+);
 
 const buttonVariants = {
   hover: { scale: 1.15 },
@@ -36,10 +25,7 @@ const buttonVariants = {
 };
 
 const MemberRow = React.memo(
-  ({ member, onDetail, onEdit, onPaymentReminder, onResend, onDelete, onAssignDiet, onViewDiet, index, isSelected }) => {
-    const isMobile = useMediaQuery("(max-width:900px)");
-
-
+  ({ member, gymName, onDetail, onEdit, onPaymentReminder, onDelete, isSelected }) => {
     const planText =
       member.membershipPlan ||
       (member.monthsPaid
@@ -49,220 +35,86 @@ const MemberRow = React.memo(
         : "—");
 
     const timing = member.workoutTimeSlot || member.timing || "—";
+    const id = member.memberId || member.id || member.gymMemberId;
 
-    const singleLine = {
-      whiteSpace: "nowrap",
-      overflow: "hidden",
-      textOverflow: "ellipsis",
-      maxWidth: "100%",
-    };
-
-    // --------------------- MOBILE VIEW ---------------------
-    if (isMobile) {
-      return (
-        <MotionBox
-          variants={rowVariants}
-          initial="hidden"
-          animate="visible"
-          exit="exit"
-          whileHover={{ scale: 1.02 }}
-          whileTap={{ scale: 0.98 }}
-          layout
-          sx={{
-            border: isSelected ? "2px solid #0ea5e9" : "1px solid #e5e7eb",
-            borderRadius: "12px",
-            p: 2,
-            mb: 2,
-            bgcolor: isSelected ? "rgba(0, 123, 255, 0.08)" : "white",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-            cursor: "pointer",
-          }}
-          onClick={onDetail}
-        >
-          <Stack spacing={1.5}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-              <Avatar
-                sx={{
-                  bgcolor: "primary.main",
-                  width: 40,
-                  height: 40,
-                  borderRadius: "10px",
-                }}
-              >
-                <Person sx={{ color: "white" }} />
-              </Avatar>
-
-              <Box sx={{ minWidth: 0 }}>
-                <Typography fontWeight={600} sx={singleLine}>
-                  {member.fullName}
-                </Typography>
-                <Typography variant="body2" color="text.secondary" sx={singleLine}>
-                  {member.email}
-                </Typography>
-              </Box>
-            </Box>
-
-            <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-              <Typography variant="body2" color="text.secondary">
-                {member.phoneNo || member.phoneNumber || "—"}
-              </Typography>
-
-              <Chip
-                label={planText}
-                size="small"
-                sx={{
-                  bgcolor: "success.light",
-                  color: "success.main",
-                  fontWeight: 600,
-                  fontSize: "0.75rem",
-                  height: 24,
-                }}
-              />
-            </Box>
-
-            {timing !== "—" && (
-              <Typography variant="body2" sx={{ fontSize: "0.85rem", color: "#4b5563" }}>
-                {timing}
-              </Typography>
-            )}
-
-            {/* Mobile action buttons */}
-            <Stack
-              direction="row"
-              spacing={1}
-              justifyContent="flex-end"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                <IconButton size="small" sx={{ color: "info.main", bgcolor: "rgba(23, 162, 184, 0.08)" }} onClick={onDetail}>
-                  <Visibility fontSize="small" />
-                </IconButton>
-              </motion.div>
-
-              <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                <IconButton size="small" sx={{ color: "warning.main", bgcolor: "#fffbeb" }} onClick={onEdit}>
-                  <Edit fontSize="small" />
-                </IconButton>
-              </motion.div>
-
-              <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                <IconButton size="small" sx={{ color: "success.main", bgcolor: "success.light" }} onClick={onPaymentReminder}>
-                  <AttachMoney fontSize="small" />
-                </IconButton>
-              </motion.div>
-
-              <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                <IconButton size="small" sx={{ color: "error.main", bgcolor: "#fef2f2" }} onClick={onDelete}>
-                  <Delete fontSize="small" />
-                </IconButton>
-              </motion.div>
-
-            </Stack>
-          </Stack>
-        </MotionBox>
-      );
-    }
-
-    // --------------------- DESKTOP VIEW ---------------------
     return (
-      <MotionTableRow
-        variants={rowVariants}
-        initial="hidden"
-        animate="visible"
-        exit="exit"
-        whileHover="hover"
-        layout
+      <motion.tr
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, x: -20 }}
+        whileHover={{ backgroundColor: 'rgba(255, 255, 255, 0.02)' }}
+        className={isSelected ? "member-row-selected" : ""}
         onClick={onDetail}
-        sx={{
+        style={{
           cursor: "pointer",
-          bgcolor: isSelected ? "rgba(0, 123, 255, 0.08)" : "inherit",
-          "&:hover": { bgcolor: isSelected ? "rgba(0, 123, 255, 0.15)" : "#f9fafb" },
-          transition: "background-color 0.2s",
+          backgroundColor: isSelected ? 'rgba(var(--db-accent-rgb, 251, 146, 60), 0.05)' : 'transparent',
+          transition: 'background-color 0.2s'
         }}
       >
-        <TableCell sx={{ py: 2 }}>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-            <motion.div whileHover={{ scale: 1.1, rotate: 10 }}>
-              <Avatar
-                variant="rounded"
-                sx={{
-                  bgcolor: "primary.main",
-                  width: 36,
-                  height: 36,
-                  borderRadius: "8px",
-                }}
-              >
-                <Person sx={{ color: "white", fontSize: 20 }} />
-              </Avatar>
-            </motion.div>
+        <td style={{ width: '35%' }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+            <div className="avatar-sm" style={{ 
+              backgroundColor: 'rgba(var(--db-accent-rgb, 251, 146, 60), 0.1)', 
+              color: 'var(--db-accent)',
+              borderRadius: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <IconPerson />
+            </div>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--db-text-primary)' }}>{member.fullName}</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--db-text-secondary)' }}>{member.email}</div>
+              {gymName && (
+                <div style={{ fontSize: '0.7rem', color: 'var(--db-accent)', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                   <span style={{opacity: 0.7}}>Gym:</span> {gymName}
+                </div>
+              )}
+            </div>
+          </div>
+        </td>
 
-            <Typography fontWeight={600} sx={{ color: "#1f2937", ...singleLine }}>
-              {member.fullName}
-            </Typography>
-          </Box>
-        </TableCell>
+        <td data-label="Phone">
+          <div style={{ fontSize: "0.85rem", color: "var(--db-text-secondary)" }}>
+            {member.phoneNo || member.phoneNumber || "—"}
+          </div>
+        </td>
 
-        <TableCell sx={{ color: "#4b5563", ...singleLine }}>{member.email}</TableCell>
+        <td data-label="Plan">
+          <span className="db-badge badge-member db-badge-outline">
+            {planText}
+          </span>
+        </td>
 
-        <TableCell sx={{ color: "#4b5563", ...singleLine }}>
-          {member.phoneNo || member.phoneNumber || "—"}
-        </TableCell>
+        <td data-label="Timing">
+          <div style={{ fontSize: "0.85rem", color: "var(--db-text-secondary)" }}>{timing}</div>
+        </td>
 
-        <TableCell>
-          <Chip
-            label={planText}
-            size="small"
-            sx={{
-              bgcolor: "success.light",
-              color: "success.main",
-              fontWeight: 600,
-              borderRadius: "6px",
-              fontSize: "0.8rem",
-              height: 26,
-            }}
-          />
-        </TableCell>
+        <td onClick={(e) => e.stopPropagation()}>
+          <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
+            <motion.button variants={buttonVariants} whileHover="hover" whileTap="tap" 
+              className="db-btn-icon" onClick={onDetail} title="View Details">
+              <IconEye />
+            </motion.button>
 
-        <TableCell sx={{ color: "#4b5563", ...singleLine }}>{timing}</TableCell>
+            <motion.button variants={buttonVariants} whileHover="hover" whileTap="tap" 
+              className="db-btn-icon" onClick={onEdit} title="Edit Member">
+              <IconEdit />
+            </motion.button>
 
-        {/* Action buttons */}
-        <TableCell align="center" onClick={(e) => e.stopPropagation()}>
-          <Stack direction="row" spacing={1} justifyContent="center">
-            <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-              <Tooltip title="View">
-                <IconButton size="small" sx={{ color: "info.main" }} onClick={onDetail}>
-                  <Visibility fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            </motion.div>
+            <motion.button variants={buttonVariants} whileHover="hover" whileTap="tap" 
+              className="db-btn-icon" onClick={onPaymentReminder} title="Payment Reminder" style={{ color: 'var(--db-green)' }}>
+              <IconMoney />
+            </motion.button>
 
-            <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-              <Tooltip title="Edit">
-                <IconButton size="small" sx={{ color: "warning.main" }} onClick={onEdit}>
-                  <Edit fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            </motion.div>
-
-            <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-              <Tooltip title="Payment Reminder">
-                <IconButton size="small" sx={{ color: "success.main" }} onClick={onPaymentReminder}>
-                  <AttachMoney fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            </motion.div>
-
-            <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-              <Tooltip title="Delete">
-                <IconButton size="small" sx={{ color: "error.main" }} onClick={onDelete}>
-                  <Delete fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            </motion.div>
-
-          </Stack>
-        </TableCell>
-      </MotionTableRow>
+            <motion.button variants={buttonVariants} whileHover="hover" whileTap="tap" 
+              className="db-btn-icon btn-delete" onClick={onDelete} title="Delete Member">
+              <IconTrash />
+            </motion.button>
+          </div>
+        </td>
+      </motion.tr>
     );
   }
 );

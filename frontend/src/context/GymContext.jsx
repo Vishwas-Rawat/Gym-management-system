@@ -69,6 +69,25 @@ export const GymProvider = ({ children }) => {
       return { success: true };
     } catch (err) {
       const msg = err.response?.data?.message || "Failed to delete gym.";
+      // Don't set global error here if we want to handle it in the component (for force delete trigger)
+      // keeping it consistent but component will rely on return value
+      // setError(msg); 
+      return { success: false, message: msg };
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Force Delete Gym
+  const forceDeleteGym = async (gymId) => {
+    setLoading(true);
+    try {
+      await userApi.delete(`/gym/force-delete/${gymId}`);
+      // Update local state
+      setGyms(prev => prev.filter(g => g.gymId !== gymId));
+      return { success: true };
+    } catch (err) {
+      const msg = err.response?.data?.message || "Failed to force delete gym.";
       setError(msg);
       return { success: false, message: msg };
     } finally {
@@ -85,7 +104,9 @@ export const GymProvider = ({ children }) => {
         createGyms,
         getMyGyms,
         updateGym,
-        deleteGym
+        updateGym,
+        deleteGym,
+        forceDeleteGym
       }}
     >
       {children}

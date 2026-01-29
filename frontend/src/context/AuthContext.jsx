@@ -1,6 +1,7 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { authService } from '../services/authService';
+import { cryptoService } from '../services/cryptoService';
 
 const AuthContext = createContext();
 
@@ -93,6 +94,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = async (redirect = true) => {
+    const userId = localStorage.getItem('userId');
     try {
       await authService.logout();
     } catch (error) {
@@ -100,11 +102,59 @@ export const AuthProvider = ({ children }) => {
     } finally {
       localStorage.removeItem('token');
       localStorage.removeItem('userId');
+      if (userId) {
+        localStorage.removeItem(`chat_priv_key_${userId}`);
+        localStorage.removeItem(`chat_pub_key_${userId}`);
+      }
       setFormData({});
       setErrors({});
       setApiError('');
       setSuccessMessage('');
       if (redirect) navigate('/login');
+    }
+  };
+
+  const handleKeySync = async (password) => {
+    const userId = localStorage.getItem('userId');
+    if (!userId) return false;
+    try {
+      // 1. Try to download keys
+      const data = await authService.downloadKeys();
+      if (data && data.encryptedPrivateKey && data.publicKey) {
+        // 2. Decrypt private key
+        const privateKeyJwk = await cryptoService.decryptPrivateKey(data.encryptedPrivateKey, password);
+        if (privateKeyJwk) {
+          localStorage.setItem(`chat_priv_key_${userId}`, privateKeyJwk);
+          localStorage.setItem(`chat_pub_key_${userId}`, data.publicKey);
+          console.log("Chat keys synced and decrypted successfully.");
+          return true;
+        }
+      }
+      
+      // If we reach here, either keys don't exist OR decryption failed
+      // Generate new keys if none exist on server
+      if (!data || !data.encryptedPrivateKey) {
+        const keyPair = await cryptoService.generateKeyPair();
+        const publicKeyPem = await cryptoService.exportPublicKey(keyPair.publicKey);
+        const privateKeyJwk = await cryptoService.exportPrivateKey(keyPair.privateKey);
+        
+        const encryptedPrivateKey = await cryptoService.encryptPrivateKey(privateKeyJwk, password);
+        
+        await authService.syncKeys({
+          publicKey: publicKeyPem,
+          encryptedPrivateKey: encryptedPrivateKey
+        });
+        
+        localStorage.setItem(`chat_priv_key_${userId}`, privateKeyJwk);
+        localStorage.setItem(`chat_pub_key_${userId}`, publicKeyPem);
+        console.log("New chat keys generated and synced successfully.");
+        return true;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error("Key sync failed:", error);
+      return false;
     }
   };
 
@@ -145,7 +195,8 @@ export const AuthProvider = ({ children }) => {
       handleSubmit, 
       logout, 
       checkStatus,
-      resendOtp // Exporting new function
+      resendOtp,
+      handleKeySync
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

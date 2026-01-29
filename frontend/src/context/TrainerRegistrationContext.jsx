@@ -101,37 +101,20 @@ export const TrainerRegistrationProvider = ({ children }) => {
   /* HELPER: Map nested user data to top-level */
   /* -------------------------------------------------- */
   const mapTrainerData = (data) => {
-      if (!data) return data;
-      // If array, map each item
-      if (Array.isArray(data)) {
-          return data.map(item => mapTrainerData(item));
-      }
-      
-      // If object, flatten nested user fields
-      if (data.user) {
-          if (!data.fullName) {
-              if (data.user.userProfile) {
-                  data.fullName = `${data.user.userProfile.firstName || ''} ${data.user.userProfile.lastName || ''}`.trim();
-              } else if (data.user.username) {
-                  data.fullName = data.user.username;
-              }
-          }
-          if (!data.email && data.user.email) {
-              data.email = data.user.email;
-          }
-          if (!data.phoneNo && !data.phoneNumber && data.user.phoneNumber) {
-              data.phoneNo = data.user.phoneNumber;
-              data.phoneNumber = data.user.phoneNumber;
-          }
-      }
-      
-      // Map nested gym data
-      if (data.gym) {
-          if (!data.gymId) data.gymId = data.gym.gymId;
-          if (!data.gymName) data.gymName = data.gym.gymName;
-      }
-
-      return data;
+    if (!data) return data;
+    if (Array.isArray(data)) {
+      return data.map(item => mapTrainerData(item));
+    }
+    
+    // The backend now provides a flat structure:
+    // trainerId, fullName, email, phoneNo, specialization, experienceYears, gymName
+    // We keep mapTrainerData for backward compatibility or if some fields are missing
+    return {
+      ...data,
+      fullName: data.fullName || (data.user?.userProfile ? `${data.user.userProfile.firstName} ${data.user.userProfile.lastName}` : ''),
+      email: data.email || data.user?.email || '',
+      phoneNo: data.phoneNo || data.user?.phoneNumber || '',
+    };
   };
 
   /* -------------------------------------------------- */
@@ -160,7 +143,7 @@ export const TrainerRegistrationProvider = ({ children }) => {
     setIsLoading(true);
     clearMessages();
     try {
-      let endpoint = '/trainer/all';
+      let endpoint = '/trainer/admin/all/my-trainers';
       if (gymId) {
         endpoint = `/trainer/gym/${gymId}`;
       }

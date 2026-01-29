@@ -1,16 +1,16 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ThemeProvider, CssBaseline, Typography, TextField, Button, CircularProgress, Box, IconButton, InputAdornment } from '@mui/material';
+import { CssBaseline, Typography, TextField, Button, CircularProgress, Box, IconButton, InputAdornment } from '@mui/material';
 import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { useAuth } from '../context/AuthContext';
 import AuthLayout from '../components/AuthLayout';
-import lightTheme from '../themes/lightTheme';
+import { useTheme } from '../context/ThemeContext';
 import { motion } from 'framer-motion';
 import { jwtDecode } from "jwt-decode";
 
 const LoginPage = () => {
   const navigate = useNavigate();
-  const { formData, errors, apiError, successMessage, isLoading, handleChange, handleSubmit } = useAuth();
+  const { formData, errors, apiError, successMessage, isLoading, handleChange, handleSubmit, handleKeySync } = useAuth();
   const [showPassword, setShowPassword] = useState(false);
 
   useEffect(() => {
@@ -31,6 +31,10 @@ const LoginPage = () => {
       if (data.token) {
         localStorage.setItem('token', data.token);
         localStorage.setItem('userId', data.userId);
+        
+        // Handle Chat Key Sync
+        const { password } = payload;
+        handleKeySync(password);
         
         let role = data.role;
         
@@ -68,11 +72,11 @@ const LoginPage = () => {
   };
 
   return (
-    <ThemeProvider theme={lightTheme}>
+    <>
       <CssBaseline />
       <AuthLayout
-        title="Welcome Back"
-        navText="Log in to manage your gym with powerful admin tools"
+        title="Admin Login"
+        navText="Log in to manage your gym with powerful admin tools and analytics."
         navAction="Don't have an account?"
         navLink="/register"
       >
@@ -83,7 +87,11 @@ const LoginPage = () => {
             transition={{ duration: 0.5, delay: 0.2 }}
             onSubmit={handleFormSubmit} 
             noValidate 
-            sx={{ mt: 1 }}
+            sx={{ 
+              mt: 1,
+              '& .MuiInputLabel-root': { fontSize: '1.1rem' },
+              '& .MuiOutlinedInput-root': { fontSize: '1.1rem' }
+            }}
         >
           <TextField
             margin="normal"
@@ -135,7 +143,7 @@ const LoginPage = () => {
               color={successMessage ? 'success.main' : 'error.main'}
               align="center"
               variant="body2"
-              sx={{ my: 1, fontWeight: 500 }}
+              sx={{ my: 1, fontWeight: 600 }}
             >
               {successMessage || apiError}
               {successMessage && (
@@ -153,13 +161,13 @@ const LoginPage = () => {
             color="primary"
             disabled={isLoading}
             startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : null}
-            sx={{ mt: 3, mb: 2, py: 1.5, fontSize: '1rem', fontWeight: 600, borderRadius: '8px' }}
+            sx={{ mt: 3, mb: 2, py: 1.5, fontSize: '1.15rem', fontWeight: 700, borderRadius: '12px' }}
           >
             Login
           </Button>
         </Box>
       </AuthLayout>
-    </ThemeProvider>
+    </>
   );
 };
 
