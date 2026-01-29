@@ -1,120 +1,95 @@
 import React from 'react';
-import { Restaurant, AccessTime, Person, FitnessCenter } from '@mui/icons-material';
-import '../styles/PlanViews.css'; // Import the new CSS
+import '../styles/PlanViews.css';
 
-const DietPlanView = ({ plan, hasTrainer, availableTrainers }) => {
-  // --- RENDER NO PLAN STATE ---
+// --- Custom SVGs ---
+const Icons = {
+    Restaurant: ({ size = 24, style }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={style}>
+            <path d="M18 8h1a4 4 0 0 1 0 8h-1"></path>
+            <path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"></path>
+            <line x1="6" y1="1" x2="6" y2="4"></line>
+            <line x1="10" y1="1" x2="10" y2="4"></line>
+            <line x1="14" y1="1" x2="14" y2="4"></line>
+        </svg>
+    ),
+    Fire: ({ size = 20, style }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={style}>
+             <path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"></path>
+        </svg>
+    ),
+    Wheat: ({ size = 20, style }) => (
+        <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={style}>
+            <path d="M2 22 22 2"></path><path d="M16 6a4 4 0 0 0-4 4"></path><path d="M22 2a4 4 0 0 0-4 4"></path><path d="M2 22a4 4 0 0 1 4-4"></path><path d="M8 18a4 4 0 0 1-4 4"></path>
+        </svg>
+    )
+};
+
+const DietPlanView = ({ plan }) => {
   if (!plan) {
     return (
-      <div className="plan-container">
-        {hasTrainer === false ? (
-           <div className="plan-info-hero">
-             <div style={{ display: 'inline-flex', padding: '20px', borderRadius: '50%', background: '#e2e8f0', marginBottom: '20px' }}>
-                  <Person style={{ fontSize: 50, color: '#64748b' }} />
-             </div>
-             <h2>No trainer assigned</h2>
-             <p>Here are the available trainers in your gym who can create a diet plan for you!</p>
-             
-             <div className="exercises-grid" style={{ marginTop: '40px', textAlign: 'left' }}>
-                 {availableTrainers && availableTrainers.length > 0 ? availableTrainers.map(trainer => (
-                     <div className="exercise-card" key={trainer.trainerId}>
-                         <div className="ex-title">{trainer.user?.firstName} {trainer.user?.lastName || trainer.user?.username}</div>
-                         <div className="ex-tag">{trainer.specialization}</div>
-                         <p>Experience: {trainer.experience} years</p>
-                         <button className="btn-request" style={{ width: '100%', justifyContent: 'center', marginTop: 'auto' }}>View Details</button> 
-                     </div>
-                 )) : (
-                     <p>No trainers available at the moment.</p>
-                 )}
-             </div>
-           </div>
-        ) : (
-           <div className="plan-info-hero">
-              <Restaurant style={{ fontSize: 48, marginBottom: 16, opacity: 0.5 }} />
-              <h2>No diet plan assigned yet.</h2>
-              <p>Your trainer hasn't assigned a diet plan yet. Use the 'Request New Plan' button above to ask for one!</p>
-           </div>
-        )}
+      <div className="no-plan-container">
+        <Icons.Restaurant size={48} style={{ opacity: 0.1, marginBottom: '1.5rem', color: 'var(--text-main)' }} />
+        <h3 style={{ color: 'var(--text-secondary)', margin: 0, fontSize: '1.25rem' }}>No active diet plan assigned.</h3>
+        <p style={{ color: 'var(--text-secondary)', fontSize: '0.9rem', marginTop: '0.5rem', opacity: 0.7 }}>Nutrition tracking will start once a plan is assigned.</p>
       </div>
     );
   }
 
-  // --- DATA PREP ---
-  const {
-    planName,
-    trainerName,
-    memberName,
-    dietType,
-    createdAt,
-    meals
-  } = plan;
-
-  const formattedDate = new Date(createdAt).toLocaleDateString(undefined, {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
-
   return (
-    <div className="plan-container">
-      {/* INFO HERO */}
-       <div className="plan-info-hero" style={{ textAlign: 'left', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-         <div>
-            <h1 style={{ color: 'var(--primary-color)' }}>{planName}</h1>
-            <div style={{ display: 'flex', gap: '10px', margin: '15px 0' }}>
-               <span className="ex-tag" style={{ marginBottom: 0 }}>
-                    <Restaurant style={{ fontSize: 14, verticalAlign: 'middle', marginRight: 4 }} /> {dietType}
-               </span>
-               <span className="ex-tag" style={{ marginBottom: 0, background: 'white', border: '1px solid #e2e8f0', color: '#64748b' }}>
-                    <AccessTime style={{ fontSize: 14, verticalAlign: 'middle', marginRight: 4 }} /> Created: {formattedDate}
-               </span>
-            </div>
-            <p className="detail-label" style={{ fontSize: '1rem' }}>
-               <strong>Member:</strong> {memberName} | <strong>Trainer:</strong> {trainerName}
-            </p>
-         </div>
-         <FitnessCenter style={{ fontSize: 100, color: '#000', opacity: 0.05 }} />
-       </div>
+    <div className="plan-view-v2">
+      <div className="plan-header-mini">
+        <h1 className="plan-title-mini" style={{ color: '#fcc419' }}>{plan.planName}</h1>
+        <div className="plan-meta-mini">
+             <span className="highlight-text" style={{ color: '#fcc419' }}>{plan.dietType || 'Custom Diet'}</span> 
+             <span className="separator">•</span>
+             Assigned: {plan.createdAt ? new Date(plan.createdAt).toLocaleDateString() : 'N/A'}
+        </div>
+      </div>
 
-       <h2 style={{ marginBottom: '30px', fontWeight: 800 }}>Meal Schedule</h2>
-
-      {/* MEALS GRID */}
-       <div className="days-grid">
-         {meals?.map((meal, index) => (
-           <div className="day-card" key={index}>
-             <div className="meal-card-header">
-                  <span className="meal-title">{meal.mealName}</span>
+      <div className="days-stack">
+        {plan.meals?.map((meal, index) => (
+            <div className="day-group" key={index}>
+              <div className="day-group-header">
+                  <h3 className="day-name" style={{ color: '#fcc419' }}>{meal.mealName}</h3>
+                  <div className="day-line"></div>
                   {meal.protein && (
-                    <span className="meal-protein-tag">
-                      Protein: {meal.protein.proteinName} - {meal.protein.proteinQuantity}
-                    </span>
+                       <span className="day-count" style={{ color: '#fcc419', background: 'rgba(252, 196, 25, 0.1)' }}>{meal.foods?.length || 0} ITEMS</span>
                   )}
-             </div>
-             <div className="day-content" style={{ padding: 0 }}>
-                <div className="custom-table-container">
-                    <table className="custom-table">
-                        <thead>
-                            <tr>
-                                <th width="40%">Food Item</th>
-                                <th width="25%">Quantity</th>
-                                <th width="35%">Notes</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {meal.foods.map((food, idx) => (
-                                <tr key={idx}>
-                                    <td style={{ fontWeight: 600 }}>{food.foodName}</td>
-                                    <td>{food.quantity}</td>
-                                    <td style={{ fontStyle: 'italic', color: 'var(--text-muted)' }}>{food.notes || '-'}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-             </div>
-           </div>
-         ))}
-       </div>
+              </div>
+              
+              <div className="exercises-grid-compact">
+                {meal.foods?.map((food, idx) => (
+                  <div className="exercise-card-compact" key={idx}>
+                    <div className="ex-header-compact">
+                        <div className="ex-name-compact" style={{ fontSize: '1.1rem' }}>
+                            {food.foodName}
+                        </div>
+                    </div>
+                    
+                    <div className="ex-stats-compact">
+                        <div className="stat-box">
+                            <div className="stat-label">QUANTITY</div>
+                            <div className="stat-value" style={{ fontSize: '1.2rem' }}>{food.quantity}</div>
+                        </div>
+                        {food.calories && (
+                            <div className="stat-box">
+                                <div className="stat-label">CALORIES</div>
+                                <div className="stat-value highlight" style={{ color: '#fcc419' }}>{food.calories}</div>
+                            </div>
+                        )}
+                    </div>
+                    
+                    {food.notes && (
+                        <div className="ex-notes-compact">
+                            <span>{food.notes}</span>
+                        </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+        ))}
+      </div>
     </div>
   );
 };

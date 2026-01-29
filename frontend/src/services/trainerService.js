@@ -63,16 +63,22 @@ export const trainerService = {
   },
 
   // 11. Get Workout Requests (8085)
-  getWorkoutRequests: async (trainerId) => {
+  getWorkoutRequests: async () => {
       // NOTE: User doc says GET /trainer/requests/workout on 8085
-      const response = await api.get(`/trainer/requests/workout?trainerId=${trainerId}`);
+      const response = await api.get('/trainer/requests/workout');
       return response.data;
   },
 
   // 12. Get Diet Requests (8085)
-  getDietRequests: async (trainerId) => {
+  getDietRequests: async () => {
       // NOTE: User doc says GET /trainer/requests/diet on 8085
-      const response = await api.get(`/trainer/requests/diet?trainerId=${trainerId}`);
+      const response = await api.get('/trainer/requests/diet');
       return response.data;
+  },
+
+  // 13. Get Trainer By ID (8083)
+  getTrainerById: async (trainerId) => {
+    const response = await userApi.get(`/trainer/${trainerId}`);
+    return response.data;
   }
 };

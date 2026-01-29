@@ -1,13 +1,13 @@
-import api, { memberActivityApi, attendanceApi } from './api';
+import api, { userApi, memberActivityApi, attendanceApi } from './api';
 
 const processError = (error) => {
   return error.response?.data?.message || error.message || 'Something went wrong';
 };
 
 // --- HOME & DASHBOARD (8085) ---
-export const getHomeStats = async () => {
+export const getHomeStats = async (gymId) => {
     try {
-        const response = await memberActivityApi.get('/api/member/dashboard/home');
+        const response = await memberActivityApi.get(`/api/member/dashboard/home/${gymId}`);
         return response.data;
     } catch (error) { throw processError(error); }
 };
@@ -19,18 +19,40 @@ export const getTodayActivity = async () => {
     } catch (error) { throw processError(error); }
 };
 
-// --- DIET LOGGING (8085) ---
+// --- DIET LOGGING (8083 & 8085) ---
+
+// 1. Search Food (Trainer Panel 8085)
+export const searchFood = async (query) => {
+    try {
+        const response = await memberActivityApi.get(`/api/food/search?query=${query}`);
+        return response.data;
+    } catch (error) { throw processError(error); }
+};
+
+// 2. Add Custom Food (Trainer Panel 8085 - Member Context)
+export const addCustomFood = async (data) => {
+    try {
+        const response = await memberActivityApi.post('/api/food', data);
+        return response.data;
+    } catch (error) { throw processError(error); }
+}
+
+// 3. Log Diet (8085)
+// 3. Log Diet (8085)
 export const logDiet = async (data) => {
     try {
+        // data: Array of { date, mealName, foodItemId, quantity }
         const response = await memberActivityApi.post('/api/diet/log', data);
         return response.data;
     } catch (error) { throw processError(error); }
 };
 
-export const getTodayDietLogs = async () => {
+// 4. Get Daily Logs (8085)
+export const getTodayDietLogs = async (date) => {
     try {
-        const response = await memberActivityApi.get('/api/diet/today');
-        return response.data;
+        const queryDate = date || new Date().toISOString().split('T')[0];
+        const response = await memberActivityApi.get(`/api/diet/log?date=${queryDate}`);
+        return response.data; // Returns { date, logs: [], totalCalories... }
     } catch (error) { throw processError(error); }
 };
 
@@ -41,10 +63,51 @@ export const getDietHistory = async () => {
     } catch (error) { throw processError(error); }
 }
 
-// --- WORKOUT LOGGING (8085) ---
+export const deleteDietLog = async (logId) => {
+    try {
+        const response = await memberActivityApi.delete(`/api/diet/log/${logId}`);
+        return response.data;
+    } catch (error) { throw processError(error); }
+};
+
+export const updateDietLog = async (logId, data) => {
+    try {
+        const response = await memberActivityApi.put(`/api/diet/log/${logId}`, data);
+        return response.data;
+    } catch (error) { throw processError(error); }
+};
+
+// --- WORKOUT LOGGING (8083 & 8085) ---
+
+// 1. Search Exercise (Trainer Panel 8085)
+export const searchExercise = async (query) => {
+    try {
+        const response = await memberActivityApi.get(`/api/exercise/search?query=${query}`);
+        return response.data;
+    } catch (error) { throw processError(error); }
+};
+
+// 2. Add Custom Exercise (Trainer Panel 8085)
+export const addCustomExercise = async (data) => {
+    try {
+        const response = await memberActivityApi.post('/api/exercise', data);
+        return response.data;
+    } catch (error) { throw processError(error); }
+};
+
+// 3. Log Workout (Member Service 8083)
 export const logWorkout = async (data) => {
     try {
+        // data: { date, exerciseId, sets, reps, weightKg }
         const response = await memberActivityApi.post('/api/workout/log', data);
+        return response.data;
+    } catch (error) { throw processError(error); }
+};
+
+export const getTodayWorkoutLogs = async (date) => {
+    try {
+        const queryDate = date || new Date().toISOString().split('T')[0];
+        const response = await memberActivityApi.get(`/api/workout/log?date=${queryDate}`);
         return response.data;
     } catch (error) { throw processError(error); }
 };
@@ -63,31 +126,24 @@ export const updateWorkoutLog = async (logId, data) => {
     } catch (error) { throw processError(error); }
 };
 
-export const getTodayWorkoutLogs = async () => {
-    try {
-        const response = await memberActivityApi.get('/api/workout/today');
-        return response.data;
-    } catch (error) { throw processError(error); }
-};
-
-// --- PROFILE (8085) ---
+// --- PROFILE (8083) ---
 export const getMyProfile = async () => {
     try {
-        const response = await api.get('/api/member/profile/me');
+        const response = await userApi.get('/member/profile/me'); 
         return response.data;
     } catch (error) { throw processError(error); }
 };
 
 export const updateProfile = async (data) => {
     try {
-        const response = await api.put('/api/member/profile/update', data);
+        const response = await userApi.put('/member/profile/me', data);
         return response.data;
     } catch (error) { throw processError(error); }
 };
 
 
 
-// --- DIET PLAN (8085) ---
+// --- DIET PLAN (8083) ---
 export const getMyDietPlan = async () => {
     try {
         const response = await memberActivityApi.get('/api/member/diet/my-plan');
@@ -109,10 +165,10 @@ export const getDietTodaySummary = async () => {
     } catch (error) { throw processError(error); }
 };
 
-// --- WORKOUT PLAN (8085) ---
+// --- WORKOUT PLAN (8083) ---
 export const getMyWorkoutPlan = async () => {
     try {
-        const response = await memberActivityApi.get('/api/member/workout/my-plan');
+        const response = await memberActivityApi.get('/api/workout/my-plan');
         return response.data;
     } catch (error) { throw processError(error); }
 };
@@ -121,35 +177,21 @@ export const getMyWorkoutPlan = async () => {
 
 export const markAttendance = async (status = 'PRESENT') => {
     try {
-        const response = await attendanceApi.post(`/api/attendance/mark?status=${status}`);
+        const response = await attendanceApi.post(`/attendance/mark?status=${status}`);
         return response.data;
     } catch (error) { throw processError(error); }
 };
 
 export const getAttendanceHistory = async () => {
     try {
-        const response = await attendanceApi.get('/api/attendance/history');
+        const response = await attendanceApi.get('/attendance/history');
         return response.data;
     } catch (error) { throw processError(error); }
 };
 
 export const checkTodayAttendanceStatus = async () => {
     try {
-        const response = await attendanceApi.get('/api/attendance/today');
-        return response.data;
-    } catch (error) { throw processError(error); }
-};
-
-export const getAttendanceStreak = async () => {
-    try {
-        const response = await attendanceApi.get('/api/attendance/streak');
-        return response.data;
-    } catch (error) { throw processError(error); }
-};
-
-export const getAttendanceMaxStreak = async () => {
-    try {
-        const response = await attendanceApi.get('/api/attendance/max-streak');
+        const response = await attendanceApi.get('/attendance/today');
         return response.data;
     } catch (error) { throw processError(error); }
 };
@@ -157,7 +199,8 @@ export const getAttendanceMaxStreak = async () => {
 // --- TRAINER CHECK ---
 export const getHasTrainer = async () => {
     try {
-        const response = await memberActivityApi.get('/api/member/has-trainer');
+        // Use userApi (8083) as per instruction
+        const response = await userApi.get('/member/has-trainer');
         return response.data;
     } catch (error) { throw processError(error); }
 };
@@ -185,14 +228,39 @@ export const getExercisesByMuscleGroup = async (muscleGroup) => {
 
 export const requestWorkoutPlan = async (data) => {
     try {
-        const response = await memberActivityApi.post('/member/request/workout', data);
+    const response = await memberActivityApi.post('/api/member/request/workout', data);
         return response.data;
     } catch (error) { throw processError(error); }
 };
 
+
 export const requestDietPlan = async (data) => {
     try {
-        const response = await memberActivityApi.post('/member/request/diet', data);
+    const response = await memberActivityApi.post('/api/member/request/diet', data);
         return response.data;
     } catch (error) { throw processError(error); }
 };
+
+
+export const getMyRequests = async () => {
+    try {
+        const response = await memberActivityApi.get('/api/member/request/my'); 
+        return response.data;
+    } catch (error) { throw processError(error); }
+};
+
+export const updateRequest = async (type, requestId, message) => {
+    try {
+        const response = await memberActivityApi.put(`/api/member/request/${type}/${requestId}`, { message });
+        return response.data;
+    } catch (error) { throw processError(error); }
+};
+
+export const cancelRequest = async (type, requestId) => {
+    try {
+        const response = await memberActivityApi.delete(`/api/member/request/${type}/${requestId}`);
+        return response.data;
+    } catch (error) { throw processError(error); }
+};
+
+

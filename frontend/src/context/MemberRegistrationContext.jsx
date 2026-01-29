@@ -56,8 +56,9 @@ export const MemberRegistrationProvider = ({ children }) => {
     setIsLoading(true);
     clearMessages();
     try {
+      // POST /member/admin/add-multiple (Port 8083)
       const { data } = await userApi.post('/member/admin/add-multiple', membersArray);
-      setSuccessMessage(data.message || `${membersArray.length} members added`);
+      setSuccessMessage(data.message || `${membersArray.length} members added successfully`);
       return data;
     } catch (err) {
       const msg = err.response?.data?.message || 'Failed to add members';
@@ -120,12 +121,7 @@ export const MemberRegistrationProvider = ({ children }) => {
       clearMessages();
       const { data } = await userApi.get(`/member/${id}`);
 
-      const timeSlot = data.timing || data.workoutTimeSlot || '';
-      const [fromPart = '', toPart = ''] = timeSlot.split(' to ');
-      const [fromTime = '', fromPeriod = ''] = fromPart.trim().split(' ');
-      const [toTime = '', toPeriod = ''] = toPart.trim().split(' ');
-      const [fromHour = '', fromMinute = ''] = fromTime.split(':');
-      const [toHour = '', toMinute = ''] = toTime.split(':');
+      const workoutTimeSlot = data.workoutTimeSlot || data.timing || '';
 
       let monthsPaid = data.monthsPaid?.toString() || '';
       let monthsFree = data.monthsFree?.toString() || '0';
@@ -145,14 +141,13 @@ export const MemberRegistrationProvider = ({ children }) => {
         gymId: data.gymId || '',
         monthsPaid,
         monthsFree,
-        fromHour, fromMinute, fromPeriod,
-        toHour, toMinute, toPeriod,
+        workoutTimeSlot,
         registrationFee: (data.registrationFee || 0).toString(),
         planPrice: (data.planPrice || 0).toString(),
         discount: (data.discount || 0).toString(),
         totalAmount: data.totalPaid || data.amountPaid || 0,
         paymentMethod: data.paymentMethod || '',
-        startDate: data.startDate || data.joiningDate || '',
+        joiningDate: data.joiningDate || data.startDate || '',
         workoutTimeSlot: timeSlot,
       };
     } catch (err) {
@@ -205,8 +200,8 @@ export const MemberRegistrationProvider = ({ children }) => {
              return data || [];
         }
 
-        // If no gymId, fetch ALL members (Admin only)
-        const { data } = await userApi.get('/member/all');
+        // If no gymId, fetch active members for MY gyms (Admin only)
+        const { data } = await userApi.get('/member/admin/all/my-members');
         return data || [];
       }
 
@@ -263,11 +258,12 @@ export const MemberRegistrationProvider = ({ children }) => {
       const id = validateMemberId(memberId);
       setIsLoading(true);
       clearMessages();
+      // PUT /member/{memberId} (Port 8083)
       const { data } = await userApi.put(`/member/${id}`, payload);
-      setSuccessMessage(data.message || 'Member updated');
+      setSuccessMessage(data.message || 'Member updated successfully');
       return data;
     } catch (err) {
-      const msg = err.response?.data?.message || err.message || 'Update failed';
+      const msg = err.response?.data?.message || 'Update failed';
       setApiError(msg);
       throw new Error(msg);
     } finally {
@@ -362,6 +358,7 @@ export const MemberRegistrationProvider = ({ children }) => {
         dateOfBirth: completeRegForm.dateOfBirth,
         fitnessGoal: completeRegForm.fitnessGoal,
         workoutTimeSlot: completeRegForm.workoutTimeSlot,
+        age: completeRegForm.age,
       };
 
       const data = await authService.completeMemberRegistration(payload);

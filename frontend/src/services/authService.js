@@ -30,7 +30,7 @@ export const authService = {
   completeMemberRegistration: async (data) => {
     // This might be on member service? Docs said /member/complete-registration. 
     // Usually member management is split. 
-    // If it's pure Auth, 8083. If it creates member profile, maybe 8085?
+    // If it's pure Auth, 8083. If it creates member profile, maybe 8083 too?
     // Docs: "5. Member Registration... Url: /member/complete-registration"
     // Does not specify port explicitly in that section.
     // However, Gym Management Auth Doc says Base URL: http://localhost:8083
@@ -54,7 +54,7 @@ export const authService = {
   // 8. Check Status
 
   checkStatus: async () => {
-      // User requests 8085 for check-status
+      // Auth Status is on Port 8085 (Trainer Panel Service)
       const response = await api.get('/auth/check-status');
       return response.data;
   },
@@ -74,6 +74,25 @@ export const authService = {
   resetPassword: async (data) => {
     // data: { email, otp, newPassword }
     const response = await userApi.post('/auth/reset-password', data);
+    return response.data;
+  },
+
+  // 12. Upload Keys
+  syncKeys: async (data) => {
+    // data: { publicKey, encryptedPrivateKey }
+    const response = await userApi.post('/user/sync-keys', data);
+    return response.data;
+  },
+
+  // 13. Download Keys
+  downloadKeys: async () => {
+    const response = await userApi.get('/user/sync-keys');
+    return response.data;
+  },
+
+  // 14. Get Admin Profile
+  getAdminProfile: async () => {
+    const response = await userApi.get('/admin/profile/me');
     return response.data;
   }
 };

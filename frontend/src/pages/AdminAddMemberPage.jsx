@@ -1,206 +1,30 @@
-// src/pages/AdminAddMemberPage.jsx
 import React, { useState, useEffect, useRef } from "react";
-import {
-  Box,
-  Button,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  Alert,
-  CircularProgress,
-  Typography,
-  InputBase,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  useMediaQuery,
-  IconButton,
-} from "@mui/material";
-import {
-  PersonAdd,
-  Search,
-  Group,
-  Close,
-  FitnessCenter,
-} from "@mui/icons-material";
+import { createPortal } from 'react-dom';
 import { motion, AnimatePresence } from "framer-motion";
-import { ThemeProvider, CssBaseline, createTheme } from "@mui/material";
 import MemberAddForm from "../components/MemberAddForm";
 import { MemberDetailView } from "../components/MemberDetailModal";
 import { MemberRegistrationProvider, useMemberRegistration } from "../context/MemberRegistrationContext";
 import MemberRow from "../components/MemberRow";
 import { userApi } from "../services/api";
 import ConfirmationDialog from "../components/ConfirmationDialog";
+import '../styles/dashboard.css';
 
-const dashboardTheme = createTheme({
-  palette: {
-    mode: 'light',
-    primary: { main: "#007BFF" }, // Bootstrap Blue
-    secondary: { main: "#6c757d" }, // Bootstrap Secondary (Gray)
-    success: { main: "#27C499", light: "#D1FAE5" }, // Clean SaaS Green
-    warning: { main: "#F6A23E" }, // Amber
-    error: { main: "#E53935" }, // Material Red
-    info: { main: "#17A2B8" }, // Info Blue-light
-    background: { default: "#F4F6F9", paper: "#FFFFFF" },
-    text: { primary: "#1F2937", secondary: "#6B7280" },
-  },
-  typography: {
-    fontFamily: "'Inter', 'Roboto', 'Helvetica', 'Arial', sans-serif",
-    h4: { fontWeight: 700 },
-    h6: { fontWeight: 600 },
-    subtitle2: { fontWeight: 600 },
-    button: { textTransform: "none", fontWeight: 600 },
-  },
-  components: {
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          borderRadius: 16,
-          boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
-          border: "1px solid #E5E7EB",
-        },
-      },
-    },
-    MuiPaper: {
-      styleOverrides: {
-        root: { borderRadius: 16, boxShadow: "0 4px 20px rgba(0,0,0,0.05)" },
-      },
-    },
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          borderRadius: 10,
-          padding: "10px 24px",
-          boxShadow: "none",
-          "&:hover": { boxShadow: "0 4px 12px rgba(0,0,0,0.1)" },
-        },
-        containedPrimary: {
-          background: "#007BFF",
-          "&:hover": { background: "#0056b3" },
-        },
-      },
-    },
-    MuiTableCell: {
-      styleOverrides: {
-        root: {
-          borderBottom: "1px solid #E5E7EB",
-          padding: "16px 24px",
-        },
-        head: {
-          fontWeight: 600,
-          color: "#6B7280",
-          backgroundColor: "#F9FAFB",
-        },
-      },
-    },
-    MuiChip: {
-      styleOverrides: {
-        root: { fontWeight: 600, borderRadius: 8 },
-      },
-    },
-  },
-});
-
-const AdminLayout = ({ title, subtitle, children }) => (
-  <Box
-    sx={{
-      minHeight: "100vh",
-      bgcolor: "background.default",
-      pb: 6,
-      overflowX: "hidden",
-    }}
-  >
-    {/* HEADER */}
-    <Box
-      sx={{
-        bgcolor: "white",
-        borderBottom: "1px solid #E5E7EB",
-        py: 2,
-        px: { xs: 2, sm: 3, md: 4 },
-        mb: 4,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "space-between",
-        boxShadow: "0 2px 10px rgba(0,0,0,0.02)",
-      }}
-    >
-      <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-        <Box
-          sx={{
-            width: 48,
-            height: 48,
-            borderRadius: "12px",
-            bgcolor: "primary.main",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            color: "white",
-            boxShadow: "0 4px 12px rgba(0, 123, 255, 0.2)",
-          }}
-        >
-          <FitnessCenter />
-        </Box>
-        <Box>
-          <Typography variant="h5" fontWeight={800} color="text.primary">
-            {title}
-          </Typography>
-          <Typography variant="body2" color="text.secondary" fontWeight={500}>
-            {subtitle}
-          </Typography>
-        </Box>
-      </Box>
-    </Box>
-
-    <Box sx={{ maxWidth: "1400px", mx: "auto", px: { xs: 2, sm: 3, md: 4 } }}>
-      {children}
-    </Box>
-  </Box>
+// SVG Icons to replace MUI
+const IconPlus = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
 );
-
-// GYM DROPDOWN
-const SelectGym = ({ onGymChange }) => {
-  const { gyms, fetchGyms } = useMemberRegistration();
-  const [gymId, setGymId] = useState("all");
-
-  useEffect(() => {
-    fetchGyms();
-  }, [fetchGyms]);
-
-  const handleChange = (e) => {
-    const value = e.target.value;
-    setGymId(value);
-    onGymChange(value === "all" ? null : value);
-  };
-
-  return (
-    <FormControl size="small" sx={{ minWidth: 200 }}>
-      <InputLabel id="gym-select-label">Gyms</InputLabel>
-      <Select
-        labelId="gym-select-label"
-        value={gymId}
-        label="Gyms"
-        onChange={handleChange}
-        sx={{
-          bgcolor: "white",
-          borderRadius: "10px",
-          "& .MuiOutlinedInput-notchedOutline": { borderColor: "#e5e7eb" },
-        }}
-      >
-        <MenuItem value="all">All Gyms</MenuItem>
-        {gyms.map((gym) => (
-          <MenuItem key={gym.gymId} value={gym.gymId}>
-            {gym.gymName}
-          </MenuItem>
-        ))}
-      </Select>
-    </FormControl>
-  );
-};
+const IconSearch = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+);
+const IconGroup = () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+);
+const IconClose = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+);
+const IconUserPlus = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+);
 
 const AdminAddMemberPageContent = () => {
   const {
@@ -217,9 +41,9 @@ const AdminAddMemberPageContent = () => {
     sendPaymentReminder,
     getMemberDetail,
     getMemberById,
+    gyms,
+    fetchGyms
   } = useMemberRegistration();
-
-  const isMobile = useMediaQuery("(max-width:900px)");
 
   const [sidePanel, setSidePanel] = useState({
     open: false,
@@ -233,13 +57,26 @@ const AdminAddMemberPageContent = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [localSearchResults, setLocalSearchResults] = useState([]);
   const [isSearchingAPI, setIsSearchingAPI] = useState(false);
-  const [selectedGymId, setSelectedGymId] = useState(null);
+  const [selectedGymId, setSelectedGymId] = useState("all");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false); // ✅ Added state
+  const dropdownRef = useRef(null); // ✅ Added ref
   const searchTimeoutRef = useRef(null);
-
   const [stats, setStats] = useState(null);
 
   useEffect(() => {
     userApi.get("/admin/dashboard/18").then((res) => setStats(res.data)).catch(console.error);
+    fetchGyms();
+  }, []);
+
+  // ✅ Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   // Confirmation Dialog State
@@ -255,7 +92,8 @@ const AdminAddMemberPageContent = () => {
   useEffect(() => {
     let mounted = true;
     const load = async () => {
-      const data = await fetchMembers(selectedGymId);
+      const gymId = selectedGymId === "all" ? null : selectedGymId;
+      const data = await fetchMembers(gymId);
       if (mounted) {
         setOriginalMembers(data || []);
         setMembers(data || []);
@@ -268,7 +106,6 @@ const AdminAddMemberPageContent = () => {
   // Search
   useEffect(() => {
     if (searchTimeoutRef.current) clearTimeout(searchTimeoutRef.current);
-
     const term = searchTerm.trim();
 
     if (!term) {
@@ -290,7 +127,8 @@ const AdminAddMemberPageContent = () => {
     searchTimeoutRef.current = setTimeout(async () => {
       setIsSearchingAPI(true);
       try {
-        const results = await searchMembers(term, selectedGymId);
+        const gymId = selectedGymId === "all" ? null : selectedGymId;
+        const results = await searchMembers(term, gymId);
         setMembers(results || []);
       } catch (err) {
         console.error("Search failed:", err);
@@ -306,10 +144,6 @@ const AdminAddMemberPageContent = () => {
 
   const displayMembers = searchTerm.trim() ? localSearchResults : members;
 
-  const handleGymChange = (gymId) => {
-    setSelectedGymId(gymId);
-  };
-
   const closePanel = () => {
     setSidePanel({ open: false, view: "none", data: null, loading: false });
     clearMessages();
@@ -318,7 +152,8 @@ const AdminAddMemberPageContent = () => {
   const handleAddSuccess = async (payloadArray) => {
     const arr = Array.isArray(payloadArray) ? payloadArray : [payloadArray];
     await addMultipleMembers(arr);
-    const updated = await fetchMembers(selectedGymId);
+    const gymId = selectedGymId === "all" ? null : selectedGymId;
+    const updated = await fetchMembers(gymId);
     setOriginalMembers(updated || []);
     setMembers(updated || []);
     closePanel();
@@ -327,7 +162,8 @@ const AdminAddMemberPageContent = () => {
   const handleEditSuccess = async (payload) => {
     if (sidePanel.data) {
       await updateMember(sidePanel.data.id, payload);
-      const updated = await fetchMembers(selectedGymId);
+      const gymId = selectedGymId === "all" ? null : selectedGymId;
+      const updated = await fetchMembers(gymId);
       setOriginalMembers(updated || []);
       setMembers(updated || []);
       closePanel();
@@ -338,24 +174,12 @@ const AdminAddMemberPageContent = () => {
     setSidePanel({ open: true, view: "add", data: null });
   };
 
-  const openEdit = async (memberId) => {
-    setSidePanel({ open: true, view: "edit", data: null, loading: true });
-    // Pass true to prevent global loading spinner
-    const mem = await getMemberById(memberId, true);
-    
-    if (mem) {
-      setSidePanel({ open: true, view: "edit", data: mem, loading: false });
-    } else {
-      setSidePanel(prev => ({ ...prev, loading: false }));
-    }
+  const openEdit = (member) => {
+    if (member) setSidePanel({ open: true, view: "edit", data: member, loading: false });
   };
 
-  const openDetail = async (memberId) => {
-    if (!memberId) return;
-    const mem = await getMemberDetail(memberId);
-    if (mem) {
-      setSidePanel({ open: true, view: "detail", data: mem });
-    }
+  const openDetail = (member) => {
+    if (member) setSidePanel({ open: true, view: "detail", data: member });
   };
 
   const handleResend = (userId) => {
@@ -377,13 +201,14 @@ const AdminAddMemberPageContent = () => {
       open: true,
       title: "Delete Member?",
       message: "Are you sure you want to soft-delete this member?",
-      severity: "error", // Use error color for delete
+      severity: "error",
       confirmText: "Delete",
       onConfirm: async () => {
         setConfirmDialog(prev => ({ ...prev, open: false }));
         const ok = await deleteMember(memberId);
         if (ok) {
-          const updated = await fetchMembers(selectedGymId);
+          const gymId = selectedGymId === "all" ? null : selectedGymId;
+          const updated = await fetchMembers(gymId);
           setOriginalMembers(updated || []);
           setMembers(updated || []);
         }
@@ -405,286 +230,311 @@ const AdminAddMemberPageContent = () => {
     });
   };
 
-  const renderMembersList = () => {
-    if (isLoading || (isSearchingAPI && searchTerm.trim())) {
-      return (
-        <Box sx={{ display: "flex", justifyContent: "center", py: 8 }}>
-          <CircularProgress sx={{ color: "primary.main" }} />
-        </Box>
-      );
-    }
-
-    if (!displayMembers.length) {
-      return (
-        <Typography align="center" sx={{ py: 8, color: "text.secondary", fontSize: "1.1rem" }}>
-          {searchTerm.trim()
-            ? "No members found matching your search."
-            : selectedGymId
-            ? "No members found in this gym."
-            : "No members added yet."}
-        </Typography>
-      );
-    }
-
-    if (isMobile) {
-      return (
-        <Box sx={{ p: 2 }}>
-          <AnimatePresence>
-            {displayMembers.map((m, index) => {
-               const id = m.memberId || m.id || m.gymMemberId; 
-               const isSelected = sidePanel.open && sidePanel.data && (sidePanel.data.memberId === id || sidePanel.data.id === id);
-               return (
-                <MemberRow
-                  key={id || index}
-                  member={m}
-                  index={index}
-                  isSelected={isSelected}
-                  onDetail={() => openDetail(id)}
-                  onEdit={() => openEdit(id)}
-                  onPaymentReminder={() => handlePaymentReminder(id)}
-                  onResend={() => handleResend(m.userId || id)}
-                  onDelete={() => handleDelete(id)}
-                />
-              );
-            })}
-          </AnimatePresence>
-        </Box>
-      );
-    }
-
-    return (
-      <TableContainer>
-        <Table stickyHeader>
-          <TableHead>
-            <TableRow>
-              {["Full Name", "Email", "Phone Number", "Plan", "Workout Timing", "Actions"].map((h) => (
-                <TableCell
-                  key={h}
-                  sx={{
-                    fontWeight: 700,
-                    color: "text.secondary",
-                    bgcolor: "background.paper",
-                    borderBottom: "2px solid #E5E7EB",
-                    py: 2,
-                  }}
-                >
-                  {h}
-                </TableCell>
-              ))}
-            </TableRow>
-          </TableHead>
-          <TableBody component={motion.tbody} layout>
-            <AnimatePresence>
-              {displayMembers.map((m, index) => {
-                const id = m.memberId || m.id || m.gymMemberId;
-                const isSelected = sidePanel.open && sidePanel.data && (sidePanel.data.memberId === id || sidePanel.data.id === id);
-
-                return (
-                  <MemberRow
-                    key={id || index}
-                    member={m}
-                    index={index}
-                    isSelected={isSelected}
-                    onDetail={() => openDetail(id)}
-                    onEdit={() => openEdit(id)}
-                    onPaymentReminder={() => handlePaymentReminder(id)}
-                    onResend={() => handleResend(m.userId || id)}
-                    onDelete={() => handleDelete(id)}
-                  />
-                );
-              })}
-            </AnimatePresence>
-          </TableBody>
-        </Table>
-      </TableContainer>
-    );
-  };
-
   return (
-    <AdminLayout title="Manage Members" subtitle="Real-time member management">
-      <AnimatePresence>
+    <div className="dashboard-content-inner">
+      {/* Alert Messages */}
+      <AnimatePresence mode="wait">
         {successMessage && (
-          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}>
-            <Alert severity="success" sx={{ mb: 3, borderRadius: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}>
-              {successMessage}
-            </Alert>
+          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+             style={{ padding: '1rem', backgroundColor: 'rgba(81, 207, 102, 0.1)', color: 'var(--db-green)', borderRadius: '12px', marginBottom: '1.5rem', border: '1px solid rgba(81, 207, 102, 0.2)' }}>
+            {successMessage}
           </motion.div>
         )}
         {apiError && (
-          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}>
-            <Alert severity="error" sx={{ mb: 3, borderRadius: "12px" }}>
-              {apiError}
-            </Alert>
+          <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }}
+             style={{ padding: '1rem', backgroundColor: 'rgba(238, 82, 83, 0.1)', color: '#ee5253', borderRadius: '12px', marginBottom: '1.5rem', border: '1px solid rgba(238, 82, 83, 0.2)' }}>
+            {apiError}
           </motion.div>
         )}
       </AnimatePresence>
 
-      <Box sx={{ position: "relative", display: "flex", alignItems: "flex-start", gap: 2 }}>
-        {/* LEFT PANEL: MEMBER LIST */}
-        <motion.div
-          layout
-          initial={false}
-          animate={{
-            width: sidePanel.open ? (isMobile ? "100%" : "60%") : "100%",
-            x: sidePanel.open && isMobile ? "-100%" : "0%",
-            opacity: sidePanel.open && isMobile ? 0 : 1,
-            display: sidePanel.open && isMobile ? "none" : "block",
-          }}
-          transition={{ type: "spring", stiffness: 300, damping: 30 }}
-          style={{ flexShrink: 0, width: "100%" }}
-        >
-          <Paper sx={{ overflow: "hidden", border: "1px solid #E5E7EB", borderRadius: "24px", boxShadow: "0 10px 40px -10px rgba(0,0,0,0.1)", minHeight: "70vh" }}>
-            <Box
-              sx={{
-                p: 4,
-                borderBottom: "1px solid #E5E7EB",
-                display: "flex",
-                flexDirection: { xs: "column", lg: "row" },
-                justifyContent: "space-between",
-                alignItems: "center",
-                gap: 3,
-                bgcolor: "white",
-              }}
-            >
-              <Box sx={{ display: "flex", alignItems: "center", gap: 2.5 }}>
-                <Box sx={{ width: 56, height: 56, borderRadius: "16px", bgcolor: "rgba(0, 123, 255, 0.1)", display: "flex", alignItems: "center", justifyContent: "center", color: "primary.main" }}>
-                  <Group sx={{ fontSize: 30 }} />
-                </Box>
-                <Box>
-                  <Typography variant="h5" fontWeight={700}>All Members</Typography>
-                  <Typography variant="body1" color="text.secondary">
-                    {displayMembers.length} members found
-                  </Typography>
-                   {stats && (
-                    <Typography variant="body2" color="success.main" fontWeight={600} sx={{ mt: 0.5 }}>
-                      Active: {stats.activeMembers} | Monthly Revenue: ₹{stats.monthlyRevenue?.toLocaleString()}
-                    </Typography>
-                  )}
-                </Box>
-              </Box>
+      <div className="admin-content-layout" style={{ display: "flex", alignItems: "flex-start", gap: "2rem", position: "relative", flexWrap: "wrap" }}>
+        {/* Main Section */}
+        {(!sidePanel.open || window.innerWidth > 1200) && (
+          <div
+             className="admin-main-section"
+             style={{ width: '100%' }}
+           >
+          {/* Filters Row */}
+          <div className="db-filters-row">
+            <div style={{ display: "flex", alignItems: "center", gap: "1.5rem" }}>
+              <div className="icon-box-sm" style={{ backgroundColor: 'rgba(255, 107, 107, 0.1)', color: 'var(--db-accent)' }}>
+                <IconGroup />
+              </div>
+              <div>
+                <h3 style={{ margin: 0, fontSize: '1.25rem' }}>All Members</h3>
+                <p style={{ margin: 0, color: 'var(--db-text-secondary)', fontSize: '0.85rem' }}>
+                  {displayMembers.length} active records
+                </p>
+              </div>
+            </div>
 
-              <Box sx={{ display: "flex", gap: 2, flexDirection: { xs: "column", sm: "row" }, flexWrap: "wrap" }}>
-                <SelectGym onGymChange={handleGymChange} />
-                <Box
-                  sx={{
-                    display: "flex",
-                    alignItems: "center",
-                    bgcolor: "#f9fafb",
-                    borderRadius: "12px",
-                    px: 2.5,
-                    py: 1.5,
-                    border: "1px solid #E5E7EB",
-                    flexGrow: 1,
-                    minWidth: { xs: "100%", sm: "250px" },
-                    "&:focus-within": { borderColor: "#007BFF", boxShadow: "0 0 0 4px rgba(0, 123, 255, 0.1)" },
-                  }}
-                >
-                  <Search sx={{ color: "text.secondary", mr: 1.5, fontSize: 24 }} />
-                  <InputBase
-                    placeholder="Search members..."
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                    sx={{ width: "100%", fontSize: "1.05rem" }}
-                  />
-                </Box>
-                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-                  <Button
-                    variant="contained"
-                    startIcon={<PersonAdd />}
-                    onClick={openAddMember}
-                    sx={{
-                      bgcolor: "primary.main",
-                      "&:hover": { bgcolor: "primary.dark" },
-                      px: 4,
-                      py: 1.5,
-                      fontSize: "1rem",
-                      borderRadius: "12px",
+            <div className="filters-controls-container" style={{ display: "flex", gap: "1rem", flex: 1, width: '100%', flexDirection: 'column' }}>
+              <div className="db-select-wrapper no-after" ref={dropdownRef} style={{ position: 'relative', width: '100%' }}>
+                {/* Custom Styled Dropdown Trigger */}
+                <div 
+                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                    style={{
+                        width: '100%',
+                        padding: '0.75rem 1rem',
+                        backgroundColor: 'var(--db-card)',
+                        border: '1px solid var(--db-border)',
+                        borderRadius: '12px',
+                        color: 'var(--db-text-primary)',
+                        cursor: 'pointer',
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        fontSize: '0.9rem',
+                        fontWeight: '600',
+                        transition: 'all 0.2s',
+                        boxShadow: isDropdownOpen ? '0 0 0 2px rgba(251, 146, 60, 0.2)' : 'none'
                     }}
-                  >
-                    Add Member
-                  </Button>
-                </motion.div>
-              </Box>
-            </Box>
+                    onMouseEnter={(e) => e.currentTarget.style.backgroundColor = 'rgba(var(--db-accent-rgb, 251, 146, 60), 0.02)'}
+                    onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'var(--db-card)'}
+                >
+                    <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                         {selectedGymId === 'all' ? (
+                            "All Gyms"
+                         ) : (
+                            gyms.find(g => g.gymId.toString() === selectedGymId.toString())?.gymName || 'Select Gym'
+                         )}
+                    </span>
+                    <div style={{ transform: isDropdownOpen ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s', display: 'flex', opacity: 0.7 }}>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+                    </div>
+                </div>
 
-            {renderMembersList()}
-          </Paper>
-        </motion.div>
-
-        {/* RIGHT PANEL: SIDE PANEL */}
-        <AnimatePresence>
-          {sidePanel.open && (
-            <motion.div
-              initial={{ x: "100%", opacity: 0 }}
-              animate={{ x: 0, opacity: 1 }}
-              exit={{ x: "100%", opacity: 0 }}
-              transition={{ type: "spring", stiffness: 300, damping: 30 }}
-              style={{
-                position: isMobile ? "absolute" : "relative",
-                right: 0,
-                top: 0,
-                width: isMobile ? "100%" : "40%",
-                height: "100%",
-                minHeight: "70vh",
-                zIndex: 10,
-              }}
-            >
-              <Paper sx={{ height: "100%", borderRadius: "24px", overflow: "hidden", boxShadow: "-10px 0 30px rgba(0,0,0,0.1)", bgcolor: "white", display: "flex", flexDirection: "column" }}>
-                <Box sx={{ p: 2, display: "flex", justifyContent: "flex-end", borderBottom: "1px solid #E5E7EB" }}>
-                  <IconButton onClick={closePanel}>
-                    <Close />
-                  </IconButton>
-                </Box>
-                <Box sx={{ flexGrow: 1, overflowY: "auto" }}>
-                  {sidePanel.view === "add" && (
-                    <Box sx={{ p: 2 }}>
-                      <Typography variant="h5" fontWeight={700} sx={{ mb: 3, px: 2, color: "primary.dark" }}>
-                        Add New Member
-                      </Typography>
-                      <MemberAddForm onSuccess={handleAddSuccess} multiple onCancel={closePanel} />
-                    </Box>
-                  )}
-                  {sidePanel.view === "edit" && (
-                    <Box sx={{ p: 2 }}>
-                      <Typography variant="h5" fontWeight={700} sx={{ mb: 3, px: 2, color: "primary.dark" }}>
-                        Edit Member
-                      </Typography>
-                      {sidePanel.loading ? (
-                         <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-                            <CircularProgress />
-                         </Box>
-                      ) : (
-                         sidePanel.data && <MemberAddForm onSuccess={handleEditSuccess} member={sidePanel.data} onCancel={closePanel} />
-                      )}
-                    </Box>
-                  )}
-                  {sidePanel.view === "detail" && sidePanel.data && (
-
-                    <MemberDetailView 
-                        member={sidePanel.data} 
-                        onClose={closePanel} 
-                        onAssignSuccess={async () => {
-                            // Refresh member details and list
-                            const updated = await fetchMembers(selectedGymId);
-                            setOriginalMembers(updated || []);
-                            setMembers(updated || []);
+                {/* Dropdown Menu */}
+                <AnimatePresence>
+                    {isDropdownOpen && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 8, scale: 0.98 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 8, scale: 0.98 }}
+                            transition={{ duration: 0.2, ease: "easeOut" }}
+                            style={{
+                                position: 'absolute',
+                                top: 'calc(100% + 6px)',
+                                left: 0,
+                                right: 0,
+                                backgroundColor: 'var(--db-sidebar)',
+                                border: '1px solid var(--db-border)',
+                                borderRadius: '14px',
+                                overflow: 'hidden',
+                                zIndex: 105,
+                                boxShadow: 'var(--glass-shadow)',
+                                padding: '6px'
+                            }}
+                        >
+                            <div 
+                                onClick={() => { setSelectedGymId("all"); setIsDropdownOpen(false); }}
+                                className="dropdown-item"
+                                style={{
+                                    padding: '10px 12px',
+                                    borderRadius: '8px',
+                                    cursor: 'pointer',
+                                    color: selectedGymId === 'all' ? '#fff' : 'var(--db-text-secondary)',
+                                    backgroundColor: selectedGymId === 'all' ? 'var(--db-accent)' : 'transparent',
+                                    fontWeight: selectedGymId === 'all' ? '600' : '500',
+                                    fontSize: '0.9rem',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    gap: '10px',
+                                    marginBottom: '4px'
+                                }}
+                            >
+                                All Gyms
+                            </div>
                             
-                            // Also refresh opened detail view if needed (optional, or close)
-                            // We close it for simplicity or re-fetch member detail
-                            if (sidePanel.data) {
+                            <div style={{ height: '1px', backgroundColor: 'var(--db-border)', margin: '4px 0' }}></div>
+
+                            <div style={{ maxHeight: '250px', overflowY: 'auto' }}>
+                                {gyms.map(gym => (
+                                    <div 
+                                        key={gym.gymId}
+                                        onClick={() => { setSelectedGymId(gym.gymId); setIsDropdownOpen(false); }}
+                                        className="dropdown-item"
+                                        style={{
+                                            padding: '10px 12px',
+                                            borderRadius: '8px',
+                                            cursor: 'pointer',
+                                            color: selectedGymId === gym.gymId ? '#fff' : 'var(--db-text-primary)',
+                                            backgroundColor: selectedGymId === gym.gymId ? 'var(--db-accent)' : 'transparent',
+                                            fontWeight: selectedGymId === gym.gymId ? '600' : '500',
+                                            fontSize: '0.9rem',
+                                            marginBottom: '2px',
+                                            display: 'flex',
+                                            alignItems: 'center',
+                                            gap: '10px'
+                                        }}
+                                        onMouseEnter={(e) => {
+                                            if(selectedGymId !== gym.gymId) {
+                                                e.currentTarget.style.backgroundColor = 'rgba(var(--db-accent-rgb, 251, 146, 60), 0.08)';
+                                                e.currentTarget.style.color = 'var(--db-accent)';
+                                            }
+                                        }}
+                                        onMouseLeave={(e) => {
+                                            if(selectedGymId !== gym.gymId) {
+                                                e.currentTarget.style.backgroundColor = 'transparent';
+                                                e.currentTarget.style.color = 'var(--db-text-primary)';
+                                            }
+                                        }}
+                                    >
+                                        {gym.gymName}
+                                    </div>
+                                ))}
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+              </div>
+
+              <div className="db-search-wrapper" style={{ width: '100%' }}>
+                <IconSearch />
+                <input 
+                  type="text" 
+                  className="db-search-input" 
+                  placeholder="Filter name, email..." 
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+              </div>
+
+              <button className="db-btn db-btn-primary" onClick={openAddMember} style={{ width: '100%', justifyContent: 'center' }}>
+                <IconUserPlus /> Add Member
+              </button>
+            </div>
+          </div>
+
+          {/* Members Table */}
+          <div className="db-table-container">
+            {isLoading || (isSearchingAPI && searchTerm.trim()) ? (
+              <div style={{ padding: '4rem', textAlign: 'center' }}>
+                <div className="spinner" style={{ margin: '0 auto' }}></div>
+              </div>
+            ) : displayMembers.length === 0 ? (
+              <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--db-text-secondary)' }}>
+                 No members found.
+              </div>
+            ) : (
+              <table className="db-table">
+                <thead>
+                  <tr>
+                    <th>Member Details</th>
+                    <th>Plan</th>
+                    <th>Workout</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <AnimatePresence mode="popLayout">
+                    {displayMembers.map((m, index) => {
+                      const id = m.memberId || m.id || m.gymMemberId;
+                      const isSelected = sidePanel.open && sidePanel.data && (sidePanel.data.memberId === id || sidePanel.data.id === id);
+                      // Find gym name
+                      const memberGym = gyms.find(g => g.gymId === m.gymId);
+                      const gymName = memberGym ? memberGym.gymName : '';
+
+                      return (
+                        <MemberRow
+                          key={id || index}
+                          member={m}
+                          gymName={gymName}
+                          isSelected={isSelected}
+                          onDetail={() => openDetail(m)}
+                          onEdit={() => openEdit(m)}
+                          onPaymentReminder={() => handlePaymentReminder(id)}
+                          onResend={() => handleResend(m.userId || id)}
+                          onDelete={() => handleDelete(id)}
+                        />
+                      );
+                    })}
+                  </AnimatePresence>
+                </tbody>
+              </table>
+            )}
+          </div>
+          </div>
+        )}
+
+        {/* Side Panel */}
+        {/* Modal Popup Overlay */}
+        {createPortal(
+          <AnimatePresence>
+            {sidePanel.open && (
+              <motion.div
+                key="modal-overlay"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                className="modal-overlay"
+                style={{ display: 'flex' }} // Keep flex for children alignment
+                onClick={closePanel}
+              >
+                <motion.div
+                  key="modal-container"
+                  initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                  transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                  className="modal-container"
+                  style={{
+                     width: '100%',
+                     maxWidth: sidePanel.view === 'detail' ? '900px' : '700px',
+                     position: 'relative'
+                  }}
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <div className="db-card" style={{ padding: 0, overflow: 'hidden', display: 'flex', flexDirection: 'column', boxShadow: '0 20px 40px rgba(0,0,0,0.4)', maxHeight: '90vh' }}>
+                    <div style={{ 
+                      padding: '1.5rem', 
+                      borderBottom: '1px solid var(--db-border)', 
+                      display: 'flex', 
+                      justifyContent: 'space-between', 
+                      alignItems: 'center', 
+                      backgroundColor: 'var(--db-card)',
+                      flexShrink: 0, // Prevent header from shrinking
+                      zIndex: 10
+                    }}>
+                       <h3 style={{ margin: 0, fontSize: '1.2rem', fontWeight: 700 }}>
+                          {sidePanel.view === 'add' ? 'Register New Member' : sidePanel.view === 'edit' ? 'Update Member Info' : 'Member Profile Overview'}
+                       </h3>
+                       <button className="db-btn-icon" onClick={closePanel} style={{ backgroundColor: 'rgba(255,255,255,0.05)' }}>
+                          <IconClose />
+                       </button>
+                    </div>
+                    
+                    <div style={{ padding: '2rem 1.5rem', backgroundColor: 'var(--db-card)', overflowY: 'auto', flex: 1 }}>
+                      {sidePanel.view === "add" && <MemberAddForm onSuccess={handleAddSuccess} multiple onCancel={closePanel} />}
+                      {sidePanel.view === "edit" && (
+                        sidePanel.loading ? <div style={{ display: 'flex', justifyContent: 'center', p: 4 }}><div className="spinner"></div></div> :
+                        sidePanel.data && <MemberAddForm onSuccess={handleEditSuccess} member={sidePanel.data} onCancel={closePanel} />
+                      )}
+                      {sidePanel.view === "detail" && sidePanel.data && (
+                        <MemberDetailView 
+                            member={sidePanel.data} 
+                            onClose={closePanel} 
+                            onAssignSuccess={async () => {
+                                const gymId = selectedGymId === "all" ? null : selectedGymId;
+                                const updated = await fetchMembers(gymId);
+                                setOriginalMembers(updated || []);
+                                setMembers(updated || []);
                                 const mem = await getMemberDetail(sidePanel.data.memberId || sidePanel.data.id);
                                 if (mem) setSidePanel(prev => ({ ...prev, data: mem }));
-                            }
-                        }}
-                    />
-                  )}
-                </Box>
-              </Paper>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                            }}
+                        />
+                      )}
+                    </div>
+                  </div>
+                </motion.div>
+              </motion.div>
+            )}
+          </AnimatePresence>,
+          document.body
+        )}
+      </div>
 
-      </Box>
       <ConfirmationDialog 
         open={confirmDialog.open}
         title={confirmDialog.title}
@@ -694,17 +544,14 @@ const AdminAddMemberPageContent = () => {
         onConfirm={confirmDialog.onConfirm}
         onCancel={() => setConfirmDialog(prev => ({ ...prev, open: false }))}
       />
-    </AdminLayout>
+    </div>
   );
 };
 
 const AdminAddMemberPage = () => (
-  <ThemeProvider theme={dashboardTheme}>
-    <CssBaseline />
-    <MemberRegistrationProvider>
-      <AdminAddMemberPageContent />
-    </MemberRegistrationProvider>
-  </ThemeProvider>
+  <MemberRegistrationProvider>
+    <AdminAddMemberPageContent />
+  </MemberRegistrationProvider>
 );
 
 export default AdminAddMemberPage;

@@ -1,0 +1,373 @@
+/* MemberWorkoutView.css */
+
+.workout-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    color: var(--db-text-primary);
+    font-family: 'Inter', system-ui, sans-serif;
+    padding: 0 1rem;
+}
+
+.workout-header {
+    margin-bottom: 2.5rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+}
+
+.workout-title {
+    font-size: 2.5rem;
+    font-weight: 900;
+    margin: 0 0 0.5rem 0;
+    letter-spacing: -1px;
+    background: linear-gradient(to right, #38bdf8, #818cf8);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.light-theme .workout-title {
+    background: linear-gradient(to right, #0ea5e9, #4f46e5); /* Slightly darker start color */
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.05); /* Subtle shadow for depth */
+}
+
+.workout-subtitle {
+    margin: 0;
+    color: var(--db-text-secondary);
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.light-theme .workout-subtitle {
+    color: #475569; /* Darker slate/gray for better readability */
+    font-weight: 600; /* Slightly bolder */
+}
+
+.workout-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 2rem;
+}
+
+/* Logger Card */
+.logger-card {
+    background: var(--db-card);
+    border-radius: 24px;
+    padding: 2rem;
+    border: 1px solid var(--db-border);
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.light-theme .logger-card {
+    background: #ffffff;
+    border-color: rgba(0,0,0,0.05);
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
+}
+
+.logger-header {
+    margin-bottom: 0.5rem;
+}
+
+.logger-title {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin: 0 0 0.25rem 0;
+    color: var(--db-text-primary);
+}
+
+.logger-desc {
+    color: var(--db-text-secondary);
+    font-size: 0.9rem;
+    margin: 0;
+}
+
+.form-label {
+    display: block;
+    font-size: 0.75rem;
+    font-weight: 700;
+    color: var(--db-text-secondary);
+    letter-spacing: 0.5px;
+    margin-bottom: 0.5rem;
+    text-transform: uppercase;
+}
+
+.input-group {
+    position: relative;
+    width: 100%;
+}
+
+.custom-input {
+    width: 100%;
+    background: rgba(0,0,0,0.2);
+    border: 1px solid var(--db-border);
+    color: var(--db-text-primary);
+    padding: 1rem 1rem 1rem 2.8rem; /* Space for icon */
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.light-theme .custom-input {
+    background: #f8fafc;
+    border-color: rgba(0,0,0,0.1);
+    color: var(--db-text-primary);
+}
+
+.custom-input:focus {
+    outline: none;
+    border-color: var(--db-blue);
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.1);
+}
+
+.custom-input::placeholder {
+    color: #475569;
+}
+
+.input-icon {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--db-text-secondary);
+    pointer-events: none;
+}
+
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+}
+
+.grid-cols-2 {
+    grid-template-columns: 1fr 1fr;
+}
+
+.log-btn {
+    background: #1e293b;
+    color: white;
+    border: 1px solid var(--db-border);
+    padding: 1rem;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+    transition: background 0.2s ease, transform 0.1s ease;
+    margin-top: 1rem;
+    box-shadow: none;
+}
+
+.light-theme .log-btn {
+    box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+}
+
+.log-btn:hover {
+    background: #334155;
+    box-shadow: none;
+}
+
+.log-btn:active {
+    transform: scale(0.98);
+}
+
+.log-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    background: #334155;
+}
+
+/* Suggested Results */
+.suggestions-dropdown {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    margin-top: 0.5rem;
+    background: var(--db-card);
+    border: 1px solid var(--db-border);
+    border-radius: 12px;
+    overflow: hidden;
+    z-index: 50;
+    box-shadow: 0 10px 40px -10px rgba(0,0,0,0.5);
+}
+
+.suggestion-item {
+    padding: 1rem;
+    border-bottom: 1px solid var(--db-border);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: background 0.1s;
+}
+
+.suggestion-item:last-child {
+    border-bottom: none;
+}
+
+.suggestion-item:hover {
+    background: rgba(255,255,255,0.05);
+}
+
+.light-theme .suggestion-item:hover {
+    background: rgba(0,0,0,0.05);
+}
+
+.light-theme .suggestions-dropdown {
+    background: #ffffff;
+    background: #ffffff;
+    border-color: rgba(0,0,0,0.1);
+}
+
+.light-theme .suggestion-item span {
+    color: #1e293b !important; /* Ensure text is dark and visible */
+}
+
+/* Summary Card */
+.summary-card {
+    background: var(--db-card);
+    border-radius: 24px;
+    padding: 2rem;
+    border: 1px solid var(--db-border);
+}
+
+.light-theme .summary-card {
+    background: #ffffff;
+    border-color: rgba(0,0,0,0.05);
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.05);
+}
+
+.log-item {
+    background: rgba(255,255,255,0.02);
+    border: 1px solid var(--db-border);
+    border-radius: 16px;
+    padding: 1rem;
+    margin-bottom: 0.75rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    transition: all 0.2s ease;
+}
+
+.log-item:hover {
+    background: rgba(255,255,255,0.04);
+    transform: translateX(4px);
+}
+
+.light-theme .log-item {
+    background: #f8fafc;
+    border-color: rgba(0,0,0,0.05);
+}
+
+.light-theme .log-item:hover {
+    background: #f1f5f9;
+}
+
+.log-actions button {
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: #94a3b8;
+    padding: 0.6rem;
+    border-radius: 10px;
+    cursor: pointer;
+    margin-left: 0.5rem;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.log-actions button:hover {
+    background: rgba(56, 189, 248, 0.15);
+    border-color: rgba(56, 189, 248, 0.3);
+    color: #38bdf8;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(56, 189, 248, 0.1);
+}
+
+.log-actions button.delete-btn:hover {
+    background: rgba(239, 68, 68, 0.15);
+    border-color: rgba(239, 68, 68, 0.3);
+    color: #ef4444;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.1);
+}
+
+.stats-tag {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #38bdf8;
+    background: rgba(56, 189, 248, 0.1);
+    padding: 0.25rem 0.5rem;
+    border-radius: 6px;
+    margin-top: 0.25rem;
+    display: inline-block;
+}
+
+/* Responsive */
+@media (max-width: 960px) {
+    .workout-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+
+    .workout-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 1rem;
+    }
+
+    .workout-container {
+        padding: 0 1rem 2rem 1rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .workout-title {
+        font-size: 2rem;
+    }
+
+    .logger-card, .summary-card {
+        padding: 1.25rem;
+    }
+    
+
+    .form-row, .grid-cols-2 {
+        grid-template-columns: 1fr;
+    }
+
+    .log-item {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.75rem;
+    }
+
+    .log-actions {
+        width: 100%;
+        display: flex;
+        justify-content: flex-end; /* Keep right aligned or use space-between */
+        gap: 1rem; /* More space between buttons */
+        border-top: 1px solid rgba(255, 255, 255, 0.05);
+        padding-top: 0.75rem;
+        margin-top: 0.25rem;
+    }
+
+    .log-actions button {
+        padding: 0.75rem; /* Larger touch target */
+        background: rgba(255, 255, 255, 0.08); /* More visible bg */
+    }
+
+    /* Custom Input Icon spacing fix if needed */
+    .custom-input {
+        font-size: 0.95rem;
+    }
+}

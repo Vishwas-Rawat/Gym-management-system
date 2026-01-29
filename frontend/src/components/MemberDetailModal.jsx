@@ -1,63 +1,79 @@
-// src/components/MemberDetailModal.jsx
-import React from "react";
-import {
-  Dialog,
-  DialogContent,
-  DialogActions,
-  Typography,
-  Chip,
-  Divider,
-  Box,
-  IconButton,
-  Paper,
-  Stack,
-  Button,
-  useMediaQuery,
-} from "@mui/material";
-import {
-  Close,
-  CalendarToday,
-  AccessTime,
-  Payment,
-  Person,
-  Phone,
-  Email,
-  Event,
-  CreditCard,
-  AssignmentInd
-} from "@mui/icons-material";
-import { motion } from "framer-motion";
+import React from 'react';
+import { motion, AnimatePresence } from "framer-motion";
+import '../styles/dashboard.css';
+
+// Custom SVG Icon Components (Lucide-inspired)
+const Icons = {
+  Close: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  ),
+  Calendar: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+    </svg>
+  ),
+  Clock: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+    </svg>
+  ),
+  Payment: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="1" y="4" width="22" height="16" rx="2" ry="2" /><line x1="1" y1="10" x2="23" y2="10" />
+    </svg>
+  ),
+  Person: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
+    </svg>
+  ),
+  Phone: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+    </svg>
+  ),
+  Email: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" />
+    </svg>
+  ),
+  Assignment: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><polyline points="16 11 18 13 22 9" />
+    </svg>
+  ),
+  CreditCard: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="1" y="4" width="22" height="16" rx="2" ry="2" /><line x1="1" y1="10" x2="23" y2="10" />
+    </svg>
+  ),
+  Event: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+    </svg>
+  )
+};
 
 const SectionHeader = ({ icon: Icon, title }) => (
-  <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2, mt: 1 }}>
-    <Icon sx={{ color: "primary.main", fontSize: 24 }} />
-    <Typography
-      variant="h6"
-      sx={{
-        fontWeight: 700,
-        color: "primary.dark",
-        fontSize: "1.1rem",
-      }}
-    >
-      {title}
-    </Typography>
-  </Box>
+  <div className="detail-section-header">
+    <div className="detail-icon-box">
+        <Icon />
+    </div>
+    <span className="detail-section-title">{title}</span>
+  </div>
 );
 
 const InfoRow = ({ label, value, icon: Icon, highlight = false }) => (
-  <Box sx={{ mb: 2 }}>
-    <Typography variant="caption" color="text.secondary" sx={{ display: "flex", alignItems: "center", gap: 0.5, mb: 0.5 }}>
-      {Icon && <Icon sx={{ fontSize: 14 }} />} {label}
-    </Typography>
-    <Typography
-      variant="body1"
-      fontWeight={highlight ? 700 : 500}
-      color={highlight ? "primary.main" : "text.primary"}
-      sx={{ fontSize: "1rem" }}
-    >
+  <div className="detail-info-row">
+    <div className="detail-info-label">
+      {Icon && <Icon />} {label}
+    </div>
+    <div className={`detail-info-value ${highlight ? 'highlight' : ''}`}>
       {value || "—"}
-    </Typography>
-  </Box>
+    </div>
+  </div>
 );
 
 /* ------------------------------------------------------------------ */
@@ -79,19 +95,38 @@ const normaliseMember = (raw) => {
 };
 
 const containerVariants = {
-  hidden: { opacity: 0 },
-  visible: {
-    opacity: 1,
-    transition: {
-      staggerChildren: 0.1,
-      delayChildren: 0.2,
-    },
+  hidden: { opacity: 0, scale: 0.96, y: 15, filter: "blur(4px)" },
+  visible: { 
+    opacity: 1, 
+    scale: 1, 
+    y: 0,
+    filter: "blur(0px)",
+    transition: { 
+      type: "spring",
+      stiffness: 260,
+      damping: 26,
+      mass: 1,
+      staggerChildren: 0.06,
+      delayChildren: 0.2
+    } 
   },
+  exit: { 
+    opacity: 0, 
+    scale: 0.96, 
+    y: 15, 
+    filter: "blur(4px)",
+    transition: { duration: 0.2, ease: "easeOut" } 
+  }
 };
 
 const itemVariants = {
-  hidden: { opacity: 0, y: 20 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
+  hidden: { opacity: 0, y: 10, filter: "blur(2px)" },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    filter: "blur(0px)",
+    transition: { type: "spring", stiffness: 300, damping: 30 }
+  },
 };
 
 export const MemberDetailView = ({ member: rawMember, onClose, style }) => {
@@ -112,220 +147,150 @@ export const MemberDetailView = ({ member: rawMember, onClose, style }) => {
   const planText = member.membershipPlan || (member.monthsPaid ? `${member.monthsPaid} Months` : "—");
 
   return (
-    <Box
-      component={motion.div}
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-      sx={{ bgcolor: "white", height: "100%", display: "flex", flexDirection: "column", ...style }}
-    >
+    <div className="detail-view-container" style={style}>
       {/* Header */}
-      <Box
-        sx={{
-          bgcolor: "rgba(0, 123, 255, 0.08)",
-          p: 3,
-          display: "flex",
-          justifyContent: "space-between",
-          alignItems: "center",
-          borderBottom: "1px solid rgba(0, 123, 255, 0.15)",
-          flexShrink: 0,
-        }}
-      >
-        <Typography variant="h5" fontWeight={800} color="primary.dark">
-          Member Profile
-        </Typography>
+      <div className="detail-view-header">
+        <h3 className="detail-view-title">Member Profile</h3>
         {onClose && (
-          <IconButton onClick={onClose} size="small" sx={{ color: "primary.dark" }}>
-            <Close />
-          </IconButton>
+          <button className="detail-close-btn" onClick={onClose}>
+            <Icons.Close />
+          </button>
         )}
-      </Box>
+      </div>
 
-      <Box sx={{ p: 3, overflowY: "auto", flexGrow: 1 }}>
+      <div className="detail-view-content">
         {/* Personal Information */}
-        <motion.div variants={itemVariants}>
-          <SectionHeader icon={Person} title="Personal Information" />
-          <Paper variant="outlined" sx={{ p: 2, borderRadius: "12px", borderColor: "#e5e7eb", mb: 3 }}>
-            <Stack spacing={2}>
+        <motion.div variants={itemVariants} className="detail-section">
+          <SectionHeader icon={Icons.Person} title="Personal Information" />
+          <div className="detail-card">
               <InfoRow label="Full Name" value={member.fullName} />
-              <InfoRow label="Email" value={member.email} icon={Email} />
-              <InfoRow label="Phone" value={member.phoneNo || member.phoneNumber} icon={Phone} />
+              <InfoRow label="Email" value={member.email} icon={Icons.Email} />
+              <InfoRow label="Phone" value={member.phoneNo || member.phoneNumber} icon={Icons.Phone} />
 
               {/* Assigned Trainer */}
-              <Box sx={{ mt: 2, p: 1.5, bgcolor: '#f0f9ff', borderRadius: 2, border: '1px dashed #bae6fd', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                 <Box>
-                    <Typography variant="caption" color="text.secondary">Assigned Trainer</Typography>
-                    <Typography variant="subtitle2" fontWeight={700} color="primary.main">
+              <div className="detail-assigned-box">
+                 <div className="detail-assigned-info">
+                    <span className="detail-info-label">Assigned Trainer</span>
+                    <span className="detail-assigned-name">
                         {member.trainerName || member.trainer?.fullName || "No Trainer Assigned"}
-                    </Typography>
-                 </Box>
-                 <Button 
-                    size="small" 
-                    variant="text" 
-                    startIcon={<AssignmentInd />}
+                    </span>
+                 </div>
+                 <button 
+                    className="detail-manage-btn"
                     onClick={() => window.location.href = '/admin/assignments'}
-                    sx={{ textTransform: 'none', fontWeight: 600 }}
                  >
+                    <Icons.Assignment />
                     Manage
-                 </Button>
-              </Box>
-            </Stack>
-          </Paper>
+                 </button>
+              </div>
+          </div>
         </motion.div>
 
         {/* Membership Plan */}
-        <motion.div variants={itemVariants}>
-          <SectionHeader icon={CalendarToday} title="Membership Plan" />
-          <Paper variant="outlined" sx={{ p: 2, borderRadius: "12px", borderColor: "#e5e7eb", mb: 3 }}>
-            <Box sx={{ mb: 2 }}>
-              <Typography variant="caption" color="text.secondary" sx={{ mb: 1, display: "block" }}>
-                Current Plan
-              </Typography>
-              <Chip
-                label={planText}
-                sx={{
-                  bgcolor: "success.light",
-                  color: "success.main",
-                  fontWeight: 700,
-                  borderRadius: "8px",
-                  fontSize: "0.9rem",
-                  height: 32,
-                }}
-              />
-            </Box>
-            <Stack direction="row" spacing={4}>
-              <Box>
-                <Typography variant="caption" color="text.secondary">Months Paid</Typography>
-                <Typography variant="h6" fontWeight={600}>{member.monthsPaid || 0}</Typography>
-              </Box>
-              <Box>
-                <Typography variant="caption" color="text.secondary">Months Free</Typography>
-                <Typography variant="h6" fontWeight={600}>{member.monthsFree || 0}</Typography>
-              </Box>
-            </Stack>
-            <Box sx={{ mt: 2 }}>
-                <InfoRow label="Start Date" value={formatDateOnly(member.startDate)} icon={Event} />
-            </Box>
-          </Paper>
+        <motion.div variants={itemVariants} className="detail-section">
+          <SectionHeader icon={Icons.Calendar} title="Membership Plan" />
+          <div className="detail-card">
+            <div className="detail-info-row">
+              <span className="detail-info-label">Current Plan</span>
+              <span className="db-badge db-badge-success">{planText}</span>
+            </div>
+            <div className="detail-stats-row">
+              <div className="detail-stat-item">
+                <span className="detail-info-label">Months Paid</span>
+                <span className="detail-stat-value">{member.monthsPaid || 0}</span>
+              </div>
+              <div className="detail-stat-item">
+                <span className="detail-info-label">Months Free</span>
+                <span className="detail-stat-value">{member.monthsFree || 0}</span>
+              </div>
+            </div>
+            <InfoRow label="Start Date" value={formatDateOnly(member.startDate)} icon={Icons.Event} />
+          </div>
         </motion.div>
 
         {/* Workout Timing */}
-        <motion.div variants={itemVariants}>
-          <SectionHeader icon={AccessTime} title="Workout Timing" />
-          <Paper
-            variant="outlined"
-            sx={{
-              p: 2,
-              borderRadius: "12px",
-              borderColor: "rgba(0, 123, 255, 0.15)",
-              bgcolor: "rgba(0, 123, 255, 0.08)",
-              textAlign: "center",
-              mb: 3,
-            }}
-          >
-            <Typography variant="h6" fontWeight={700} color="primary.dark">
-              {timing}
-            </Typography>
-          </Paper>
+        <motion.div variants={itemVariants} className="detail-section">
+          <SectionHeader icon={Icons.Clock} title="Workout Timing" />
+          <div className="detail-timing-card">
+            {timing}
+          </div>
         </motion.div>
 
         {/* Payment Details */}
-        <motion.div variants={itemVariants}>
-          <SectionHeader icon={Payment} title="Payment Details" />
-          <Paper variant="outlined" sx={{ p: 2, borderRadius: "12px", borderColor: "#e5e7eb", mb: 3 }}>
-            <Stack spacing={2}>
-              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <Typography variant="body2" color="text.secondary">Registration Fee</Typography>
-                <Typography variant="body1" fontWeight={600}>₹{member.registrationFee?.toFixed(2)}</Typography>
-              </Box>
-              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <Typography variant="body2" color="text.secondary">Plan Price</Typography>
-                <Typography variant="body1" fontWeight={600}>₹{member.planPrice?.toFixed(2)}</Typography>
-              </Box>
-              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <Typography variant="body2" color="text.secondary">Discount</Typography>
-                <Typography variant="body1" fontWeight={600} color="error.main">-₹{member.discount?.toFixed(2)}</Typography>
-              </Box>
-              <Divider sx={{ borderStyle: "dashed" }} />
-              <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <Typography variant="body1" fontWeight={700} color="primary.dark">Total Paid</Typography>
-                <Typography variant="h6" fontWeight={700} color="primary.dark">₹{member.totalPaid?.toFixed(2)}</Typography>
-              </Box>
-              <Box sx={{ mt: 1 }}>
-                <InfoRow label="Payment Method" value={member.paymentMethod} icon={CreditCard} />
-              </Box>
-            </Stack>
-          </Paper>
+        <motion.div variants={itemVariants} className="detail-section">
+          <SectionHeader icon={Icons.Payment} title="Payment Details" />
+          <div className="detail-card">
+              <div className="detail-payment-item">
+                <span className="detail-info-label">Registration Fee</span>
+                <span className="detail-payment-value">₹{member.registrationFee?.toFixed(2)}</span>
+              </div>
+              <div className="detail-payment-item">
+                <span className="detail-info-label">Plan Price</span>
+                <span className="detail-payment-value">₹{member.planPrice?.toFixed(2)}</span>
+              </div>
+              <div className="detail-payment-item">
+                <span className="detail-info-label">Discount</span>
+                <span className="detail-payment-value discount">-₹{member.discount?.toFixed(2)}</span>
+              </div>
+              <div className="detail-divider-dashed" />
+              <div className="detail-payment-total">
+                <span className="total-label">Total Paid</span>
+                <span className="total-value">₹{member.totalPaid?.toFixed(2)}</span>
+              </div>
+              <InfoRow label="Payment Method" value={member.paymentMethod} icon={Icons.CreditCard} />
+          </div>
         </motion.div>
 
         {/* Record Info */}
-        <motion.div variants={itemVariants}>
-          <SectionHeader icon={Event} title="Record Info" />
-          <Paper variant="outlined" sx={{ p: 2, borderRadius: "12px", borderColor: "#e5e7eb", bgcolor: "#f9fafb" }}>
-            <Stack direction="row" spacing={4}>
-              <Box>
-                <Typography variant="caption" color="text.secondary" display="block">Created At</Typography>
-                <Typography variant="body2" sx={{ fontFamily: "monospace" }}>
+        <motion.div variants={itemVariants} className="detail-section">
+          <SectionHeader icon={Icons.Event} title="Record Info" />
+          <div className="detail-card record-info">
+            <div className="detail-stats-row">
+              <div className="detail-stat-item">
+                <span className="detail-info-label">Created At</span>
+                <span className="detail-record-timestamp">
                   {new Date(member.createdAt).toLocaleString()}
-                </Typography>
-              </Box>
-              <Box>
-                <Typography variant="caption" color="text.secondary" display="block">Updated At</Typography>
-                <Typography variant="body2" sx={{ fontFamily: "monospace" }}>
+                </span>
+              </div>
+              <div className="detail-stat-item">
+                <span className="detail-info-label">Updated At</span>
+                <span className="detail-record-timestamp">
                   {new Date(member.updatedAt).toLocaleString()}
-                </Typography>
-              </Box>
-            </Stack>
-          </Paper>
+                </span>
+              </div>
+            </div>
+          </div>
         </motion.div>
-      </Box>
+      </div>
 
       {onClose && (
-        <Box sx={{ p: 3, borderTop: "1px solid #f3f4f6", bgcolor: "#f9fafb", flexShrink: 0 }}>
-          <Button
-            onClick={onClose}
-            variant="contained"
-            fullWidth
-            sx={{
-              bgcolor: "primary.main", // Indigo color from the image
-              "&:hover": { bgcolor: "primary.dark" },
-              borderRadius: "10px",
-              py: 1.2,
-              fontWeight: 600,
-              textTransform: "none",
-              fontSize: "1rem",
-            }}
-          >
-            Close
-          </Button>
-        </Box>
+        <div className="detail-view-footer">
+          <button className="db-btn db-btn-primary" onClick={onClose} style={{ width: '100%' }}>
+            Close Profile
+          </button>
+        </div>
       )}
-    </Box>
+    </div>
   );
 };
 
 export default function MemberDetailModal({ open, onClose, member }) {
-  const isMobile = useMediaQuery("(max-width:600px)"); // Keep if needed for Dialog sizing, otherwise remove
-
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="sm"
-      fullWidth
-      PaperProps={{
-        component: motion.div,
-        initial: { opacity: 0, scale: 0.9 },
-        animate: { opacity: 1, scale: 1 },
-        transition: { duration: 0.3 },
-        sx: {
-          borderRadius: "16px",
-          boxShadow: "0 24px 48px rgba(0,0,0,0.2)",
-          overflow: "hidden",
-        },
-      }}
-    >
-      <MemberDetailView member={member} onClose={onClose} />
-    </Dialog>
+    <AnimatePresence>
+      {open && (
+        <div className="db-modal-overlay" onClick={onClose}>
+          <motion.div 
+            className="db-modal-container detail-modal"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            onClick={e => e.stopPropagation()}
+          >
+            <MemberDetailView member={member} onClose={onClose} />
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
   );
 }

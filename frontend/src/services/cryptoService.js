@@ -83,7 +83,10 @@ export const cryptoService = {
   // 7. Decrypt Message
   decrypt: async (privateKey, ciphertext) => {
     try {
-      const binaryString = window.atob(ciphertext);
+      // Sanitize Base64: Replace spaces with +, strip newlines
+      const safeBase64 = ciphertext.replace(/ /g, '+').replace(/\n/g, '');
+      
+      const binaryString = window.atob(safeBase64);
       const binaryData = new Uint8Array(binaryString.length);
       for (let i = 0; i < binaryString.length; i++) {
         binaryData[i] = binaryString.charCodeAt(i);
@@ -100,6 +103,95 @@ export const cryptoService = {
     } catch (e) {
       console.error("Decryption failed", e);
       return "[Decryption Failed]";
+    }
+  },
+
+  // 8. Password-Based Encryption for Private Key (for Sync)
+  encryptPrivateKey: async (privateKeyJwk, password) => {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(privateKeyJwk);
+    const salt = encoder.encode("gym-management-salt-2025"); // Static salt for cross-device consistency
+    
+    // Derive key from password
+    const baseKey = await window.crypto.subtle.importKey(
+      "raw",
+      encoder.encode(password),
+      "PBKDF2",
+      false,
+      ["deriveKey"]
+    );
+    
+    const aesKey = await window.crypto.subtle.deriveKey(
+      {
+        name: "PBKDF2",
+        salt: salt,
+        iterations: 100000,
+        hash: "SHA-256",
+      },
+      baseKey,
+      { name: "AES-GCM", length: 256 },
+      false,
+      ["encrypt"]
+    );
+    
+    const iv = window.crypto.getRandomValues(new Uint8Array(12));
+    const encrypted = await window.crypto.subtle.encrypt(
+      { name: "AES-GCM", iv: iv },
+      aesKey,
+      data
+    );
+    
+    // Combine IV and Encrypted Data
+    const combined = new Uint8Array(iv.length + encrypted.byteLength);
+    combined.set(iv);
+    combined.set(new Uint8Array(encrypted), iv.length);
+    
+    return window.btoa(String.fromCharCode(...combined));
+  },
+
+  // 9. Password-Based Decryption
+  decryptPrivateKey: async (encryptedBlob, password) => {
+    try {
+      const encoder = new TextEncoder();
+      const combined = new Uint8Array(
+        window.atob(encryptedBlob).split("").map(c => c.charCodeAt(0))
+      );
+      
+      const iv = combined.slice(0, 12);
+      const data = combined.slice(12);
+      const salt = encoder.encode("gym-management-salt-2025");
+      
+      const baseKey = await window.crypto.subtle.importKey(
+        "raw",
+        encoder.encode(password),
+        "PBKDF2",
+        false,
+        ["deriveKey"]
+      );
+      
+      const aesKey = await window.crypto.subtle.deriveKey(
+        {
+          name: "PBKDF2",
+          salt: salt,
+          iterations: 100000,
+          hash: "SHA-256",
+        },
+        baseKey,
+        { name: "AES-GCM", length: 256 },
+        false,
+        ["decrypt"]
+      );
+      
+      const decrypted = await window.crypto.subtle.decrypt(
+        { name: "AES-GCM", iv: iv },
+        aesKey,
+        data
+      );
+      
+      return new TextDecoder().decode(decrypted);
+    } catch (e) {
+      console.error("Private key decryption failed", e);
+      return null;
     }
   }
 };

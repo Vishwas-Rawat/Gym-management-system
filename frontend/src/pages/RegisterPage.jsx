@@ -2,9 +2,9 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { userApi } from '../services/api';
+import AuthLayout from '../components/AuthLayout';
+import { useTheme } from '../context/ThemeContext';
 import {
-  ThemeProvider,
-  createTheme,
   CssBaseline,
   Typography,
   TextField,
@@ -22,6 +22,7 @@ import { Visibility, VisibilityOff } from '@mui/icons-material';
 
 const RegisterPage = () => {
   const navigate = useNavigate();
+  const { isDarkMode } = useTheme();
   const [step, setStep] = useState(0);
   const [formData, setFormData] = useState({
     email: '',
@@ -50,52 +51,7 @@ const RegisterPage = () => {
   const [isRedirecting, setIsRedirecting] = useState(false);
   const [showOtpField, setShowOtpField] = useState(false);
 
-  // Theme configuration
-  const theme = createTheme({
-    palette: {
-      mode: 'light',
-      primary: { main: '#342bddff' },
-      secondary: { main: '#4F46E5' },
-      background: { default: 'linear-gradient(135deg, #E5E7EB 0%, #F3F4F6 100%)' },
-      text: { primary: '#111827', secondary: '#4B5563' },
-      success: { main: '#46e546ff' },
-      error: { main: '#EF4444' },
-    },
-    typography: { fontFamily: "'Inter', sans-serif" },
-    components: {
-      MuiTextField: {
-        styleOverrides: {
-          root: {
-            '& .MuiOutlinedInput-root': {
-              borderRadius: '10px',
-              backgroundColor: 'rgba(255, 255, 255, 0.5)',
-              '&:hover fieldset': { borderColor: '#342bddff' },
-              '&.Mui-focused fieldset': { borderColor: '#342bddff' },
-            },
-            '& .MuiInputLabel-root.Mui-focused': { color: '#342bddff' },
-          },
-        },
-      },
-      MuiButton: {
-        styleOverrides: {
-          root: {
-            textTransform: 'none',
-            borderRadius: '10px',
-            padding: '12px 24px',
-            fontWeight: 600,
-            background: 'linear-gradient(90deg, #4F46E5, #4F46E5)',
-            color: '#FFFFFF',
-            '&:hover': {
-              transform: 'translateY(-2px)',
-              boxShadow: '0 6px 12px rgba(0, 0, 0, 0.2)',
-              background: 'linear-gradient(90deg, #342bddff, #342bddff)',
-            },
-            '&:disabled': { background: 'grey', opacity: 0.6 },
-          },
-        },
-      },
-    },
-  });
+
 
   // Resend OTP timer
   useEffect(() => {
@@ -246,50 +202,57 @@ const RegisterPage = () => {
   const steps = ['Account Details', 'Personal Info', 'Contact Info'];
 
   return (
-    <ThemeProvider theme={theme}>
+    <>
       <CssBaseline />
-      <Box sx={{ display: 'flex', minHeight: '100vh', background: 'linear-gradient(135deg, #E5E7EB 0%, #F3F4F6 100%)' }}>
-        {/* Left Side - Image */}
-        <Box sx={{ flex: 1, position: 'relative', display: { xs: 'none', md: 'block' } }}>
-          <Box sx={{ height: '100%', backgroundImage: `url('https://images.unsplash.com/photo-1517836357463-d25dfeac3438?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')`, backgroundSize: 'cover', backgroundPosition: 'center' }} />
-          <Box sx={{ position: 'absolute', inset: 0, bgcolor: 'rgba(0,0,0,0.4)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', color: 'white', px: 4 }}>
-            <Typography variant="h3" fontWeight={700}>Transform Your Gym</Typography>
-            <Typography variant="h6" sx={{ mt: 2, maxWidth: '80%' }}>Unlock powerful admin tools to elevate your fitness business in 2025</Typography>
-          </Box>
-        </Box>
-
-        {/* Right Side - Form */}
-        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', p: { xs: 2, sm: 4, md: 6 } }}>
-          <Box sx={{ maxWidth: 500, m: 'auto', width: '100%' }}>
-            <Typography variant="h5" fontWeight={700} mb={4}>Admin Sign-Up</Typography>
-
-            {!isRegistered && !showOtpField ? (
-              <>
-                {/* Step Indicators */}
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
+      <AuthLayout
+        title="Admin Sign-Up"
+        navText="Unlock powerful admin tools to elevate your fitness business in 2025"
+        navAction="Already have an account?"
+        navLink="/login"
+      >
+        {!isRegistered && !showOtpField ? (
+          <>
+             {/* Step Indicators */}
+             <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 4 }}>
                   {steps.map((label, i) => (
                     <Box key={i} sx={{ textAlign: 'center', flex: 1 }}>
                       <Box
                         sx={{
                           width: 36, height: 36, borderRadius: '50%', mx: 'auto', mb: 1,
-                          bgcolor: stepErrors[i] ? 'error.main' : (step >= i ? 'primary.main' : 'text.secondary'),
-                          color: 'white', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontWeight: 600,
+                          bgcolor: stepErrors[i] ? 'error.main' : (step >= i ? 'primary.main' : (isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.05)')),
+                          color: step >= i ? 'white' : (isDarkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.3)'),
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontWeight: 700,
+                          border: step >= i ? 'none' : '1px solid',
+                          borderColor: isDarkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)'
                         }}
                         component={motion.div}
                         animate={{ scale: step === i ? 1.2 : 1 }}
                       >
                         {i + 1}
                       </Box>
-                      <Typography variant="caption" color={stepErrors[i] ? 'error' : (step >= i ? 'primary' : 'text.secondary')}>
+                      <Typography 
+                        variant="caption" 
+                        sx={{ 
+                          fontWeight: 700,
+                          color: stepErrors[i] ? 'error.main' : (step >= i ? 'primary.main' : (isDarkMode ? 'rgba(255,255,255,0.5)' : '#64748b'))
+                        }}
+                      >
                         {label}
                       </Typography>
                     </Box>
                   ))}
                 </Box>
-
-                <AnimatePresence mode="wait">
-                  <Box component="form" onSubmit={step === 2 ? handleSubmit : e => e.preventDefault()} sx={{ mt: 2 }}>
+            
+            <AnimatePresence mode="wait">
+                  <Box component="form" onSubmit={step === 2 ? handleSubmit : e => e.preventDefault()} 
+                    sx={{ 
+                      mt: 2,
+                      '& .MuiInputLabel-root': { fontSize: '1.1rem' },
+                      '& .MuiOutlinedInput-root': { fontSize: '1.1rem' },
+                      '& .MuiMenuItem-root': { fontSize: '1.1rem' }
+                    }}
+                  >
 
                     {/* Step 0: Account Details */}
                     {step === 0 && (
@@ -363,38 +326,45 @@ const RegisterPage = () => {
 
                     {/* Navigation Buttons */}
                     <Box sx={{ display: 'flex', gap: 2, mt: 4 }}>
-                      {step > 0 && (
-                        <Button variant="outlined" onClick={handleBack} disabled={isLoading} sx={{ flex: 1 }}>
-                          Back
-                        </Button>
-                      )}
-                      {step < 2 ? (
-                        <Button variant="contained" onClick={handleNext} disabled={isLoading} sx={{ flex: 1 }}>
+                      <Button 
+                        variant="outlined" 
+                        onClick={handleBack} 
+                        disabled={isLoading || step === 0} 
+                        sx={{ 
+                          flex: 1, 
+                          py: 1.5,
+                          fontWeight: 700,
+                          borderRadius: '12px',
+                          fontSize: '1.1rem',
+                          borderColor: isDarkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)', 
+                          color: 'primary.main', 
+                          visibility: step === 0 ? 'hidden' : 'visible',
+                          '&:hover': { 
+                            borderColor: 'primary.main', 
+                            background: isDarkMode ? 'rgba(255,255,255,0.05)' : 'rgba(255, 82, 82, 0.05)' 
+                          } 
+                        }}
+                      >
+                        Back
+                      </Button>
+
+                       {step < 2 ? (
+                        <Button variant="contained" onClick={handleNext} disabled={isLoading} sx={{ flex: 1, py: 1.5, fontWeight: 700, borderRadius: '12px', fontSize: '1.1rem' }}>
                           Next
                         </Button>
                       ) : (
-                        <Button type="submit" variant="contained" disabled={isLoading} startIcon={isLoading && <CircularProgress size={20} />} sx={{ flex: 1 }}>
+                        <Button type="submit" variant="contained" disabled={isLoading} startIcon={isLoading && <CircularProgress size={20} color="inherit" />} sx={{ flex: 1, py: 1.5, fontWeight: 700, borderRadius: '12px', fontSize: '1.1rem' }}>
                           Register
                         </Button>
                       )}
                     </Box>
-
-                    {/* Login Link */}
-                    <Box textAlign="center" mt={4}>
-                      <Typography variant="body2" color="text.secondary">
-                        Already have an account?{' '}
-                        <Button onClick={() => navigate('/login')} color="primary" sx={{ textTransform: 'none', fontWeight: 600 }}>
-                          Log In
-                        </Button>
-                      </Typography>
-                    </Box>
                   </Box>
-                </AnimatePresence>
-              </>
-            ) : (
-              /* OTP Verification Screen */
+            </AnimatePresence>
+          </>
+        ) : (
+             /* OTP Verification Screen */
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
-                <Typography variant="h6" textAlign="center" mb={4}>
+                <Typography variant="h6" textAlign="center" mb={4} sx={{ fontWeight: 800, color: isDarkMode ? 'white' : '#0f172a' }}>
                   Verify Your Email
                 </Typography>
                 <Box component="form" onSubmit={handleVerifyOtp} sx={{ maxWidth: 400, mx: 'auto' }}>
@@ -406,21 +376,19 @@ const RegisterPage = () => {
                     inputProps={{ maxLength: 6 }}
                     sx={{ mb: 3 }}
                   />
-                  {apiError && <Typography color="error" textAlign="center">{apiError}</Typography>}
-                  {successMessage && <Typography color="success.main" textAlign="center">{successMessage}</Typography>}
-                  <Button type="submit" variant="contained" fullWidth disabled={isLoading || isRedirecting} sx={{ mt: 2 }}>
-                    {isLoading ? <CircularProgress size={24} /> : 'Verify OTP'}
+                  {apiError && <Typography color="error" textAlign="center" sx={{ mb: 2, fontWeight: 600 }}>{apiError}</Typography>}
+                  {successMessage && <Typography color="success.main" textAlign="center" sx={{ mb: 2, fontWeight: 600 }}>{successMessage}</Typography>}
+                  <Button type="submit" variant="contained" fullWidth disabled={isLoading || isRedirecting} sx={{ mt: 2, py: 1.5, fontWeight: 700, borderRadius: '12px' }}>
+                    {isLoading ? <CircularProgress size={24} color="inherit" /> : 'Verify OTP'}
                   </Button>
-                  <Button onClick={handleResendOtp} disabled={resendTimer > 0 || isLoading} fullWidth variant="text" sx={{ mt: 2 }}>
+                  <Button onClick={handleResendOtp} disabled={resendTimer > 0 || isLoading} fullWidth variant="text" sx={{ mt: 2, fontWeight: 600, color: isDarkMode ? 'rgba(255,255,255,0.6)' : '#64748b' }}>
                     {resendTimer > 0 ? `Resend in ${resendTimer}s` : 'Resend OTP'}
                   </Button>
                 </Box>
               </motion.div>
-            )}
-          </Box>
-        </Box>
-      </Box>
-    </ThemeProvider>
+        )}
+      </AuthLayout>
+    </>
   );
 };
 
