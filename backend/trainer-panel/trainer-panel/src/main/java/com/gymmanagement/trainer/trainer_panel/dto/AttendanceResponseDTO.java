@@ -10,4 +10,6 @@ public class AttendanceResponseDTO {
     private String role;
     private LocalDate date;
     private String status;
+    private String firstName;
+    private String lastName;
 }

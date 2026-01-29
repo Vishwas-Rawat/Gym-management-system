@@ -11,6 +11,8 @@ import java.time.LocalDateTime;
 public class ViewMemberResponse {
 
     private Integer memberId;
+    private Integer userId; // Added for Chat/Auth integration
+    private Integer trainerUserId; // ⭐ NEW: For Chat Contact Logic
     private String fullName;
     private String email;
     private String phoneNo;
@@ -29,9 +31,24 @@ public class ViewMemberResponse {
     private LocalDateTime updatedAt;
     private String message;
 
+    // ⭐ NEW FIELDS FOR MEMBER PROFILE
+    private String address;
+    private String gender;
+    private LocalDate dateOfBirth;
+    private String fitnessGoal;
+
+    // ⭐ NEW: Days Remaining
+    private Long daysRemaining;
+
     public ViewMemberResponse(Member member, String message) {
         if (member != null) {
             this.memberId = member.getMemberId();
+            this.userId = member.getUser().getUserId(); // Populate userId
+
+            // ⭐ Populate Trainer User ID
+            if (member.getTrainer() != null && member.getTrainer().getUser() != null) {
+                this.trainerUserId = member.getTrainer().getUser().getUserId();
+            }
 
             // Safely get full name from UserProfile
             this.fullName = getFullName(member.getUser().getUserProfile());
@@ -48,6 +65,17 @@ public class ViewMemberResponse {
                     ? member.getWorkoutTimeSlot()
                     : "Not Set";
 
+            // ⭐ Populate New Profile Fields
+            this.fitnessGoal = member.getFitnessGoal() != null ? member.getFitnessGoal() : "Not Specified";
+
+            if (member.getUser().getUserProfile() != null) {
+                UserProfile p = member.getUser().getUserProfile();
+                this.address = p.getAddress();
+                this.gender = p.getGender();
+                this.dateOfBirth = p.getDateOfBirth();
+                // firstName/lastName are already used for fullName
+            }
+
             // Financials
             this.registrationFee = getDoubleOrZero(member.getRegistrationFee());
             this.planPrice = getDoubleOrZero(member.getPlanPrice());
@@ -62,6 +90,22 @@ public class ViewMemberResponse {
             this.startDate = member.getJoiningDate();
             this.createdAt = member.getCreatedAt();
             this.updatedAt = member.getUpdatedAt();
+
+            // ⭐ Calculate Days Remaining
+            try {
+                LocalDate start = member.getPlanStartDate() != null ? member.getPlanStartDate()
+                        : member.getJoiningDate();
+                if (start != null) {
+                    int totalMonths = (member.getMonthsPaid() != null ? member.getMonthsPaid() : 0)
+                            + (member.getMonthsFree() != null ? member.getMonthsFree() : 0);
+                    LocalDate expiryDate = start.plusMonths(totalMonths);
+                    this.daysRemaining = java.time.temporal.ChronoUnit.DAYS.between(LocalDate.now(), expiryDate);
+                } else {
+                    this.daysRemaining = 0L;
+                }
+            } catch (Exception e) {
+                this.daysRemaining = 0L;
+            }
         }
 
         this.message = message;

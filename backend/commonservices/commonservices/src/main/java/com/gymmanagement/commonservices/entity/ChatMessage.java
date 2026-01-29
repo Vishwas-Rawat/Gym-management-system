@@ -21,7 +21,10 @@ public class ChatMessage {
     private Integer receiverUserId;
 
     @Column(nullable = false, columnDefinition = "text")
-    private String ciphertext; // encrypted payload (base64 or binary->base64)
+    private String ciphertext; // encrypted payload for receiver
+
+    @Column(columnDefinition = "text")
+    private String senderCiphertext; // encrypted payload for sender (new)
 
     @Column(nullable = false)
     private LocalDateTime createdAt = LocalDateTime.now();

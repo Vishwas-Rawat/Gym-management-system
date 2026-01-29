@@ -7,6 +7,7 @@ import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 import org.thymeleaf.context.Context;
 import org.thymeleaf.spring6.SpringTemplateEngine;
 import java.time.LocalDate;
@@ -22,24 +23,28 @@ public class EmailService {
     @Autowired
     private SpringTemplateEngine templateEngine;
 
+    @Value("${app.frontend.url}")
+    private String frontendUrl;
+
     // 1. Send OTP Verification Email
     public void sendVerificationEmail(String toEmail, Integer userId, String otpCode) {
         String subject = "Verify your account";
-        String verifyUrl = "http://localhost:3000/verify?userId=" + userId + "&otp=" + otpCode;
+        String verifyUrl = frontendUrl + "/verify?userId=" + userId + "&otp=" + otpCode;
 
         String body = """
-            <p>Hello,</p>
-            <p>Thank you for registering! Please verify your email address by clicking the button below:</p>
-            <div style="text-align:center; margin:30px 0;">
-                <a href="%s" style="display:inline-block; padding:14px 32px; font-size:16px; color:white; background-color:#28a745; text-decoration:none; border-radius:8px; font-weight:bold;">
-                    Verify Email Address
-                </a>
-            </div>
-            <p>If the button doesn't work, copy and paste this link:</p>
-            <p><a href="%s">%s</a></p>
-            <p>Or use this OTP directly: <strong style="font-size:18px; color:#d32f2f;">%s</strong></p>
-            <p>This OTP expires in 10 minutes.</p>
-            """.formatted(verifyUrl, verifyUrl, verifyUrl, otpCode);
+                <p>Hello,</p>
+                <p>Thank you for registering! Please verify your email address by clicking the button below:</p>
+                <div style="text-align:center; margin:30px 0;">
+                    <a href="%s" style="display:inline-block; padding:14px 32px; font-size:16px; color:white; background-color:#28a745; text-decoration:none; border-radius:8px; font-weight:bold;">
+                        Verify Email Address
+                    </a>
+                </div>
+                <p>If the button doesn't work, copy and paste this link:</p>
+                <p><a href="%s">%s</a></p>
+                <p>Or use this OTP directly: <strong style="font-size:18px; color:#d32f2f;">%s</strong></p>
+                <p>This OTP expires in 10 minutes.</p>
+                """
+                .formatted(verifyUrl, verifyUrl, verifyUrl, otpCode);
 
         sendHtmlEmail(toEmail, subject, body);
     }
@@ -49,17 +54,18 @@ public class EmailService {
         String subject = "Complete Your Gym Registration";
 
         String body = """
-            <p>Hello,</p>
-            <p>Welcome to the gym! Your account has been created. Please complete your registration by setting your password.</p>
-            <div style="text-align:center; margin:30px 0;">
-                <a href="%s" style="display:inline-block; padding:14px 32px; font-size:16px; color:white; background-color:#007bff; text-decoration:none; border-radius:8px; font-weight:bold;">
-                    Complete Registration
-                </a>
-            </div>
-            <p>If the button doesn't work, please copy and paste this link into your browser:</p>
-            <p><a href="%s">%s</a></p>
-            <p>This link expires in 24 hours.</p>
-            """.formatted(link, link, link);
+                <p>Hello,</p>
+                <p>Welcome to the gym! Your account has been created. Please complete your registration by setting your password.</p>
+                <div style="text-align:center; margin:30px 0;">
+                    <a href="%s" style="display:inline-block; padding:14px 32px; font-size:16px; color:white; background-color:#007bff; text-decoration:none; border-radius:8px; font-weight:bold;">
+                        Complete Registration
+                    </a>
+                </div>
+                <p>If the button doesn't work, please copy and paste this link into your browser:</p>
+                <p><a href="%s">%s</a></p>
+                <p>This link expires in 24 hours.</p>
+                """
+                .formatted(link, link, link);
 
         sendHtmlEmail(toEmail, subject, body);
     }

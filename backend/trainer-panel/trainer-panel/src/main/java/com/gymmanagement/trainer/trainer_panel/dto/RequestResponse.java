@@ -11,4 +11,7 @@ public class RequestResponse {
     private Integer trainerId;
     private String message;
     private LocalDateTime createdAt;
+    private String status;
+    private String memberName;
+    private String type; // "DIET" or "WORKOUT"
 }

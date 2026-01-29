@@ -17,5 +17,6 @@ public class ViewMemberResponse {
     private Double totalPaid;
     private String paymentMethod;
     private Integer userId;
+    private Integer trainerUserId;
 
 }

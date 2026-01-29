@@ -15,10 +15,14 @@ public class WorkoutRequest {
     @Column(nullable = false)
     private Integer memberId;
 
-    @Column(nullable = false)
+    @Column(nullable = true)
     private Integer trainerId;
 
     private String note;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = true)
+    private com.gymmanagement.commonservices.enumeration.RequestStatus status = com.gymmanagement.commonservices.enumeration.RequestStatus.PENDING;
 
     private LocalDateTime createdAt = LocalDateTime.now();
 }

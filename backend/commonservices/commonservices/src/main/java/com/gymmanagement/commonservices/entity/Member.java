@@ -7,15 +7,16 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "members")
+@Table(name = "members", uniqueConstraints = @UniqueConstraint(columnNames = { "user_id", "gym_id" }))
 public class Member {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer memberId;
 
-    @OneToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_id", nullable = false, unique = true)
+    // ✅ Changed to ManyToOne for Multi-Gym Support
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = false) // Removed unique=true
     private User user;
 
     @Column(name = "months_paid", nullable = false)

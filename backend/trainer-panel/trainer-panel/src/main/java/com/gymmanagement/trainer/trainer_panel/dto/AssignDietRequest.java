@@ -10,5 +10,6 @@ public class AssignDietRequest {
     private String planName;
     private Integer memberId;
     private DietType dietType;
+    private String strategy; // "REPLACE" or "APPEND"
     private List<MealDto> meals;
 }

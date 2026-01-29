@@ -16,7 +16,8 @@ public class AuthStatusController {
 
     private final UserStatusService statusService;
 
-    private record UserContext(Integer userId) {}
+    private record UserContext(Integer userId) {
+    }
 
     private UserContext extractUser(Authentication auth) {
         Object p = auth.getPrincipal();
@@ -26,6 +27,9 @@ public class AuthStatusController {
         }
         if (p instanceof MemberPrincipal mp) {
             return new UserContext(mp.userId());
+        }
+        if (p instanceof com.gymmanagement.trainer.trainer_panel.security.AdminPrincipal ap) {
+            return new UserContext(ap.userId());
         }
 
         throw new RuntimeException("Invalid principal");

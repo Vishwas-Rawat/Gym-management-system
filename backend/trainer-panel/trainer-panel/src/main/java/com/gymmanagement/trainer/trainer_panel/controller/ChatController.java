@@ -13,61 +13,59 @@ import org.springframework.stereotype.Controller;
 @RequiredArgsConstructor
 public class ChatController {
 
-    private final ChatService chatService;
-    private final SimpMessagingTemplate messagingTemplate;
+        private final ChatService chatService;
+        private final SimpMessagingTemplate messagingTemplate;
 
-    // Client sends to /app/chat/send
-    @MessageMapping("/chat/send")
-    public void handleSend(@Payload ChatPayload payload,
-                           @Header("simpUser") java.security.Principal principal) {
+        // Client sends to /app/chat/send
+        @MessageMapping("/chat/send")
+        public void handleSend(@Payload ChatPayload payload,
+                        @Header("simpUser") java.security.Principal principal) {
 
-        System.out.println("🔥 handleSend CALLED — payload = " + payload);
+                System.out.println("🔥 handleSend CALLED — payload = " + payload);
 
-        Integer senderUserId = Integer.valueOf(principal.getName());
+                Integer senderUserId = Integer.valueOf(principal.getName());
 
-        var saved = chatService.saveMessage(senderUserId,
-                payload.getReceiverUserId(),
-                payload.getCiphertext());
+                var saved = chatService.saveMessage(senderUserId,
+                                payload.getReceiverUserId(),
+                                payload.getCiphertext(),
+                                payload.getSenderCiphertext()); // Pass sender copy
 
-        System.out.println("🔥 MESSAGE SAVED? saved = " + saved);
+                System.out.println("🔥 MESSAGE SAVED? saved = " + saved);
 
-        messagingTemplate.convertAndSendToUser(
-                payload.getReceiverUserId().toString(),
-                "/queue/messages",
-                saved
-        );
+                messagingTemplate.convertAndSendToUser(
+                                payload.getReceiverUserId().toString(),
+                                "/queue/messages",
+                                saved);
 
-        messagingTemplate.convertAndSendToUser(
-                principal.getName(),
-                "/queue/messages",
-                saved
-        );
-    }
-
-
-    // Typing indicator: client sends to /app/chat/typing
-    @MessageMapping("/chat/typing")
-    public void handleTyping(@Payload TypingPayload payload, @Header("simpUser") java.security.Principal principal) {
-        // forward to recipient topic
-        messagingTemplate.convertAndSendToUser(
-                payload.getToUserId().toString(),
-                "/queue/typing",
-                payload
-        );
-    }
-
-    // Read receipt sent from reader client: /app/chat/read
-    @MessageMapping("/chat/read")
-    public void handleRead(@Payload ReadReceiptPayload payload, @Header("simpUser") java.security.Principal principal) {
-        chatService.markMessageRead(payload.getMessageId());
-        // optionally notify sender
-        var msg = chatService.getById(payload.getMessageId()); // implement getById if needed
-        if (msg != null) {
-            messagingTemplate.convertAndSendToUser(
-                    msg.getSenderUserId().toString(),
-                    "/queue/read-receipts",
-                    payload
-            );
+                messagingTemplate.convertAndSendToUser(
+                                principal.getName(),
+                                "/queue/messages",
+                                saved);
         }
-    }
+
+        // Typing indicator: client sends to /app/chat/typing
+        @MessageMapping("/chat/typing")
+        public void handleTyping(@Payload TypingPayload payload,
+                        @Header("simpUser") java.security.Principal principal) {
+                // forward to recipient topic
+                messagingTemplate.convertAndSendToUser(
+                                payload.getToUserId().toString(),
+                                "/queue/typing",
+                                payload);
+        }
+
+        // Read receipt sent from reader client: /app/chat/read
+        @MessageMapping("/chat/read")
+        public void handleRead(@Payload ReadReceiptPayload payload,
+                        @Header("simpUser") java.security.Principal principal) {
+                chatService.markMessageRead(payload.getMessageId());
+                // optionally notify sender
+                var msg = chatService.getById(payload.getMessageId()); // implement getById if needed
+                if (msg != null) {
+                        messagingTemplate.convertAndSendToUser(
+                                        msg.getSenderUserId().toString(),
+                                        "/queue/read-receipts",
+                                        payload);
+                }
+        }
 }

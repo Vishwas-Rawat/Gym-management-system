@@ -16,7 +16,8 @@ public class AttendanceController {
 
     private final AttendanceService attendanceService;
 
-    private record UserContext(Integer userId, String role) {}
+    private record UserContext(Integer userId, String role) {
+    }
 
     private UserContext extractUser(Authentication auth) {
         Object p = auth.getPrincipal();
@@ -27,14 +28,18 @@ public class AttendanceController {
         if (p instanceof MemberPrincipal mp) {
             return new UserContext(mp.userId(), "MEMBER");
         }
-        throw new RuntimeException("Invalid principal");
+        if (p instanceof com.gymmanagement.trainer.trainer_panel.security.AdminPrincipal ap) { // ✅ NEW
+            return new UserContext(ap.userId(), "ADMIN");
+        }
+        throw new RuntimeException("Invalid principal: " + p.getClass().getName());
     }
 
     @PostMapping("/mark")
     public ResponseEntity<?> markAttendance(Authentication auth) {
+        System.out.println("DEBUG: markAttendance called. Principal: " + auth.getPrincipal());
         var ctx = extractUser(auth);
-        AttendanceMarkResponse res =
-                attendanceService.markToday(ctx.userId(), ctx.role);
+        System.out.println("DEBUG: Extracted User: " + ctx);
+        AttendanceMarkResponse res = attendanceService.markToday(ctx.userId(), ctx.role);
         return ResponseEntity.ok(res);
     }
 
@@ -57,7 +62,21 @@ public class AttendanceController {
     }
 
     @GetMapping("/admin/gym/{gymId}")
-    public ResponseEntity<?> adminGymStats(@PathVariable Long gymId) {
-        return ResponseEntity.ok(attendanceService.getGymAttendance(gymId));
+    public ResponseEntity<?> adminGymStats(
+            @PathVariable Long gymId,
+            @RequestParam(required = false, defaultValue = "date") String sortBy,
+            @RequestParam(required = false, defaultValue = "desc") String direction,
+            @RequestParam(required = false) java.time.LocalDate date,
+            Authentication auth) {
+        var ctx = extractUser(auth);
+        Integer adminId = "ADMIN".equals(ctx.role) ? ctx.userId : null;
+        return ResponseEntity.ok(attendanceService.getGymAttendance(gymId, sortBy, direction, date, adminId));
+    }
+
+    @PostMapping("/admin/update")
+    public ResponseEntity<?> adminUpdateAttendance(
+            @RequestBody com.gymmanagement.trainer.trainer_panel.dto.AdminAttendanceUpdateRequest req) {
+        attendanceService.updateAttendance(req.getUserId(), req.getDate(), req.getStatus());
+        return ResponseEntity.ok(java.util.Map.of("message", "Attendance updated successfully"));
     }
 }

@@ -1,57 +1,104 @@
 package com.gymmanagement.trainer.trainer_panel.controller;
 
-import com.gymmanagement.commonservices.entity.PublicKeyEntity;
-import com.gymmanagement.trainer.trainer_panel.repository.PublicKeyRepository;
+import com.gymmanagement.trainer.trainer_panel.security.AdminPrincipal;
+import com.gymmanagement.trainer.trainer_panel.security.MemberPrincipal;
+import com.gymmanagement.trainer.trainer_panel.security.TrainerPrincipal;
 import com.gymmanagement.trainer.trainer_panel.service.ChatService;
+import com.gymmanagement.trainer.trainer_panel.service.ContactService;
+import lombok.Data;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDateTime;
-import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/chat")
 @RequiredArgsConstructor
 public class ChatRestController {
 
-    private final PublicKeyRepository keyRepo;
     private final ChatService chatService;
+    private final ContactService contactService;
 
-    @PostMapping("/keys")
-    public ResponseEntity<?> uploadPublicKey(@RequestBody PublicKeyEntity dto) {
-        // dto.userId and dto.publicKeyPem expected
-        var existing = keyRepo.findByUserId(dto.getUserId());
-        if (existing.isPresent()) {
-            var entity = existing.get();
-            entity.setPublicKeyPem(dto.getPublicKeyPem());
-            entity.setUpdatedAt(LocalDateTime.now());
-            keyRepo.save(entity);
-        } else {
-            dto.setUpdatedAt(LocalDateTime.now());
-            keyRepo.save(dto);
-        }
-        return ResponseEntity.ok().build();
+    @GetMapping("/search")
+    public ResponseEntity<?> search(@RequestParam String query, Authentication auth) {
+        Integer userId = extractUserId(auth);
+        String role = extractRole(auth);
+        return ResponseEntity.ok(contactService.searchContacts(userId, role, query));
     }
 
-    @GetMapping("/keys/{userId}")
-    public ResponseEntity<?> getPublicKey(@PathVariable Integer userId) {
-        return keyRepo.findByUserId(userId)
-                .map(pk -> ResponseEntity.ok(pk.getPublicKeyPem()))
-                .orElse(ResponseEntity.notFound().build());
+    @GetMapping("/contacts")
+    public ResponseEntity<?> getContacts(Authentication auth) {
+        Integer userId = extractUserId(auth);
+        String role = extractRole(auth);
+        return ResponseEntity.ok(contactService.getContacts(userId, role));
+    }
+
+    @PostMapping("/sync-keys")
+    public ResponseEntity<?> syncKeys(@RequestBody KeySyncRequest request, Authentication auth) {
+        Integer userId = extractUserId(auth);
+        chatService.syncKeys(userId, request.getPublicKey(), request.getEncryptedPrivateKey());
+        return ResponseEntity.ok(Map.of("message", "Keys synced successfully"));
+    }
+
+    @GetMapping("/sync-keys")
+    public ResponseEntity<?> getKeys(Authentication auth) {
+        Integer userId = extractUserId(auth);
+        var keys = chatService.getKeys(userId);
+        if (keys == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(Map.of(
+                "publicKey", keys.getPublicKeyPem(),
+                "encryptedPrivateKey", keys.getEncryptedPrivateKey() != null ? keys.getEncryptedPrivateKey() : ""));
+    }
+
+    @DeleteMapping("/sync-keys")
+    public ResponseEntity<?> resetKeys(Authentication auth) {
+        Integer userId = extractUserId(auth);
+        chatService.resetKeys(userId);
+        return ResponseEntity.ok(Map.of("message", "Encryption keys reset successfully. Please generate new keys."));
     }
 
     @GetMapping("/history/{otherUserId}")
-    public ResponseEntity<?> getConversation(@RequestHeader("X-User-Id") Integer authUserId,
-                                             @PathVariable Integer otherUserId) {
-        // You will likely extract userId from JWT/auth in real code; shown here simple
-        var conv = chatService.getConversation(authUserId, otherUserId);
-        return ResponseEntity.ok(conv);
+    public ResponseEntity<?> getHistory(
+            @PathVariable Integer otherUserId,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "100") int size,
+            Authentication auth) {
+        Integer myId = extractUserId(auth);
+        org.springframework.data.domain.Pageable pageable = org.springframework.data.domain.PageRequest.of(page, size);
+        return ResponseEntity.ok(chatService.getConversationPaginated(myId, otherUserId, pageable).getContent());
     }
 
-    @PostMapping("/read/{messageId}")
-    public ResponseEntity<?> markRead(@PathVariable Long messageId) {
-        chatService.markMessageRead(messageId);
-        return ResponseEntity.ok().build();
+    @GetMapping("/keys/{userId}")
+    public ResponseEntity<String> getPublicKey(@PathVariable Integer userId) {
+        var keys = chatService.getKeys(userId);
+        if (keys == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok(keys.getPublicKeyPem());
+    }
+
+    private String extractRole(Authentication auth) {
+        return auth.getAuthorities().iterator().next().getAuthority();
+    }
+
+    private Integer extractUserId(Authentication auth) {
+        Object p = auth.getPrincipal();
+        if (p instanceof TrainerPrincipal tp)
+            return tp.userId();
+        if (p instanceof MemberPrincipal mp)
+            return mp.userId();
+        if (p instanceof AdminPrincipal ap)
+            return ap.userId();
+        throw new RuntimeException("Unauthorized");
+    }
+
+    @Data
+    public static class KeySyncRequest {
+        private String publicKey;
+        private String encryptedPrivateKey;
     }
 }

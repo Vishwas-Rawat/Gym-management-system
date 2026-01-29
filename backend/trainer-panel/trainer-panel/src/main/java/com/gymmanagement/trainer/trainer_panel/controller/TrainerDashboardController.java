@@ -5,6 +5,7 @@ import com.gymmanagement.trainer.trainer_panel.security.TrainerPrincipal;
 import com.gymmanagement.trainer.trainer_panel.service.TrainerDashboardService;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,11 +17,20 @@ public class TrainerDashboardController {
     private final TrainerDashboardService dashboardService;
 
     @GetMapping
-    public TrainerDashboardResponse getDashboard(Authentication auth) {
+    public ResponseEntity<?> getDashboard(Authentication auth) {
 
-        TrainerPrincipal p = (TrainerPrincipal) auth.getPrincipal();
-        Integer trainerUserId = p.userId();
+        Object principal = auth.getPrincipal();
 
-        return dashboardService.getDashboard(trainerUserId);
+        if (principal instanceof TrainerPrincipal p) {
+            Integer trainerUserId = p.userId();
+            return ResponseEntity.ok(dashboardService.getDashboard(trainerUserId));
+        }
+
+        if (principal instanceof com.gymmanagement.trainer.trainer_panel.security.AdminPrincipal) {
+            return ResponseEntity.badRequest().body(
+                    "Admins cannot view a personal trainer dashboard directly. Please use the Admin specific endpoints.");
+        }
+
+        return ResponseEntity.status(403).build();
     }
 }

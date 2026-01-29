@@ -46,8 +46,7 @@ public class TrainerWorkoutServiceImpl implements TrainerWorkoutService {
             WorkoutPlanRepository planRepo,
             WorkoutPlanItemRepository itemRepo,
             MemberRepository memberRepo,
-            TrainerRepository trainerRepo
-    ) {
+            TrainerRepository trainerRepo) {
         this.userClient = userClient;
         this.planRepo = planRepo;
         this.itemRepo = itemRepo;
@@ -75,12 +74,18 @@ public class TrainerWorkoutServiceImpl implements TrainerWorkoutService {
             plan.setCreatedAt(LocalDateTime.now());
             plan = planRepo.save(plan);
         } else {
+            // Update Plan Details
             plan.setPlanName(req.getPlanName());
             plan.setTrainerId(trainerId);
             plan.setCreatedAt(LocalDateTime.now());
 
-            itemRepo.deleteAll(plan.getItems());
-            plan.getItems().clear();
+            // STRATEGY CHECK: Only wipe if NOT "APPEND"
+            String strategy = req.getStrategy(); // "REPLACE" or "APPEND"
+            if (!"APPEND".equalsIgnoreCase(strategy)) {
+                // Default behavior: REPLACE -> Wipe existing
+                itemRepo.deleteAll(plan.getItems());
+                plan.getItems().clear();
+            }
         }
 
         if (req.getExercises() != null) {
@@ -88,14 +93,15 @@ public class TrainerWorkoutServiceImpl implements TrainerWorkoutService {
 
                 WorkoutPlanItem item = new WorkoutPlanItem();
                 item.setWorkoutPlan(plan);
-                item.setExerciseName(ExerciseName.valueOf(ex.getExerciseName()));
+                // item.setExerciseName(ExerciseName.valueOf(ex.getExerciseName()));
+                item.setExerciseName(ex.getExerciseName()); // Allow ANY string (Custom Exercises)
                 item.setSets(ex.getSets());
                 item.setReps(ex.getReps());
                 item.setRestSeconds(ex.getRestSeconds());
                 item.setNotes(ex.getNotes());
 
-                Set<DayOfWeek> days = ex.getDays() == null ? Collections.emptySet() :
-                        ex.getDays().stream()
+                Set<DayOfWeek> days = ex.getDays() == null ? Collections.emptySet()
+                        : ex.getDays().stream()
                                 .map(String::toUpperCase)
                                 .map(DayOfWeek::valueOf)
                                 .collect(Collectors.toSet());
@@ -117,7 +123,6 @@ public class TrainerWorkoutServiceImpl implements TrainerWorkoutService {
         return resp;
     }
 
-
     @Override
     public WorkoutPlanResponse getLatestPlanForMember(Integer memberId) {
 
@@ -132,10 +137,9 @@ public class TrainerWorkoutServiceImpl implements TrainerWorkoutService {
         return mapToResponse(plan, plan.getTrainerId(), memberUser);
     }
 
-
     private WorkoutPlanResponse mapToResponse(WorkoutPlan plan,
-                                              Integer trainerId,
-                                              UserResponse ignoredUserResponse) {
+            Integer trainerId,
+            UserResponse ignoredUserResponse) {
 
         WorkoutPlanResponse res = new WorkoutPlanResponse();
         res.setPlanId(plan.getPlanId());
@@ -168,8 +172,17 @@ public class TrainerWorkoutServiceImpl implements TrainerWorkoutService {
                 .stream()
                 .map(item -> {
                     WorkoutItemResponse r = new WorkoutItemResponse();
-                    r.setExerciseName(item.getExerciseName().name());
-                    r.setDisplayName(item.getExerciseName().getDisplayName());
+                    r.setExerciseName(item.getExerciseName());
+
+                    // Try to resolve display name from Enum, else use raw string
+                    try {
+                        com.gymmanagement.commonservices.enumeration.ExerciseName e = com.gymmanagement.commonservices.enumeration.ExerciseName
+                                .valueOf(item.getExerciseName());
+                        r.setDisplayName(e.getDisplayName());
+                    } catch (IllegalArgumentException e) {
+                        r.setDisplayName(item.getExerciseName());
+                    }
+
                     r.setSets(item.getSets());
                     r.setReps(item.getReps());
                     r.setRestSeconds(item.getRestSeconds());
@@ -185,8 +198,7 @@ public class TrainerWorkoutServiceImpl implements TrainerWorkoutService {
     private String safe(String s) {
         return s == null ? "" : s;
     }
-    
-    
+
     @Override
     public List<ViewMemberResponse> getAssignedMembers(Long gymId, Integer trainerId) {
         return userClient.getMembersByTrainer(gymId, trainerId);

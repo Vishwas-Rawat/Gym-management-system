@@ -18,6 +18,9 @@ public class PublicKeyEntity {
     @Column(name = "public_key", columnDefinition = "text", nullable = false)
     private String publicKeyPem; // e.g. base64/PEM format
 
+    @Column(name = "encrypted_private_key", columnDefinition = "text")
+    private String encryptedPrivateKey; // AES encrypted private key
+
     @Column(name = "updated_at")
     private java.time.LocalDateTime updatedAt = java.time.LocalDateTime.now();
 }
