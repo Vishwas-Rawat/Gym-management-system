@@ -1,5 +1,5 @@
 import React, { createContext, useState, useContext } from 'react';
-import api from '../services/api';
+import { attendanceService } from '../services/attendanceService';
 import { useAuth } from './AuthContext';
 
 const AttendanceContext = createContext();
@@ -7,23 +7,30 @@ const AttendanceContext = createContext();
 export const useAttendance = () => useContext(AttendanceContext);
 
 export const AttendanceProvider = ({ children }) => {
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false); // For actions like mark
+  const [historyLoading, setHistoryLoading] = useState(false); // For fetching history
   const [error, setError] = useState(null);
   const [todayStatus, setTodayStatus] = useState(null); // 'PRESENT' or null
   const [history, setHistory] = useState([]);
 
   // Mark Attendance
-  const markAttendance = async () => {
+  const markAttendance = async (status = 'PRESENT') => {
     setLoading(true);
     setError(null);
     try {
-      const response = await api.post('/attendance/mark');
-      setTodayStatus('PRESENT');
-      return { success: true, message: "Attendance marked successfully!" };
+      const data = await attendanceService.markAttendance(status);
+      setTodayStatus(status);
+      return { success: true, message: data.message || `Attendance marked as ${status}!` };
     } catch (err) {
       console.error("Mark attendance error:", err);
       const msg = err.response?.data?.message || "Failed to mark attendance.";
       setError(msg);
+      // Even if error, if it says "already marked", update status
+      if (err.response?.status === 400 && msg.includes("already marked")) {
+          // If we can't distinguish, we assume PRESENT for basic flows, or better, don't change it if we don't know.
+          // But usually this error shouldn't happen with the new API that supports updates.
+          // setTodayStatus(status); 
+      }
       return { success: false, message: msg };
     } finally {
       setLoading(false);
@@ -34,17 +41,30 @@ export const AttendanceProvider = ({ children }) => {
   const checkTodayAttendance = async () => {
     setLoading(true);
     try {
-      const response = await api.get('/attendance/today');
-      // Assuming API returns { marked: true/false, status: 'PRESENT' } or similar
-      // Adjust based on actual API response structure
-      if (response.data && response.data.marked) {
-        setTodayStatus(response.data.status || 'PRESENT');
+      const isMarked = await attendanceService.checkTodayStatus();
+      if (isMarked === true) {
+        // Since the API only returns boolean, we must fetch history to know if it's PRESENT or ABSENT
+        try {
+            const historyData = await attendanceService.getHistory();
+            // Get local YYYY-MM-DD
+            const todayStr = new Date().toLocaleDateString('en-CA'); 
+            const todayRecord = historyData.find(r => r.date === todayStr); // Exact match YYYY-MM-DD
+            
+            if (todayRecord) {
+                setTodayStatus(todayRecord.status);
+            } else {
+                // Fallback: If marked but not found (timezone potential), assume PRESENT
+                setTodayStatus('PRESENT');
+            }
+        } catch (histErr) {
+            console.warn("Failed to fetch history for status verification, defaulting to PRESENT", histErr);
+            setTodayStatus('PRESENT');
+        }
       } else {
         setTodayStatus(null);
       }
     } catch (err) {
       console.error("Check today attendance error:", err);
-      // Don't set global error for this check to avoid blocking UI
     } finally {
       setLoading(false);
     }
@@ -52,15 +72,15 @@ export const AttendanceProvider = ({ children }) => {
 
   // Get History
   const getAttendanceHistory = async () => {
-    setLoading(true);
+    setHistoryLoading(true);
     try {
-      const response = await api.get('/attendance/history');
-      setHistory(response.data || []);
+      const data = await attendanceService.getHistory();
+      setHistory(data || []);
     } catch (err) {
       console.error("Get history error:", err);
       setError("Failed to fetch attendance history.");
     } finally {
-      setLoading(false);
+      setHistoryLoading(false);
     }
   };
 
@@ -68,8 +88,8 @@ export const AttendanceProvider = ({ children }) => {
   const getGymAttendanceStats = async (gymId) => {
     setLoading(true);
     try {
-      const response = await api.get(`/attendance/admin/gym/${gymId}`);
-      return response.data;
+      const data = await attendanceService.getGymAttendance(gymId);
+      return data;
     } catch (err) {
       console.error("Get gym stats error:", err);
       throw err;
@@ -82,8 +102,8 @@ export const AttendanceProvider = ({ children }) => {
    const getUserAttendanceHistory = async (userId) => {
     setLoading(true);
     try {
-      const response = await api.get(`/attendance/admin/user/${userId}`);
-      return response.data;
+      const data = await attendanceService.getUserHistory(userId);
+      return data;
     } catch (err) {
       console.error("Get user history error:", err);
       throw err;
@@ -96,6 +116,7 @@ export const AttendanceProvider = ({ children }) => {
     <AttendanceContext.Provider
       value={{
         loading,
+        historyLoading,
         error,
         todayStatus,
         history,

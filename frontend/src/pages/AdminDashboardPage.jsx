@@ -17,11 +17,16 @@ import {
   IconButton,
   CircularProgress,
   useTheme,
-  ThemeProvider,
-  CssBaseline,
-  createTheme,
   Tabs,
   Tab,
+  CardActionArea,
+  Tooltip,
+  Chip,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Divider
 } from "@mui/material";
 import {
   People,
@@ -37,735 +42,513 @@ import {
   Menu as MenuIcon,
   Logout,
   Dashboard as DashboardIcon,
+  Business,
+  AssignmentInd,
+  Email,
+  Phone,
+  Close,
+  Cake,
+  LocationOn,
+  Height,
+  MonitorWeight
 } from "@mui/icons-material";
-import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  ResponsiveContainer,
-  PieChart,
-  Pie,
-  Cell,
-  LineChart,
-  Line,
-  AreaChart,
-  Area,
-} from "recharts";
+
 import { motion } from "framer-motion";
-import api from "../services/api"; // Ensure this is your configured axios instance
+import api, { attendanceApi, userApi } from "../services/api"; // Ensure this is your configured axios instance
+import { attendanceService } from "../services/attendanceService";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import AdminChatWidget from "../components/AdminChatWidget";
 
-// --- THEME SETUP ---
-const dashboardTheme = createTheme({
-  palette: {
-    primary: { main: "#6366f1" }, // Indigo
-    secondary: { main: "#ec4899" }, // Pink
-    success: { main: "#10b981" }, // Emerald
-    warning: { main: "#f59e0b" }, // Amber
-    error: { main: "#ef4444" }, // Red
-    background: { default: "#f8fafc", paper: "#ffffff" },
-    text: { primary: "#1e293b", secondary: "#64748b" },
-  },
-  typography: {
-    fontFamily: "'Inter', 'Roboto', sans-serif",
-    h4: { fontWeight: 700 },
-    h6: { fontWeight: 600 },
-  },
-  components: {
-    MuiCard: {
-      styleOverrides: {
-        root: {
-          borderRadius: "16px",
-          boxShadow: "0 4px 20px rgba(0,0,0,0.05)",
-          transition: "transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out",
-          "&:hover": {
-            transform: "translateY(-4px)",
-            boxShadow: "0 12px 30px rgba(0,0,0,0.1)",
-          },
-        },
-      },
-    },
-    MuiPaper: {
-      styleOverrides: {
-        root: { borderRadius: "16px" },
-      },
-    },
-  },
-});
-
-// --- KPI CARD COMPONENT ---
-const KpiCard = ({ title, value, icon: Icon, color, gradient }) => (
+// --- TRANSPARENT NAV CARD COMPONENT ---
+const NavCard = ({ title, description, icon: Icon, onClick, color }) => (
   <Card
     sx={{
       height: "100%",
-      background: gradient,
+      transition: "all 0.3s ease",
+      "&:hover": { 
+          borderColor: color, 
+          transform: "translateY(-5px)",
+          boxShadow: `0 10px 30px -10px ${color}40`
+      },
+    }}
+  >
+      <CardActionArea onClick={onClick} sx={{ height: "100%", p: 2 }}>
+        <CardContent sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', gap: 2 }}>
+            <Box sx={{ 
+                width: 60, 
+                height: 60, 
+                borderRadius: '50%', 
+                bgcolor: `${color}15`, 
+                color: color,
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center' 
+            }}>
+                <Icon sx={{ fontSize: 32 }} />
+            </Box>
+            <Box>
+                <Typography variant="h6" gutterBottom>{title}</Typography>
+                <Typography variant="body2" color="text.secondary">{description}</Typography>
+            </Box>
+        </CardContent>
+    </CardActionArea>
+  </Card>
+);
+
+// --- KPI CARD COMPONENT ---
+const KpiCard = ({ title, value, icon: Icon, gradient }) => (
+  <Card
+    sx={{
+      height: "100%",
+      background: gradient || "white",
       color: "white",
       position: "relative",
       overflow: "hidden",
+      borderRadius: "24px",
+      boxShadow: "0 10px 20px -5px rgba(0,0,0,0.1)",
+      transition: "all 0.3s ease",
+      "&:hover": {
+        transform: "translateY(-5px)",
+        boxShadow: "0 20px 30px -10px rgba(0,0,0,0.15)",
+      },
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'space-between'
     }}
   >
+    {/* Decorative Background Pattern */}
     <Box
       sx={{
         position: "absolute",
-        top: -20,
-        right: -20,
-        opacity: 0.2,
-        transform: "rotate(15deg)",
+        top: 0,
+        left: 0,
+        right: 0,
+        bottom: 0,
+        opacity: 0.1,
+        backgroundImage: 'radial-gradient(circle at 10% 20%, rgba(255,255,255,0.4) 0%, transparent 20%), radial-gradient(circle at 90% 80%, rgba(255,255,255,0.4) 0%, transparent 20%)',
+        zIndex: 0
       }}
-    >
-      <Icon sx={{ fontSize: 100 }} />
-    </Box>
-    <CardContent sx={{ position: "relative", zIndex: 1 }}>
-      <Box sx={{ display: "flex", alignItems: "center", mb: 2 }}>
-        <Box
-          sx={{
-            p: 1,
-            borderRadius: "12px",
-            bgcolor: "rgba(255,255,255,0.2)",
-            display: "flex",
-            mr: 2,
-          }}
-        >
-          <Icon />
+    />
+    
+    <CardContent sx={{ position: "relative", zIndex: 1, p: 3, height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+      <Box sx={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", mb: 2 }}>
+        <Box>
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 1, opacity: 0.9 }}>
+                <Icon sx={{ fontSize: 20 }} />
+                <Typography variant="subtitle2" fontWeight={600}>
+                    {title}
+                </Typography>
+            </Box>
+            <Typography variant="h4" fontWeight={700} sx={{ letterSpacing: '-0.5px' }}>
+                {value}
+            </Typography>
         </Box>
-        <Typography variant="subtitle2" sx={{ opacity: 0.9, fontWeight: 600 }}>
-          {title}
-        </Typography>
       </Box>
-      <Typography variant="h4" fontWeight={800}>
-        {value}
-      </Typography>
+      
+      {/* Progress bar simulation or extra info could go here */}
+      <Box sx={{ width: '100%', bgcolor: 'rgba(255,255,255,0.2)', height: 6, borderRadius: 3, mt: 2 }}>
+        <Box sx={{ width: '70%', bgcolor: 'white', height: '100%', borderRadius: 3 }} />
+      </Box>
     </CardContent>
   </Card>
 );
 
+const WelcomeBanner = ({ fullName }) => (
+  <Box
+    component={motion.div}
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.5 }}
+    sx={{
+      p: { xs: 2, md: 3 },
+      mb: 3,
+      borderRadius: "24px",
+      background: "linear-gradient(135deg, #007BFF 0%, #0056b3 100%)", // Blue gradient
+      color: "white",
+      position: "relative",
+      overflow: "hidden",
+      boxShadow: "0 20px 25px -5px rgba(0, 123, 255, 0.3)",
+    }}
+  >
+    <Box sx={{ position: "relative", zIndex: 1, maxWidth: "600px" }}>
+      <Typography variant="h5" fontWeight={700} gutterBottom sx={{ fontSize: { xs: "1.25rem", md: "1.5rem" } }}>
+        Welcome back, {fullName || 'Admin'}! 👋
+      </Typography>
+      <Typography variant="body2" sx={{ opacity: 0.9, fontWeight: 400, lineHeight: 1.5 }}>
+        Here's what's happening in your gym today. Check out the latest attendance and revenue stats.
+      </Typography>
+    </Box>
+    
+    {/* Decorative Elements */}
+    <Box
+      sx={{
+        position: "absolute",
+        top: -60,
+        right: -60,
+        width: 300,
+        height: 300,
+        borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(255,255,255,0.2) 0%, rgba(255,255,255,0) 70%)",
+      }}
+    />
+    <Box
+      sx={{
+        position: "absolute",
+        bottom: -40,
+        right: 100,
+        width: 150,
+        height: 150,
+        borderRadius: "50%",
+        background: "radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0) 70%)",
+      }}
+    />
+  </Box>
+);
+
 // --- DASHBOARD PAGE ---
 const AdminDashboardPage = () => {
-  const [data, setData] = useState(null);
-  const [attendanceLogs, setAttendanceLogs] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [currentTab, setCurrentTab] = useState(0); // 0: Gym, 1: Member, 2: Trainer
+  const { logout, user } = useAuth();
   const navigate = useNavigate();
+  // State for data
+  const [dashboardData, setDashboardData] = useState(null);
+  const [loading, setLoading] = useState(true);
+  
+  // Profile dialog state
+  const [profileOpen, setProfileOpen] = useState(false);
+  const [profileData, setProfileData] = useState(null);
+  const [profileLoading, setProfileLoading] = useState(false);
+
+  // Fetch admin profile
+  const fetchProfile = async () => {
+    // Only set loading if not already loaded (to avoid flicker on initial load if we want)
+    // But here we want to load on mount.
+    // If we trigger from dialog, we might want spinner.
+    // Let's keep it simple.
+    if (!profileData) setProfileLoading(true);
+    try {
+      const response = await userApi.get("/admin/profile");
+      setProfileData(response.data);
+    } catch (error) {
+      console.error("Error fetching profile:", error);
+    } finally {
+      if (!profileData) setProfileLoading(false);
+    }
+  };
 
   useEffect(() => {
     const fetchDashboardData = async () => {
       try {
-        setLoading(true);
-        // 1. Get Gyms to find a valid ID
-        const gymsRes = await api.get("/gym/my-gyms");
-        const gyms = Array.isArray(gymsRes.data) ? gymsRes.data : [];
-        
-        if (gyms.length === 0) {
-          setError("No gyms found. Please create a gym first.");
-          setLoading(false);
-          return;
-        }
+        const response = await userApi.get("/admin/dashboard/18");
 
-        const gymId = gyms[0].gymId; // Use first gym for now
-
-        // 2. Fetch Dashboard Data
-        const res = await api.get(`/admin/dashboard/${gymId}`);
-        setData(res.data);
-
-        // 3. Fetch Attendance Logs
-        try {
-            const attendanceRes = await api.get(`/attendance/admin/gym/${gymId}`);
-            setAttendanceLogs(Array.isArray(attendanceRes.data) ? attendanceRes.data : []);
-        } catch (attErr) {
-            console.error("Failed to fetch attendance logs", attErr);
-            // Don't block main dashboard if attendance fails
-        }
-      } catch (err) {
-        console.error("Dashboard fetch error:", err);
-        setError("Failed to load dashboard data.");
+        setDashboardData(response.data);
+      } catch (error) {
+        console.error("Error fetching dashboard data:", error);
       } finally {
         setLoading(false);
       }
     };
 
     fetchDashboardData();
+    fetchProfile();
   }, []);
 
-  if (loading) {
-    return (
-      <Box sx={{ display: "flex", justifyContent: "center", alignItems: "center", height: "100vh" }}>
-        <CircularProgress size={60} thickness={4} sx={{ color: "#6366f1" }} />
-      </Box>
-    );
-  }
-
-  if (error) {
-    return (
-      <Box sx={{ p: 4, textAlign: "center" }}>
-        <Typography variant="h5" color="error" gutterBottom>
-          {error}
-        </Typography>
-        <Typography variant="body1" color="text.secondary">
-          Please check your connection or try again later.
-        </Typography>
-      </Box>
-    );
-  }
-
-  if (!data) return null;
-
-  // --- DATA PREPARATION FOR CHARTS ---
-
-  // 1. Active vs Inactive (Pie)
-  const activeInactiveData = [
-    { name: "Active", value: data.activeMembers },
-    { name: "Inactive", value: data.totalMembers - data.activeMembers },
-  ];
-  const PIE_COLORS = ["#10b981", "#ef4444"];
-
-  // 2. Attendance (Bar/Line Combo)
-  const attendanceData = [
-    { name: "Members", present: data.membersPresentToday, total: data.totalMembers },
-    { name: "Trainers", present: data.trainersPresentToday, total: data.totalTrainers },
-  ];
-
-  // 3. Trainer Activity (Horizontal Bar)
-  const trainerActivityData = data.trainerActivity.map(t => ({
-    name: t.fullName || `Trainer ${t.trainerId}`,
-    members: t.memberCount,
-  }));
-
-  // 4. Revenue Trend (Mocking monthly trend as API gives single values)
-  const revenueData = [
-    { month: "Jan", revenue: data.monthlyRevenue * 0.8 },
-    { month: "Feb", revenue: data.monthlyRevenue * 0.9 },
-    { month: "Mar", revenue: data.monthlyRevenue * 0.85 },
-    { month: "Apr", revenue: data.monthlyRevenue * 1.1 },
-    { month: "May", revenue: data.monthlyRevenue * 1.05 },
-    { month: "Jun", revenue: data.monthlyRevenue }, // Current
-  ];
-
-  const handleTabChange = (event, newValue) => {
-    setCurrentTab(newValue);
+  // Open profile dialog
+  const handleProfileClick = () => {
+    setProfileOpen(true);
+    fetchProfile();
   };
 
   return (
-    <ThemeProvider theme={dashboardTheme}>
-      <CssBaseline />
-      <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "background.default" }}>
-        
-        {/* SIDEBAR */}
-        <Paper
-          elevation={0}
-          sx={{
-            width: 280,
-            display: { xs: "none", md: "flex" },
-            flexDirection: "column",
-            borderRight: "1px solid #e2e8f0",
-            borderRadius: 0,
-            position: "fixed",
-            height: "100vh",
-            zIndex: 1200,
-          }}
-        >
-          <Box sx={{ p: 3, display: "flex", alignItems: "center", gap: 2 }}>
-            <Box
-              sx={{
-                width: 40,
-                height: 40,
-                borderRadius: "12px",
-                bgcolor: "primary.main",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "white",
-              }}
-            >
-              <FitnessCenter />
-            </Box>
-            <Typography variant="h6" fontWeight={800} color="primary.main">
-              GymAdmin
-            </Typography>
-          </Box>
-          
-          <Box sx={{ px: 2, py: 2 }}>
-            {["Dashboard", "Members", "Trainers", "Attendance", "Finance", "Settings"].map((text, index) => (
-              <Box
-                key={text}
-                sx={{
-                  p: 1.5,
-                  mb: 1,
-                  borderRadius: "10px",
-                  cursor: "pointer",
-                  bgcolor: index === 0 ? "primary.light" : "transparent",
-                  color: index === 0 ? "primary.main" : "text.secondary",
-                  fontWeight: index === 0 ? 600 : 500,
-                  "&:hover": { bgcolor: "primary.50", color: "primary.main" },
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 2,
-                }}
-                onClick={() => {
-                   if (text === "Members") navigate("/admin/members/add");
-                   if (text === "Trainers") navigate("/admin/trainers/add");
-                }}
-              >
-                {index === 0 && <TrendingUp />}
-                {index === 1 && <People />}
-                {index === 2 && <FitnessCenter />}
-                {index === 3 && <EventNote />}
-                {index === 4 && <AttachMoney />}
-                {index === 5 && <MenuIcon />}
-                <Typography>{text}</Typography>
-              </Box>
-            ))}
-          </Box>
-        </Paper>
-
-        {/* MAIN CONTENT */}
-        <Box sx={{ flexGrow: 1, ml: { md: "280px" }, p: { xs: 2, md: 4 } }}>
-          
-          {/* TOP NAVBAR */}
-          <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
-            <Box>
-              <Typography variant="h4" color="text.primary">
+    <Box>
+      {/* TOP HEADER (Page Specific) */}
+      <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
+        <Box>
+           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+             <Typography variant="h4" color="text.primary" fontWeight={800}>
                 Dashboard
-              </Typography>
-              <Typography variant="body1" color="text.secondary">
-                Overview of your gym's performance.
-              </Typography>
-            </Box>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-              <IconButton sx={{ bgcolor: "white", boxShadow: 1 }}>
-                <Logout color="action" />
-              </IconButton>
-              <Avatar sx={{ bgcolor: "primary.main" }}>A</Avatar>
-            </Box>
-          </Box>
-
-          {/* DASHBOARD TABS */}
-          <Box sx={{ borderBottom: 1, borderColor: 'divider', mb: 4 }}>
-            <Tabs value={currentTab} onChange={handleTabChange} aria-label="dashboard tabs">
-              <Tab label="Gym Dashboard" icon={<DashboardIcon />} iconPosition="start" />
-              <Tab label="Member Dashboard" icon={<People />} iconPosition="start" />
-              <Tab label="Trainer Dashboard" icon={<FitnessCenter />} iconPosition="start" />
-            </Tabs>
-          </Box>
-
-          {/* GYM DASHBOARD CONTENT */}
-          {currentTab === 0 && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
-              
-              {/* Removed AttendanceWidget and Welcome Banner */}
-
-              <Grid container spacing={3} sx={{ mb: 4 }}>
-                <Grid item xs={12} sm={6} md={3}>
-                  <KpiCard
-                    title="Total Revenue"
-                    value={`₹${data.totalRevenue.toLocaleString()}`}
-                    icon={AttachMoney}
-                    gradient="linear-gradient(135deg, #f59e0b 0%, #d97706 100%)"
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                  <KpiCard
-                    title="Monthly Revenue"
-                    value={`₹${Math.round(data.monthlyRevenue).toLocaleString()}`}
-                    icon={TrendingUp}
-                    gradient="linear-gradient(135deg, #ec4899 0%, #db2777 100%)"
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                  <KpiCard
-                    title="Total Members"
-                    value={data.totalMembers}
-                    icon={People}
-                    gradient="linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)"
-                  />
-                </Grid>
-                 <Grid item xs={12} sm={6} md={3}>
-                  <KpiCard
-                    title="Total Trainers"
-                    value={data.totalTrainers}
-                    icon={FitnessCenter}
-                    gradient="linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)"
-                  />
-                </Grid>
-              </Grid>
-
-              <Box sx={{ mt: 4, mb: 4, width: "100%" }}>
-                <Paper sx={{ p: 1, height: 500, overflow: "hidden" }}>
-                  <Box sx={{ p: 2 }}>
-                    <Typography variant="h6">
-                      Revenue Trend (Last 6 Months)
-                    </Typography>
-                  </Box>
-                  <ResponsiveContainer width="100%" height="85%">
-                    <AreaChart data={revenueData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                      <defs>
-                        <linearGradient id="colorRevenue" x1="0" y1="0" x2="0" y2="1">
-                          <stop offset="5%" stopColor="#6366f1" stopOpacity={0.3} />
-                          <stop offset="95%" stopColor="#6366f1" stopOpacity={0} />
-                        </linearGradient>
-                      </defs>
-                      <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                      <XAxis dataKey="month" axisLine={false} tickLine={false} tick={{ fill: '#64748b' }} />
-                      <YAxis axisLine={false} tickLine={false} tick={{ fill: '#64748b' }} tickFormatter={(value) => `₹${value}`} />
-                      <Tooltip
-                        contentStyle={{ borderRadius: "12px", border: "none", boxShadow: "0 4px 12px rgba(0,0,0,0.1)" }}
-                        formatter={(value) => [`₹${value.toLocaleString()}`, "Revenue"]}
-                      />
-                      <Area
-                        type="monotone"
-                        dataKey="revenue"
-                        stroke="#6366f1"
-                        strokeWidth={3}
-                        fillOpacity={1}
-                        fill="url(#colorRevenue)"
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </Paper>
-              </Box>
-
-              {/* ATTENDANCE LOGS TABLE */}
-              <Grid container spacing={3}>
-                <Grid item xs={12}>
-                  <Paper sx={{ overflow: "hidden" }}>
-                    <Box sx={{ p: 3, borderBottom: "1px solid #f1f5f9" }}>
-                      <Typography variant="h6">Recent Attendance Logs</Typography>
-                    </Box>
-                    <TableContainer sx={{ maxHeight: 400 }}>
-                      <Table stickyHeader>
-                        <TableHead>
-                          <TableRow sx={{ bgcolor: "#f8fafc" }}>
-                            <TableCell sx={{ fontWeight: 600 }}>User</TableCell>
-                            <TableCell sx={{ fontWeight: 600 }}>Role</TableCell>
-                            <TableCell sx={{ fontWeight: 600 }}>Date</TableCell>
-                            <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          {attendanceLogs.length > 0 ? (
-                            attendanceLogs.map((log) => (
-                              <TableRow key={log.id} hover>
-                                <TableCell>
-                                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                                    <Avatar sx={{ width: 32, height: 32, bgcolor: "primary.light", fontSize: 14 }}>
-                                      {log.user?.fullName ? log.user.fullName[0].toUpperCase() : "U"}
-                                    </Avatar>
-                                    <Typography variant="body2" fontWeight={500}>
-                                      {log.user?.fullName || `User ${log.user_id}`}
-                                    </Typography>
-                                  </Box>
-                                </TableCell>
-                                <TableCell>
-                                    <Box
-                                        sx={{
-                                            px: 1,
-                                            py: 0.5,
-                                            bgcolor: log.role === 'TRAINER' ? 'secondary.light' : 'primary.light',
-                                            color: 'white',
-                                            borderRadius: '6px',
-                                            display: 'inline-block',
-                                            fontSize: '0.75rem',
-                                            fontWeight: 600
-                                        }}
-                                    >
-                                        {log.role}
-                                    </Box>
-                                </TableCell>
-                                <TableCell>{log.date}</TableCell>
-                                <TableCell>
-                                  <Box
-                                    sx={{
-                                      px: 1.5,
-                                      py: 0.5,
-                                      bgcolor: "success.50",
-                                      color: "success.main",
-                                      borderRadius: "6px",
-                                      display: "inline-block",
-                                      fontSize: "0.75rem",
-                                      fontWeight: 600,
-                                    }}
-                                  >
-                                    {log.status}
-                                  </Box>
-                                </TableCell>
-                              </TableRow>
-                            ))
-                          ) : (
-                            <TableRow>
-                              <TableCell colSpan={4} align="center" sx={{ py: 4, color: "text.secondary" }}>
-                                No attendance records found.
-                              </TableCell>
-                            </TableRow>
-                          )}
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
-                  </Paper>
-                </Grid>
-              </Grid>
-            </motion.div>
-          )}
-
-          {/* MEMBER DASHBOARD CONTENT */}
-          {currentTab === 1 && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
-              <Grid container spacing={3} sx={{ mb: 4 }}>
-                <Grid item xs={12} sm={6} md={3}>
-                  <KpiCard
-                    title="Total Members"
-                    value={data.totalMembers}
-                    icon={People}
-                    gradient="linear-gradient(135deg, #6366f1 0%, #4f46e5 100%)"
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                  <KpiCard
-                    title="Active Members"
-                    value={data.activeMembers}
-                    icon={CheckCircle}
-                    gradient="linear-gradient(135deg, #10b981 0%, #059669 100%)"
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                  <KpiCard
-                    title="Members Present"
-                    value={data.membersPresentToday}
-                    icon={DirectionsRun}
-                    gradient="linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)"
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={3}>
-                  <KpiCard
-                    title="Expiring Soon"
-                    value={data.expiringMembershipCount}
-                    icon={Warning}
-                    gradient="linear-gradient(135deg, #ef4444 0%, #dc2626 100%)"
-                  />
-                </Grid>
-              </Grid>
-
-              <Grid container spacing={3} sx={{ mb: 4 }}>
-                <Grid item xs={12} md={6}>
-                  <Paper sx={{ p: 1, height: 400 }}>
-                    <Box sx={{ p: 2 }}>
-                      <Typography variant="h6">
-                        Member Status Distribution
-                      </Typography>
-                    </Box>
-                    <Box sx={{ height: 300, display: "flex", justifyContent: "center" }}>
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={activeInactiveData}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius="60%"
-                            outerRadius="80%"
-                            paddingAngle={5}
-                            dataKey="value"
-                          >
-                            {activeInactiveData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={PIE_COLORS[index % PIE_COLORS.length]} />
-                            ))}
-                          </Pie>
-                          <Tooltip />
-                          <Legend verticalAlign="bottom" height={36} />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    </Box>
-                  </Paper>
-                </Grid>
-                 <Grid item xs={12} md={6}>
-                  <Paper sx={{ p: 1, height: 400 }}>
-                    <Box sx={{ p: 2 }}>
-                      <Typography variant="h6">
-                        Attendance Overview
-                      </Typography>
-                    </Box>
-                    <ResponsiveContainer width="100%" height="85%">
-                      <BarChart data={attendanceData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                        <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                        <XAxis dataKey="name" axisLine={false} tickLine={false} />
-                        <YAxis axisLine={false} tickLine={false} />
-                        <Tooltip />
-                        <Legend />
-                        <Bar dataKey="present" name="Present Today" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
-                        <Bar dataKey="total" name="Total Count" fill="#e2e8f0" radius={[4, 4, 0, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </Paper>
-                </Grid>
-              </Grid>
-
-              <Grid container spacing={3}>
-                <Grid item xs={12} md={6}>
-                  <Paper sx={{ overflow: "hidden" }}>
-                    <Box sx={{ p: 3, borderBottom: "1px solid #f1f5f9" }}>
-                      <Typography variant="h6">Expiring Memberships</Typography>
-                    </Box>
-                    <TableContainer>
-                      <Table>
-                        <TableHead>
-                          <TableRow sx={{ bgcolor: "#f8fafc" }}>
-                            <TableCell sx={{ fontWeight: 600 }}>Member Name</TableCell>
-                            <TableCell sx={{ fontWeight: 600 }}>Expiry Date</TableCell>
-                            <TableCell sx={{ fontWeight: 600 }}>Status</TableCell>
-                            <TableCell align="right" sx={{ fontWeight: 600 }}>Action</TableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          {data.expiringMembers.length > 0 ? (
-                            data.expiringMembers.map((m) => (
-                              <TableRow key={m.memberId} hover>
-                                <TableCell>
-                                  <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
-                                    <Avatar sx={{ width: 32, height: 32, bgcolor: "secondary.light", fontSize: 14 }}>
-                                      {m.fullName ? m.fullName[0].toUpperCase() : "U"}
-                                    </Avatar>
-                                    <Typography variant="body2" fontWeight={500}>
-                                      {m.fullName || `User ${m.userId}`}
-                                    </Typography>
-                                  </Box>
-                                </TableCell>
-                                <TableCell>{m.expiryDate}</TableCell>
-                                <TableCell>
-                                  <Box
-                                    sx={{
-                                      px: 1.5,
-                                      py: 0.5,
-                                      bgcolor: "error.50",
-                                      color: "error.main",
-                                      borderRadius: "6px",
-                                      display: "inline-block",
-                                      fontSize: "0.75rem",
-                                      fontWeight: 600,
-                                    }}
-                                  >
-                                    Expiring Soon
-                                  </Box>
-                                </TableCell>
-                                <TableCell align="right">
-                                  <IconButton size="small" color="primary">
-                                    <EventNote fontSize="small" />
-                                  </IconButton>
-                                </TableCell>
-                              </TableRow>
-                            ))
-                          ) : (
-                            <TableRow>
-                              <TableCell colSpan={4} align="center" sx={{ py: 4, color: "text.secondary" }}>
-                                No memberships expiring soon.
-                              </TableCell>
-                            </TableRow>
-                          )}
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
-                  </Paper>
-                </Grid>
-              </Grid>
-            </motion.div>
-          )}
-
-          {/* TRAINER DASHBOARD CONTENT */}
-          {currentTab === 2 && (
-            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.5 }}>
-              <Grid container spacing={3} sx={{ mb: 4 }}>
-                <Grid item xs={12} sm={6} md={4}>
-                  <KpiCard
-                    title="Total Trainers"
-                    value={data.totalTrainers}
-                    icon={FitnessCenter}
-                    gradient="linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)"
-                  />
-                </Grid>
-                <Grid item xs={12} sm={6} md={4}>
-                  <KpiCard
-                    title="Trainers Present"
-                    value={data.trainersPresentToday}
-                    icon={DirectionsRun}
-                    gradient="linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%)"
-                  />
-                </Grid>
-                 <Grid item xs={12} sm={6} md={4}>
-                  <KpiCard
-                    title="Pending Requests"
-                    value={data.pendingDietRequests + data.pendingWorkoutRequests}
-                    icon={Restaurant}
-                    gradient="linear-gradient(135deg, #14b8a6 0%, #0d9488 100%)"
-                  />
-                </Grid>
-              </Grid>
-
-              <Box sx={{ mt: 4, mb: 4, width: "100%" }}>
-                <Paper sx={{ p: 1, height: 500 }}>
-                  <Box sx={{ p: 2 }}>
-                    <Typography variant="h6">
-                      Trainer Activity (Members Assigned)
-                    </Typography>
-                  </Box>
-                  <ResponsiveContainer width="100%" height="85%">
-                    <BarChart layout="vertical" data={trainerActivityData} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                      <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#e2e8f0" />
-                      <XAxis type="number" hide />
-                      <YAxis dataKey="name" type="category" width={100} axisLine={false} tickLine={false} />
-                      <Tooltip cursor={{ fill: "transparent" }} />
-                      <Bar dataKey="members" fill="#3b82f6" radius={[0, 4, 4, 0]} barSize={30} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </Paper>
-              </Box>
-                
-              <Grid container spacing={3}>
-                <Grid item xs={12}>
-                   <Paper sx={{ overflow: "hidden", height: "100%" }}>
-                    <Box sx={{ p: 3, borderBottom: "1px solid #f1f5f9" }}>
-                      <Typography variant="h6">Trainer Performance Details</Typography>
-                    </Box>
-                    <TableContainer>
-                      <Table>
-                        <TableHead>
-                          <TableRow sx={{ bgcolor: "#f8fafc" }}>
-                            <TableCell sx={{ fontWeight: 600 }}>Trainer</TableCell>
-                            <TableCell align="right" sx={{ fontWeight: 600 }}>Clients</TableCell>
-                          </TableRow>
-                        </TableHead>
-                        <TableBody>
-                          {data.trainerActivity.map((t) => (
-                            <TableRow key={t.trainerId} hover>
-                              <TableCell>
-                                <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
-                                  <Avatar sx={{ width: 30, height: 30, bgcolor: "primary.light", fontSize: 12 }}>
-                                    {t.fullName ? t.fullName[0] : "T"}
-                                  </Avatar>
-                                  <Typography variant="body2">
-                                    {t.fullName || `Trainer ${t.trainerId}`}
-                                  </Typography>
-                                </Box>
-                              </TableCell>
-                              <TableCell align="right">
-                                <Typography variant="body2" fontWeight={600}>
-                                  {t.memberCount}
-                                </Typography>
-                              </TableCell>
-                            </TableRow>
-                          ))}
-                        </TableBody>
-                      </Table>
-                    </TableContainer>
-                  </Paper>
-                </Grid>
-              </Grid>
-            </motion.div>
-          )}
-
+             </Typography>
+             <Chip 
+               label={user?.role || "ADMIN"} 
+               size="small" 
+               sx={{ 
+                 bgcolor: 'primary.main', 
+                 color: 'white', 
+                 fontWeight: 600,
+                 fontSize: '0.75rem',
+                 height: 24
+               }} 
+             />
+           </Box>
+           <Typography variant="body1" color="text.secondary">
+              Overview of your gym's performance.
+           </Typography>
+        </Box>
+        <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <IconButton 
+              sx={{ 
+                bgcolor: "white", 
+                boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
+                "&:hover": { bgcolor: "#f1f5f9" }
+              }} 
+              onClick={logout}
+            >
+              <Logout color="action" />
+            </IconButton>
+            <Tooltip 
+              title={
+                <Box sx={{ p: 0.5 }}>
+                  <Typography variant="body2" fontWeight={600}>{user?.role || 'ADMIN'}</Typography>
+                  <Typography variant="caption">{user?.email || 'admin@gym.com'}</Typography>
+                </Box>
+              } 
+              arrow
+              placement="bottom-end"
+            >
+              <Avatar 
+                onClick={handleProfileClick}
+                sx={{ bgcolor: "primary.main", width: 45, height: 45, boxShadow: "0 4px 12px rgba(99, 102, 241, 0.3)", cursor: 'pointer' }}
+              >
+                {profileData?.firstName ? profileData.firstName[0].toUpperCase() : (user?.firstName ? user.firstName[0].toUpperCase() : (user?.fullName ? user.fullName[0].toUpperCase() : 'A'))}
+              </Avatar>
+            </Tooltip>
         </Box>
       </Box>
-    </ThemeProvider>
+
+      <WelcomeBanner fullName={user?.fullName} />
+
+      {/* STATS OVERVIEW */}
+      {dashboardData && (
+        <Grid container spacing={3} sx={{ mt: 2 }}>
+            <Grid item xs={12} sm={6} md={3}>
+                <KpiCard
+                title="Total Members"
+                value={dashboardData.totalMembers}
+                icon={People}
+                gradient="linear-gradient(135deg, #007BFF 0%, #0056b3 100%)"
+                />
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+                <KpiCard
+                title="Active Members"
+                value={dashboardData.activeMembers}
+                icon={CheckCircle}
+                gradient="linear-gradient(135deg, #10b981 0%, #059669 100%)" 
+                />
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+                <KpiCard
+                title="Total Trainers"
+                value={dashboardData.totalTrainers}
+                icon={FitnessCenter}
+                gradient="linear-gradient(135deg, #ec4899 0%, #db2777 100%)"
+                />
+            </Grid>
+            <Grid item xs={12} sm={6} md={3}>
+                <KpiCard
+                title="Trainers Present"
+                value={dashboardData.trainersPresentToday} 
+                icon={DirectionsRun}
+                gradient="linear-gradient(135deg, #f97316 0%, #ea580c 100%)"
+                />
+            </Grid>
+        </Grid>
+      )}
+
+      {/* NAVIGATION CARDS */}
+      <Grid container spacing={4} sx={{ mt: 4 }}>
+          <Grid item xs={12} sm={6} md={3}>
+              <NavCard 
+                  title="Gym Management" 
+                  description="Manage gym details, branches, and facilities." 
+                  icon={Business} 
+                  onClick={() => navigate('/admin/gyms')}
+                  color="#6366f1"
+              />
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+              <NavCard 
+                  title="Trainer Management" 
+                  description="Add or manage trainers and their schedules." 
+                  icon={FitnessCenter} 
+                  onClick={() => navigate('/admin/trainers/add')}
+                  color="#ec4899"
+              />
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+              <NavCard 
+                  title="Member Management" 
+                  description="Manage members, memberships, and plans." 
+                  icon={People} 
+                  onClick={() => navigate('/admin/members/add')}
+                  color="#3b82f6"
+              />
+          </Grid>
+          <Grid item xs={12} sm={6} md={3}>
+              <NavCard 
+                  title="Attendance" 
+                  description="View daily attendance logs and records." 
+                  icon={EventNote} 
+                  onClick={() => navigate('/admin/attendance')}
+                  color="#f97316"
+              />
+          </Grid>
+          <Grid item xs={12} sm={6} md={6}>
+              <NavCard 
+                  title="Allocations" 
+                  description="Assign members to trainers." 
+                  icon={AssignmentInd} 
+                  onClick={() => navigate('/admin/assignments')}
+                  color="#14b8a6"
+              />
+          </Grid>
+      </Grid>
+
+
+
+      <AdminChatWidget />
+
+      {/* PROFILE DIALOG */}
+      <Dialog 
+        open={profileOpen} 
+        onClose={() => setProfileOpen(false)}
+        maxWidth="sm"
+        fullWidth
+        PaperProps={{
+          sx: { borderRadius: '16px' }
+        }}
+      >
+        <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', pb: 1 }}>
+          <Typography variant="h6" fontWeight={700}>Admin Profile</Typography>
+          <IconButton onClick={() => setProfileOpen(false)} size="small">
+            <Close />
+          </IconButton>
+        </DialogTitle>
+        <Divider />
+        <DialogContent sx={{ pt: 3 }}>
+          {profileLoading ? (
+            <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+              <CircularProgress />
+            </Box>
+          ) : profileData ? (
+            <Box>
+              {/* Avatar and Name */}
+              <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', mb: 3 }}>
+                <Avatar 
+                  sx={{ 
+                    width: 80, 
+                    height: 80, 
+                    bgcolor: 'primary.main', 
+                    fontSize: '2rem',
+                    mb: 2
+                  }}
+                >
+                  {profileData.firstName ? profileData.firstName[0].toUpperCase() : (profileData.fullName ? profileData.fullName[0].toUpperCase() : 'A')}
+                </Avatar>
+                <Typography variant="h5" fontWeight={700}>{profileData.fullName}</Typography>
+                <Chip 
+                  label={profileData.role} 
+                  size="small" 
+                  sx={{ 
+                    mt: 1,
+                    bgcolor: 'primary.main', 
+                    color: 'white',
+                    fontWeight: 600
+                  }} 
+                />
+              </Box>
+
+              <Divider sx={{ my: 2 }} />
+
+              {/* Contact Information */}
+              <Typography variant="subtitle2" fontWeight={700} color="text.secondary" sx={{ mb: 2 }}>
+                Contact Information
+              </Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 3 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Email sx={{ fontSize: 20, color: 'text.secondary' }} />
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">Email</Typography>
+                    <Typography variant="body2" fontWeight={600}>{profileData.email}</Typography>
+                  </Box>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Phone sx={{ fontSize: 20, color: 'text.secondary' }} />
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">Phone</Typography>
+                    <Typography variant="body2" fontWeight={600}>{profileData.phoneNumber}</Typography>
+                  </Box>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Person sx={{ fontSize: 20, color: 'text.secondary' }} />
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">Username</Typography>
+                    <Typography variant="body2" fontWeight={600}>{profileData.username}</Typography>
+                  </Box>
+                </Box>
+              </Box>
+
+              <Divider sx={{ my: 2 }} />
+
+              {/* Personal Information */}
+              <Typography variant="subtitle2" fontWeight={700} color="text.secondary" sx={{ mb: 2 }}>
+                Personal Information
+              </Typography>
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 1.5, mb: 3 }}>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Cake sx={{ fontSize: 20, color: 'text.secondary' }} />
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">Date of Birth</Typography>
+                    <Typography variant="body2" fontWeight={600}>{profileData.dateOfBirth || 'N/A'}</Typography>
+                  </Box>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <Person sx={{ fontSize: 20, color: 'text.secondary' }} />
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">Gender</Typography>
+                    <Typography variant="body2" fontWeight={600}>{profileData.gender || 'N/A'}</Typography>
+                  </Box>
+                </Box>
+                <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                  <LocationOn sx={{ fontSize: 20, color: 'text.secondary' }} />
+                  <Box>
+                    <Typography variant="caption" color="text.secondary">Address</Typography>
+                    <Typography variant="body2" fontWeight={600}>{profileData.address || 'N/A'}</Typography>
+                  </Box>
+                </Box>
+                {profileData.height && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <Height sx={{ fontSize: 20, color: 'text.secondary' }} />
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">Height</Typography>
+                      <Typography variant="body2" fontWeight={600}>{profileData.height} cm</Typography>
+                    </Box>
+                  </Box>
+                )}
+                {profileData.weight && (
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+                    <MonitorWeight sx={{ fontSize: 20, color: 'text.secondary' }} />
+                    <Box>
+                      <Typography variant="caption" color="text.secondary">Weight</Typography>
+                      <Typography variant="body2" fontWeight={600}>{profileData.weight} kg</Typography>
+                    </Box>
+                  </Box>
+                )}
+              </Box>
+
+              {/* Timestamps */}
+              <Box sx={{ mt: 3, pt: 2, borderTop: '1px solid #e0e0e0' }}>
+                <Typography variant="caption" color="text.secondary" display="block">
+                  Member Since: {new Date(profileData.createdAt).toLocaleDateString()}
+                </Typography>
+              </Box>
+            </Box>
+          ) : (
+            <Typography color="text.secondary" align="center">Failed to load profile data.</Typography>
+          )}
+        </DialogContent>
+      </Dialog>
+    </Box>
   );
 };
 

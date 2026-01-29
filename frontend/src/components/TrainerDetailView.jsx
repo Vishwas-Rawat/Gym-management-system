@@ -25,12 +25,12 @@ import { motion } from "framer-motion";
 
 const SectionHeader = ({ icon: Icon, title }) => (
   <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2, mt: 1 }}>
-    <Icon sx={{ color: "#10b981", fontSize: 24 }} />
+    <Icon sx={{ color: "primary.main", fontSize: 24 }} />
     <Typography
       variant="h6"
       sx={{
         fontWeight: 700,
-        color: "#065f46",
+        color: "primary.dark",
         fontSize: "1.1rem",
       }}
     >
@@ -71,7 +71,7 @@ const itemVariants = {
   visible: { opacity: 1, y: 0, transition: { duration: 0.4 } },
 };
 
-export const TrainerDetailView = ({ trainer, onClose, style }) => {
+export const TrainerDetailView = ({ trainer, onClose, onAssignMembers, style }) => {
   if (!trainer) return null;
 
   return (
@@ -85,20 +85,20 @@ export const TrainerDetailView = ({ trainer, onClose, style }) => {
       {/* Header */}
       <Box
         sx={{
-          bgcolor: "#f0fdf4",
+          bgcolor: "rgba(0, 123, 255, 0.08)",
           p: 3,
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          borderBottom: "1px solid #d1fae5",
+          borderBottom: "1px solid rgba(0, 123, 255, 0.15)",
           flexShrink: 0,
         }}
       >
-        <Typography variant="h5" fontWeight={800} color="#065f46">
+        <Typography variant="h5" fontWeight={800} color="primary.dark">
           Trainer Profile
         </Typography>
         {onClose && (
-          <IconButton onClick={onClose} size="small" sx={{ color: "#065f46" }}>
+          <IconButton onClick={onClose} size="small" sx={{ color: "primary.dark" }}>
             <Close />
           </IconButton>
         )}
@@ -130,8 +130,8 @@ export const TrainerDetailView = ({ trainer, onClose, style }) => {
                   <Chip
                     label={trainer.specialization || "General"}
                     sx={{
-                      bgcolor: "#10b981",
-                      color: "white",
+                      bgcolor: "success.light",
+                      color: "success.main",
                       fontWeight: 700,
                       borderRadius: "8px",
                       fontSize: "0.9rem",
@@ -161,7 +161,7 @@ export const TrainerDetailView = ({ trainer, onClose, style }) => {
                 </Box>
                 <Box>
                   <Typography variant="caption" color="text.secondary">Gym</Typography>
-                  <Typography variant="h6" fontWeight={600}>{trainer.gymName || "—"}</Typography>
+                  <Typography variant="h6" fontWeight={600}>{trainer.gym?.gymName || trainer.gymName || "—"}</Typography>
                 </Box>
               </Stack>
             </Stack>
@@ -179,7 +179,7 @@ export const TrainerDetailView = ({ trainer, onClose, style }) => {
                 <Typography variant="body2" color="text.secondary" sx={{ display: "flex", alignItems: "center", gap: 0.5 }}>
                   <AttachMoney sx={{ fontSize: 16 }} /> Monthly Salary
                 </Typography>
-                <Typography variant="h6" fontWeight={700} color="#047857">
+                <Typography variant="h6" fontWeight={700} color="primary.dark">
                   ₹{Number(trainer.salary || 0).toLocaleString()}
                 </Typography>
               </Box>
@@ -210,14 +210,31 @@ export const TrainerDetailView = ({ trainer, onClose, style }) => {
       </Box>
 
       {onClose && (
-        <Box sx={{ p: 3, borderTop: "1px solid #f3f4f6", bgcolor: "#f9fafb", flexShrink: 0 }}>
+        <Box sx={{ p: 3, borderTop: "1px solid #f3f4f6", bgcolor: "#f9fafb", flexShrink: 0, display: 'flex', gap: 2 }}>
+          <Button
+            onClick={onAssignMembers}
+            variant="outlined"
+            fullWidth
+            sx={{
+              borderColor: "primary.main",
+              color: "primary.main",
+              "&:hover": { borderColor: "primary.dark", bgcolor: "rgba(0, 123, 255, 0.08)" },
+              borderRadius: "10px",
+              py: 1.2,
+              fontWeight: 600,
+              textTransform: "none",
+              fontSize: "1rem",
+            }}
+          >
+            Assign Members
+          </Button>
           <Button
             onClick={onClose}
             variant="contained"
             fullWidth
             sx={{
-              bgcolor: "#6366f1",
-              "&:hover": { bgcolor: "#4f46e5" },
+              bgcolor: "primary.main",
+              "&:hover": { bgcolor: "primary.dark" },
               borderRadius: "10px",
               py: 1.2,
               fontWeight: 600,

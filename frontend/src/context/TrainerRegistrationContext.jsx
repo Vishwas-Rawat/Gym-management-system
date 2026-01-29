@@ -1,6 +1,6 @@
 // src/context/TrainerRegistrationContext.jsx
 import React, { createContext, useState, useContext, useCallback } from 'react';
-import api from '../services/api';
+import api, { userApi } from '../services/api'; // userApi is 8083
 
 const TrainerRegistrationContext = createContext();
 
@@ -33,7 +33,7 @@ export const TrainerRegistrationProvider = ({ children }) => {
     setIsLoading(true);
     clearMessages();
     try {
-      const { data } = await api.get('/gym/my-gyms');
+      const { data } = await userApi.get('/gym/my-gyms');
       const gymList = Array.isArray(data) ? data : [];
       setGyms(gymList);
       return gymList;
@@ -54,7 +54,7 @@ export const TrainerRegistrationProvider = ({ children }) => {
     setIsLoading(true);
     clearMessages();
     try {
-      const { data } = await api.post('/trainer/admin/add-trainers', trainersArray);
+      const { data } = await userApi.post('/trainer/admin/add-trainers', trainersArray);
       setSuccessMessage(data[0]?.message || `${trainersArray.length} trainers added`);
       return data;
     } catch (err) {
@@ -79,7 +79,7 @@ export const TrainerRegistrationProvider = ({ children }) => {
     setIsLoading(true);
     clearMessages();
     try {
-      const { data } = await api.post(`/trainer/admin/trainer/${userId}/resend`);
+      const { data } = await userApi.post(`/trainer/admin/trainer/${userId}/resend`);
       setSuccessMessage(data.message || 'Invite resent successfully');
       return data;
     } catch (err) {
@@ -94,18 +94,56 @@ export const TrainerRegistrationProvider = ({ children }) => {
   /* -------------------------------------------------- */
   /* 4. GET TRAINER DETAIL */
   /* -------------------------------------------------- */
+  /* -------------------------------------------------- */
+  /* 4. GET TRAINER DETAIL */
+  /* -------------------------------------------------- */
+  /* -------------------------------------------------- */
+  /* HELPER: Map nested user data to top-level */
+  /* -------------------------------------------------- */
+  const mapTrainerData = (data) => {
+      if (!data) return data;
+      // If array, map each item
+      if (Array.isArray(data)) {
+          return data.map(item => mapTrainerData(item));
+      }
+      
+      // If object, flatten nested user fields
+      if (data.user) {
+          if (!data.fullName) {
+              if (data.user.userProfile) {
+                  data.fullName = `${data.user.userProfile.firstName || ''} ${data.user.userProfile.lastName || ''}`.trim();
+              } else if (data.user.username) {
+                  data.fullName = data.user.username;
+              }
+          }
+          if (!data.email && data.user.email) {
+              data.email = data.user.email;
+          }
+          if (!data.phoneNo && !data.phoneNumber && data.user.phoneNumber) {
+              data.phoneNo = data.user.phoneNumber;
+              data.phoneNumber = data.user.phoneNumber;
+          }
+      }
+      
+      // Map nested gym data
+      if (data.gym) {
+          if (!data.gymId) data.gymId = data.gym.gymId;
+          if (!data.gymName) data.gymName = data.gym.gymName;
+      }
+
+      return data;
+  };
+
+  /* -------------------------------------------------- */
+  /* 4. GET TRAINER DETAIL */
+  /* -------------------------------------------------- */
   const getTrainerById = useCallback(async (trainerId) => {
     try {
       const id = validateId(trainerId);
       setIsLoading(true);
       clearMessages();
-      // The API docs don't explicitly list "Get Single Trainer by ID", but usually it's there or we filter from list.
-      // Assuming GET /trainer/{id} exists based on standard REST or we use the list.
-      // If not, we might need to fetch all and find one. 
-      // However, the Update API is PUT /trainer/{trainerId}, so GET /trainer/{trainerId} likely exists.
-      // Let's try GET /trainer/{id}. If 404, we might need to adjust.
-      const { data } = await api.get(`/trainer/${id}`);
-      return data;
+      const { data } = await userApi.get(`/trainer/${id}`);
+      return mapTrainerData(data);
     } catch (err) {
       const msg = err.response?.data?.message || err.message || 'Trainer not found';
       setApiError(msg);
@@ -126,8 +164,9 @@ export const TrainerRegistrationProvider = ({ children }) => {
       if (gymId) {
         endpoint = `/trainer/gym/${gymId}`;
       }
-      const { data } = await api.get(endpoint);
-      return data || [];
+      const { data } = await userApi.get(endpoint);
+      const list = data || [];
+      return mapTrainerData(list);
     } catch (err) {
       const msg = err.response?.data?.message || err.message || 'Failed to load trainers';
       setApiError(msg);
@@ -145,15 +184,13 @@ export const TrainerRegistrationProvider = ({ children }) => {
     setIsLoading(true);
     clearMessages();
     try {
-      // API docs say: /trainer/search?keyword=rahul
-      // Does it support gymId filtering? Docs don't say. We can filter client side if needed.
-      const { data } = await api.get(`/trainer/search?keyword=${encodeURIComponent(keyword)}`);
+      const { data } = await userApi.get(`/trainer/search?keyword=${encodeURIComponent(keyword)}`);
       
       let results = data || [];
       if (gymId) {
-        results = results.filter(t => t.gymId === Number(gymId) || t.gymName === gymId); // Adjust based on actual data shape
+        results = results.filter(t => t.gymId === Number(gymId) || t.gymName === gymId); 
       }
-      return results;
+      return mapTrainerData(results);
     } catch (err) {
       setApiError('Search failed');
       return [];
@@ -170,7 +207,7 @@ export const TrainerRegistrationProvider = ({ children }) => {
       const id = validateId(trainerId);
       setIsLoading(true);
       clearMessages();
-      const { data } = await api.put(`/trainer/${id}`, payload);
+      const { data } = await userApi.put(`/trainer/${id}`, payload);
       setSuccessMessage(data.message || 'Trainer updated successfully');
       return data;
     } catch (err) {
@@ -190,7 +227,7 @@ export const TrainerRegistrationProvider = ({ children }) => {
       const id = validateId(trainerId);
       setIsLoading(true);
       clearMessages();
-      const { data } = await api.delete(`/trainer/${id}`);
+      const { data } = await userApi.delete(`/trainer/${id}`);
       setSuccessMessage(data.message || 'Trainer deleted');
       return true;
     } catch (err) {
@@ -203,7 +240,30 @@ export const TrainerRegistrationProvider = ({ children }) => {
   }, []);
 
   /* -------------------------------------------------- */
-  /* 9. COMPLETE REGISTRATION (Trainer) */
+  /* 9. ASSIGN MEMBERS */
+  /* -------------------------------------------------- */
+  const assignMembers = useCallback(async (trainerId, memberIds) => {
+    try {
+      if (!trainerId || !memberIds || memberIds.length === 0) {
+        throw new Error("Trainer ID and Member IDs are required");
+      }
+      setIsLoading(true);
+      clearMessages();
+      const payload = { trainerId: Number(trainerId), memberIds: memberIds.map(Number) };
+      const { data } = await userApi.post('/trainer/admin/assign-members', payload);
+      setSuccessMessage(data.message || 'Members assigned successfully');
+      return true;
+    } catch (err) {
+      const msg = err.response?.data?.message || err.message || 'Assign members failed';
+      setApiError(msg);
+      return false;
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  /* -------------------------------------------------- */
+  /* 10. COMPLETE REGISTRATION (Trainer) */
   /* -------------------------------------------------- */
   const [completeRegForm, setCompleteRegForm] = useState({
     token: '',
@@ -243,7 +303,7 @@ export const TrainerRegistrationProvider = ({ children }) => {
         dateOfBirth: completeRegForm.dateOfBirth,
       };
 
-      const { data } = await api.post('/trainer/complete-registration', payload);
+      const { data } = await userApi.post('/trainer/complete-registration', payload);
       setSuccessMessage(data.message || 'Registration completed successfully!');
       setIsRedirecting(true);
       setTimeout(() => {
@@ -274,6 +334,7 @@ export const TrainerRegistrationProvider = ({ children }) => {
         updateTrainer,
         deleteTrainer,
         resendInvite,
+        assignMembers,
         // Complete Registration
         completeRegForm,
         setCompleteRegForm,

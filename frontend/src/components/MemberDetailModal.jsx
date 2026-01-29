@@ -24,17 +24,18 @@ import {
   Email,
   Event,
   CreditCard,
+  AssignmentInd
 } from "@mui/icons-material";
 import { motion } from "framer-motion";
 
 const SectionHeader = ({ icon: Icon, title }) => (
   <Box sx={{ display: "flex", alignItems: "center", gap: 1.5, mb: 2, mt: 1 }}>
-    <Icon sx={{ color: "#10b981", fontSize: 24 }} />
+    <Icon sx={{ color: "primary.main", fontSize: 24 }} />
     <Typography
       variant="h6"
       sx={{
         fontWeight: 700,
-        color: "#065f46",
+        color: "primary.dark",
         fontSize: "1.1rem",
       }}
     >
@@ -121,20 +122,20 @@ export const MemberDetailView = ({ member: rawMember, onClose, style }) => {
       {/* Header */}
       <Box
         sx={{
-          bgcolor: "#f0fdf4",
+          bgcolor: "rgba(0, 123, 255, 0.08)",
           p: 3,
           display: "flex",
           justifyContent: "space-between",
           alignItems: "center",
-          borderBottom: "1px solid #d1fae5",
+          borderBottom: "1px solid rgba(0, 123, 255, 0.15)",
           flexShrink: 0,
         }}
       >
-        <Typography variant="h5" fontWeight={800} color="#065f46">
+        <Typography variant="h5" fontWeight={800} color="primary.dark">
           Member Profile
         </Typography>
         {onClose && (
-          <IconButton onClick={onClose} size="small" sx={{ color: "#065f46" }}>
+          <IconButton onClick={onClose} size="small" sx={{ color: "primary.dark" }}>
             <Close />
           </IconButton>
         )}
@@ -149,6 +150,25 @@ export const MemberDetailView = ({ member: rawMember, onClose, style }) => {
               <InfoRow label="Full Name" value={member.fullName} />
               <InfoRow label="Email" value={member.email} icon={Email} />
               <InfoRow label="Phone" value={member.phoneNo || member.phoneNumber} icon={Phone} />
+
+              {/* Assigned Trainer */}
+              <Box sx={{ mt: 2, p: 1.5, bgcolor: '#f0f9ff', borderRadius: 2, border: '1px dashed #bae6fd', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                 <Box>
+                    <Typography variant="caption" color="text.secondary">Assigned Trainer</Typography>
+                    <Typography variant="subtitle2" fontWeight={700} color="primary.main">
+                        {member.trainerName || member.trainer?.fullName || "No Trainer Assigned"}
+                    </Typography>
+                 </Box>
+                 <Button 
+                    size="small" 
+                    variant="text" 
+                    startIcon={<AssignmentInd />}
+                    onClick={() => window.location.href = '/admin/assignments'}
+                    sx={{ textTransform: 'none', fontWeight: 600 }}
+                 >
+                    Manage
+                 </Button>
+              </Box>
             </Stack>
           </Paper>
         </motion.div>
@@ -164,8 +184,8 @@ export const MemberDetailView = ({ member: rawMember, onClose, style }) => {
               <Chip
                 label={planText}
                 sx={{
-                  bgcolor: "#10b981",
-                  color: "white",
+                  bgcolor: "success.light",
+                  color: "success.main",
                   fontWeight: 700,
                   borderRadius: "8px",
                   fontSize: "0.9rem",
@@ -197,13 +217,13 @@ export const MemberDetailView = ({ member: rawMember, onClose, style }) => {
             sx={{
               p: 2,
               borderRadius: "12px",
-              borderColor: "#d1fae5",
-              bgcolor: "#f0fdf4",
+              borderColor: "rgba(0, 123, 255, 0.15)",
+              bgcolor: "rgba(0, 123, 255, 0.08)",
               textAlign: "center",
               mb: 3,
             }}
           >
-            <Typography variant="h6" fontWeight={700} color="#047857">
+            <Typography variant="h6" fontWeight={700} color="primary.dark">
               {timing}
             </Typography>
           </Paper>
@@ -228,8 +248,8 @@ export const MemberDetailView = ({ member: rawMember, onClose, style }) => {
               </Box>
               <Divider sx={{ borderStyle: "dashed" }} />
               <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                <Typography variant="body1" fontWeight={700} color="#047857">Total Paid</Typography>
-                <Typography variant="h6" fontWeight={700} color="#047857">₹{member.totalPaid?.toFixed(2)}</Typography>
+                <Typography variant="body1" fontWeight={700} color="primary.dark">Total Paid</Typography>
+                <Typography variant="h6" fontWeight={700} color="primary.dark">₹{member.totalPaid?.toFixed(2)}</Typography>
               </Box>
               <Box sx={{ mt: 1 }}>
                 <InfoRow label="Payment Method" value={member.paymentMethod} icon={CreditCard} />
@@ -267,8 +287,8 @@ export const MemberDetailView = ({ member: rawMember, onClose, style }) => {
             variant="contained"
             fullWidth
             sx={{
-              bgcolor: "#6366f1", // Indigo color from the image
-              "&:hover": { bgcolor: "#4f46e5" },
+              bgcolor: "primary.main", // Indigo color from the image
+              "&:hover": { bgcolor: "primary.dark" },
               borderRadius: "10px",
               py: 1.2,
               fontWeight: 600,

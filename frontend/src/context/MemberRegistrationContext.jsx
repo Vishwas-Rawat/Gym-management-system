@@ -1,6 +1,7 @@
 // src/context/MemberRegistrationContext.jsx
 import React, { createContext, useState, useContext, useCallback } from 'react';
-import api from '../services/api';
+import api, { userApi } from '../services/api'; // userApi is on port 8083
+import { authService } from '../services/authService';
 
 const MemberRegistrationContext = createContext();
 
@@ -33,7 +34,7 @@ export const MemberRegistrationProvider = ({ children }) => {
     setIsLoading(true);
     clearMessages();
     try {
-      const { data } = await api.get('/gym/my-gyms');
+      const { data } = await userApi.get('/gym/my-gyms');
       const gymList = Array.isArray(data) ? data : [];
       setGyms(gymList);
       return gymList;
@@ -55,7 +56,7 @@ export const MemberRegistrationProvider = ({ children }) => {
     setIsLoading(true);
     clearMessages();
     try {
-      const { data } = await api.post('/member/admin/add-multiple', membersArray);
+      const { data } = await userApi.post('/member/admin/add-multiple', membersArray);
       setSuccessMessage(data.message || `${membersArray.length} members added`);
       return data;
     } catch (err) {
@@ -78,7 +79,7 @@ export const MemberRegistrationProvider = ({ children }) => {
     setIsLoading(true);
     clearMessages();
     try {
-      const { data } = await api.post(`/member/admin/${userId}/resend-invite`);
+      const { data } = await userApi.post(`/member/admin/${userId}/resend-invite`);
       setSuccessMessage(data.message);
       return data;
     } catch (err) {
@@ -98,7 +99,7 @@ export const MemberRegistrationProvider = ({ children }) => {
       const id = validateMemberId(memberId);
       setIsLoading(true);
       clearMessages();
-      const { data } = await api.get(`/member/${id}`);
+      const { data } = await userApi.get(`/member/${id}`);
       return data;
     } catch (err) {
       const msg = err.response?.data?.message || err.message || 'Member not found';
@@ -112,12 +113,12 @@ export const MemberRegistrationProvider = ({ children }) => {
   /* -------------------------------------------------- */
   /* 5. GET MEMBER BY ID – MAPPED (for edit) */
   /* -------------------------------------------------- */
-  const getMemberById = useCallback(async (memberId) => {
+  const getMemberById = useCallback(async (memberId, background = false) => {
     try {
       const id = validateMemberId(memberId);
-      setIsLoading(true);
+      if (!background) setIsLoading(true);
       clearMessages();
-      const { data } = await api.get(`/member/${id}`);
+      const { data } = await userApi.get(`/member/${id}`);
 
       const timeSlot = data.timing || data.workoutTimeSlot || '';
       const [fromPart = '', toPart = ''] = timeSlot.split(' to ');
@@ -159,7 +160,7 @@ export const MemberRegistrationProvider = ({ children }) => {
       setApiError(msg);
       return null;
     } finally {
-      setIsLoading(false);
+      if (!background) setIsLoading(false);
     }
   }, []);
 
@@ -174,7 +175,7 @@ export const MemberRegistrationProvider = ({ children }) => {
     setIsLoading(true);
     clearMessages();
     try {
-      const { data } = await api.get(`/member/user/${userId}`);
+      const { data } = await userApi.get(`/member/user/${userId}`);
       return data;
     } catch (err) {
       const msg = err.response?.data?.message || err.message || 'Member not found';
@@ -192,13 +193,24 @@ export const MemberRegistrationProvider = ({ children }) => {
     setIsLoading(true);
     clearMessages();
     try {
+      // NOTE: For now, if no gymId is provided, we try to fetch all.
+      // Ideally, Admin should select a gym.
       if (!gymId) {
-        // Optional: fallback to all members
-        const { data } = await api.get('/member/all');
+        // Check if user is a trainer
+        const role = localStorage.getItem('role');
+        const userId = localStorage.getItem('userId');
+        
+        if (role === 'TRAINER' && userId) {
+             const { data } = await userApi.get(`/trainer/${userId}/members`);
+             return data || [];
+        }
+
+        // If no gymId, fetch ALL members (Admin only)
+        const { data } = await userApi.get('/member/all');
         return data || [];
       }
 
-      const { data } = await api.get(`/member/gym/${gymId}`);
+      const { data } = await userApi.get(`/member/gym/${gymId}`);
       return data || [];
     } catch (err) {
       const msg = err.response?.data?.message || err.message || 'Failed to load members';
@@ -218,11 +230,11 @@ export const MemberRegistrationProvider = ({ children }) => {
     clearMessages();
     try {
       if (!gymId) {
-        const { data } = await api.get(`/member/search?keyword=${encodeURIComponent(keyword)}`);
+        const { data } = await userApi.get(`/member/search?keyword=${encodeURIComponent(keyword)}`);
         return data || [];
       }
 
-      const { data } = await api.get(`/member/gym/${gymId}`);
+      const { data } = await userApi.get(`/member/gym/${gymId}`);
       // Filter client-side if needed
       const filtered = data.filter(m =>
         m.fullName?.toLowerCase().includes(keyword.toLowerCase()) ||
@@ -251,7 +263,7 @@ export const MemberRegistrationProvider = ({ children }) => {
       const id = validateMemberId(memberId);
       setIsLoading(true);
       clearMessages();
-      const { data } = await api.put(`/member/${id}`, payload);
+      const { data } = await userApi.put(`/member/${id}`, payload);
       setSuccessMessage(data.message || 'Member updated');
       return data;
     } catch (err) {
@@ -271,7 +283,7 @@ export const MemberRegistrationProvider = ({ children }) => {
       const id = validateMemberId(memberId);
       setIsLoading(true);
       clearMessages();
-      const { data } = await api.delete(`/member/${id}`);
+      const { data } = await userApi.delete(`/member/${id}`);
       setSuccessMessage(data.message || 'Member deleted');
       return true;
     } catch (err) {
@@ -291,7 +303,7 @@ export const MemberRegistrationProvider = ({ children }) => {
       const id = validateMemberId(memberId);
       setIsLoading(true);
       clearMessages();
-      const { data } = await api.post(`/member/admin/send-reminder/${id}`);
+      const { data } = await userApi.post(`/member/admin/send-reminder/${id}`);
       // Remove "(expired)" from the message if present
       const cleanMessage = (data.message || 'Payment reminder sent successfully').replace('(expired)', '').trim();
       setSuccessMessage(cleanMessage);
@@ -352,7 +364,7 @@ export const MemberRegistrationProvider = ({ children }) => {
         workoutTimeSlot: completeRegForm.workoutTimeSlot,
       };
 
-      const { data } = await api.post('/member/complete-registration', payload);
+      const data = await authService.completeMemberRegistration(payload);
       setSuccessMessage(data.message || 'Registration completed successfully!');
       setIsRedirecting(true);
       setTimeout(() => {

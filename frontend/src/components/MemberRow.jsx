@@ -13,7 +13,7 @@ import {
   Avatar,
 } from "@mui/material";
 
-import { Visibility, Edit, AttachMoney, Delete, Person } from "@mui/icons-material";
+import { Visibility, Edit, AttachMoney, Delete, Person, RestaurantMenu, Assignment } from "@mui/icons-material";
 
 // ---- Framer Motion ----
 import { motion } from "framer-motion";
@@ -36,8 +36,9 @@ const buttonVariants = {
 };
 
 const MemberRow = React.memo(
-  ({ member, onDetail, onEdit, onPaymentReminder, onResend, onDelete, index, isSelected }) => {
-    const isMobile = useMediaQuery("(max-width:600px)");
+  ({ member, onDetail, onEdit, onPaymentReminder, onResend, onDelete, onAssignDiet, onViewDiet, index, isSelected }) => {
+    const isMobile = useMediaQuery("(max-width:900px)");
+
 
     const planText =
       member.membershipPlan ||
@@ -68,11 +69,11 @@ const MemberRow = React.memo(
           whileTap={{ scale: 0.98 }}
           layout
           sx={{
-            border: isSelected ? "2px solid #10b981" : "1px solid #e5e7eb",
+            border: isSelected ? "2px solid #0ea5e9" : "1px solid #e5e7eb",
             borderRadius: "12px",
             p: 2,
             mb: 2,
-            bgcolor: isSelected ? "#ecfdf5" : "white",
+            bgcolor: isSelected ? "rgba(0, 123, 255, 0.08)" : "white",
             boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
             cursor: "pointer",
           }}
@@ -82,7 +83,7 @@ const MemberRow = React.memo(
             <Box sx={{ display: "flex", alignItems: "center", gap: 1.5 }}>
               <Avatar
                 sx={{
-                  bgcolor: "#10b981",
+                  bgcolor: "primary.main",
                   width: 40,
                   height: 40,
                   borderRadius: "10px",
@@ -110,8 +111,8 @@ const MemberRow = React.memo(
                 label={planText}
                 size="small"
                 sx={{
-                  bgcolor: "#10b981",
-                  color: "white",
+                  bgcolor: "success.light",
+                  color: "success.main",
                   fontWeight: 600,
                   fontSize: "0.75rem",
                   height: 24,
@@ -133,28 +134,29 @@ const MemberRow = React.memo(
               onClick={(e) => e.stopPropagation()}
             >
               <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                <IconButton size="small" sx={{ color: "#10b981", bgcolor: "#ecfdf5" }} onClick={onDetail}>
+                <IconButton size="small" sx={{ color: "info.main", bgcolor: "rgba(23, 162, 184, 0.08)" }} onClick={onDetail}>
                   <Visibility fontSize="small" />
                 </IconButton>
               </motion.div>
 
               <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                <IconButton size="small" sx={{ color: "#6366f1", bgcolor: "#eef2ff" }} onClick={onEdit}>
+                <IconButton size="small" sx={{ color: "warning.main", bgcolor: "#fffbeb" }} onClick={onEdit}>
                   <Edit fontSize="small" />
                 </IconButton>
               </motion.div>
 
               <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                <IconButton size="small" sx={{ color: "#f59e0b", bgcolor: "#fffbeb" }} onClick={onPaymentReminder}>
+                <IconButton size="small" sx={{ color: "success.main", bgcolor: "success.light" }} onClick={onPaymentReminder}>
                   <AttachMoney fontSize="small" />
                 </IconButton>
               </motion.div>
 
               <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
-                <IconButton size="small" sx={{ color: "#ef4444", bgcolor: "#fef2f2" }} onClick={onDelete}>
+                <IconButton size="small" sx={{ color: "error.main", bgcolor: "#fef2f2" }} onClick={onDelete}>
                   <Delete fontSize="small" />
                 </IconButton>
               </motion.div>
+
             </Stack>
           </Stack>
         </MotionBox>
@@ -173,8 +175,8 @@ const MemberRow = React.memo(
         onClick={onDetail}
         sx={{
           cursor: "pointer",
-          bgcolor: isSelected ? "#ecfdf5" : "inherit",
-          "&:hover": { bgcolor: isSelected ? "#d1fae5" : "#f9fafb" },
+          bgcolor: isSelected ? "rgba(0, 123, 255, 0.08)" : "inherit",
+          "&:hover": { bgcolor: isSelected ? "rgba(0, 123, 255, 0.15)" : "#f9fafb" },
           transition: "background-color 0.2s",
         }}
       >
@@ -184,7 +186,7 @@ const MemberRow = React.memo(
               <Avatar
                 variant="rounded"
                 sx={{
-                  bgcolor: "#10b981",
+                  bgcolor: "primary.main",
                   width: 36,
                   height: 36,
                   borderRadius: "8px",
@@ -211,8 +213,8 @@ const MemberRow = React.memo(
             label={planText}
             size="small"
             sx={{
-              bgcolor: "#10b981",
-              color: "white",
+              bgcolor: "success.light",
+              color: "success.main",
               fontWeight: 600,
               borderRadius: "6px",
               fontSize: "0.8rem",
@@ -228,7 +230,7 @@ const MemberRow = React.memo(
           <Stack direction="row" spacing={1} justifyContent="center">
             <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
               <Tooltip title="View">
-                <IconButton size="small" sx={{ color: "#10b981" }} onClick={onDetail}>
+                <IconButton size="small" sx={{ color: "info.main" }} onClick={onDetail}>
                   <Visibility fontSize="small" />
                 </IconButton>
               </Tooltip>
@@ -236,7 +238,7 @@ const MemberRow = React.memo(
 
             <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
               <Tooltip title="Edit">
-                <IconButton size="small" sx={{ color: "#6366f1" }} onClick={onEdit}>
+                <IconButton size="small" sx={{ color: "warning.main" }} onClick={onEdit}>
                   <Edit fontSize="small" />
                 </IconButton>
               </Tooltip>
@@ -244,7 +246,7 @@ const MemberRow = React.memo(
 
             <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
               <Tooltip title="Payment Reminder">
-                <IconButton size="small" sx={{ color: "#f59e0b" }} onClick={onPaymentReminder}>
+                <IconButton size="small" sx={{ color: "success.main" }} onClick={onPaymentReminder}>
                   <AttachMoney fontSize="small" />
                 </IconButton>
               </Tooltip>
@@ -252,11 +254,12 @@ const MemberRow = React.memo(
 
             <motion.div variants={buttonVariants} whileHover="hover" whileTap="tap">
               <Tooltip title="Delete">
-                <IconButton size="small" sx={{ color: "#ef4444" }} onClick={onDelete}>
+                <IconButton size="small" sx={{ color: "error.main" }} onClick={onDelete}>
                   <Delete fontSize="small" />
                 </IconButton>
               </Tooltip>
             </motion.div>
+
           </Stack>
         </TableCell>
       </MotionTableRow>
