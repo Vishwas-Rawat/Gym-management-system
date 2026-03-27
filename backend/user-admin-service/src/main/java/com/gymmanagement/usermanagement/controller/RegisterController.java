@@ -1,13 +1,12 @@
 package com.gymmanagement.usermanagement.controller;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
-
 import com.gymmanagement.usermanagement.Request.LoginRequest;
 import com.gymmanagement.usermanagement.Request.RegisterRequest;
 import com.gymmanagement.usermanagement.Response.LoginResponse;
 import com.gymmanagement.usermanagement.Response.RegisterResponse;
 import com.gymmanagement.usermanagement.service.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/user")
@@ -16,11 +15,12 @@ public class RegisterController {
     @Autowired
     private UserService userService;
 
+    // REMOVED: UserRepository injection and countByRole check
+    // → You said you don't want to block multiple admin registrations
+
     @PostMapping("/register")
     public RegisterResponse register(@RequestBody RegisterRequest request) {
-        if (!"ADMIN".equalsIgnoreCase(request.getRole())) {
-            return new RegisterResponse("error", "Only Admin registration is allowed currently.", null, null);
-        }
+        // Anyone can register as admin → no restrictions
         return userService.registerUser(request);
     }
 
@@ -36,6 +36,6 @@ public class RegisterController {
 
     @PostMapping("/login")
     public LoginResponse login(@RequestBody LoginRequest request) {
-        return userService.login(request.getEmail(), request.getPassword());
+        return userService.login(request.getIdentifier(), request.getPassword());
     }
 }

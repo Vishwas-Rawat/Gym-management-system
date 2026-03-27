@@ -12,4 +12,5 @@ public class CompleteRegistrationRequest {
     private String gender; // optional
     private String fitnessGoal; // optional
     private String workoutTimeSlot; // optional
+    private String username;
 }

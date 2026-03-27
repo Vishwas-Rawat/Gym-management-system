@@ -1,44 +1,79 @@
-// src/components/MemberDetailModal.jsx
-import React from "react";
-import {
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Typography,
-  Chip,
-  Divider,
-  Box,
-  IconButton,
-  Paper,
-  Stack,
-  Button,
-  useMediaQuery,
-} from "@mui/material";
-import {
-  Close,
-  CalendarToday,
-  AccessTime,
-  Payment,
-  Person,
-  Phone,
-  Email,
-} from "@mui/icons-material";
+import React from 'react';
+import { motion, AnimatePresence } from "framer-motion";
+import '../styles/dashboard.css';
 
-const SectionTitle = ({ icon: Icon, title }) => (
-  <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 1.5, mt: 2 }}>
-    <Icon sx={{ color: "#059669", fontSize: { xs: 18, sm: 22 } }} />
-    <Typography
-      variant="h6"
-      sx={{
-        fontWeight: 700,
-        color: "#059669",
-        fontSize: { xs: "0.95rem", sm: "1.1rem" },
-      }}
-    >
-      {title}
-    </Typography>
-  </Box>
+// Custom SVG Icon Components (Lucide-inspired)
+const Icons = {
+  Close: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  ),
+  Calendar: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+    </svg>
+  ),
+  Clock: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+    </svg>
+  ),
+  Payment: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="1" y="4" width="22" height="16" rx="2" ry="2" /><line x1="1" y1="10" x2="23" y2="10" />
+    </svg>
+  ),
+  Person: () => (
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" />
+    </svg>
+  ),
+  Phone: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z" />
+    </svg>
+  ),
+  Email: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" />
+    </svg>
+  ),
+  Assignment: () => (
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><polyline points="16 11 18 13 22 9" />
+    </svg>
+  ),
+  CreditCard: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="1" y="4" width="22" height="16" rx="2" ry="2" /><line x1="1" y1="10" x2="23" y2="10" />
+    </svg>
+  ),
+  Event: () => (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+    </svg>
+  )
+};
+
+const SectionHeader = ({ icon: Icon, title }) => (
+  <div className="detail-section-header">
+    <div className="detail-icon-box">
+        <Icon />
+    </div>
+    <span className="detail-section-title">{title}</span>
+  </div>
+);
+
+const InfoRow = ({ label, value, icon: Icon, highlight = false }) => (
+  <div className="detail-info-row">
+    <div className="detail-info-label">
+      {Icon && <Icon />} {label}
+    </div>
+    <div className={`detail-info-value ${highlight ? 'highlight' : ''}`}>
+      {value || "—"}
+    </div>
+  </div>
 );
 
 /* ------------------------------------------------------------------ */
@@ -59,9 +94,42 @@ const normaliseMember = (raw) => {
   };
 };
 
-export default function MemberDetailModal({ open, onClose, member: rawMember }) {
-  const isJioPhone = useMediaQuery("(max-width:280px)");
+const containerVariants = {
+  hidden: { opacity: 0, scale: 0.96, y: 15, filter: "blur(4px)" },
+  visible: { 
+    opacity: 1, 
+    scale: 1, 
+    y: 0,
+    filter: "blur(0px)",
+    transition: { 
+      type: "spring",
+      stiffness: 260,
+      damping: 26,
+      mass: 1,
+      staggerChildren: 0.06,
+      delayChildren: 0.2
+    } 
+  },
+  exit: { 
+    opacity: 0, 
+    scale: 0.96, 
+    y: 15, 
+    filter: "blur(4px)",
+    transition: { duration: 0.2, ease: "easeOut" } 
+  }
+};
 
+const itemVariants = {
+  hidden: { opacity: 0, y: 10, filter: "blur(2px)" },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    filter: "blur(0px)",
+    transition: { type: "spring", stiffness: 300, damping: 30 }
+  },
+};
+
+export const MemberDetailView = ({ member: rawMember, onClose, style }) => {
   if (!rawMember) return null;
 
   const member = normaliseMember(rawMember);
@@ -76,323 +144,153 @@ export default function MemberDetailModal({ open, onClose, member: rawMember }) 
   };
 
   const timing = member.timing || member.workoutTimeSlot || "Not set";
-
-  const registrationFee = member.registrationFee ?? 0;
-  const planPrice = member.planPrice ?? 0;
-  const discount = member.discount ?? 0;
-  const totalPaid = member.totalPaid ?? 0;
+  const planText = member.membershipPlan || (member.monthsPaid ? `${member.monthsPaid} Months` : "—");
 
   return (
-    <Dialog
-      open={open}
-      onClose={onClose}
-      maxWidth="sm"
-      fullWidth
-      fullScreen={isJioPhone}
-      PaperProps={{
-        sx: {
-          borderRadius: { xs: 0, sm: 3 },
-          boxShadow: "0 20px 50px rgba(0,0,0,0.15)",
-          border: "1px solid #d1fae5",
-          m: 0,
-          maxHeight: { xs: "100vh", sm: "90vh" },
-        },
-      }}
-    >
-      <DialogTitle sx={{ pb: 1, bgcolor: "#f0fdf4" }}>
-        <Box display="flex" justifyContent="space-between" alignItems="center">
-          <Typography
-            variant="h5"
-            fontWeight={800}
-            color="#059669"
-            fontSize={{ xs: "1rem", sm: "1.25rem" }}
-            noWrap
+    <div className="detail-view-container" style={style}>
+      {/* Header */}
+      <div className="detail-view-header">
+        <h3 className="detail-view-title">Member Profile</h3>
+        {onClose && (
+          <button className="detail-close-btn" onClick={onClose}>
+            <Icons.Close />
+          </button>
+        )}
+      </div>
+
+      <div className="detail-view-content">
+        {/* Personal Information */}
+        <motion.div variants={itemVariants} className="detail-section">
+          <SectionHeader icon={Icons.Person} title="Personal Information" />
+          <div className="detail-card">
+              <InfoRow label="Full Name" value={member.fullName} />
+              <InfoRow label="Email" value={member.email} icon={Icons.Email} />
+              <InfoRow label="Phone" value={member.phoneNo || member.phoneNumber} icon={Icons.Phone} />
+
+              {/* Assigned Trainer */}
+              <div className="detail-assigned-box">
+                 <div className="detail-assigned-info">
+                    <span className="detail-info-label">Assigned Trainer</span>
+                    <span className="detail-assigned-name">
+                        {member.trainerName || member.trainer?.fullName || "No Trainer Assigned"}
+                    </span>
+                 </div>
+                 <button 
+                    className="detail-manage-btn"
+                    onClick={() => window.location.href = '/admin/assignments'}
+                 >
+                    <Icons.Assignment />
+                    Manage
+                 </button>
+              </div>
+          </div>
+        </motion.div>
+
+        {/* Membership Plan */}
+        <motion.div variants={itemVariants} className="detail-section">
+          <SectionHeader icon={Icons.Calendar} title="Membership Plan" />
+          <div className="detail-card">
+            <div className="detail-info-row">
+              <span className="detail-info-label">Current Plan</span>
+              <span className="db-badge db-badge-success">{planText}</span>
+            </div>
+            <div className="detail-stats-row">
+              <div className="detail-stat-item">
+                <span className="detail-info-label">Months Paid</span>
+                <span className="detail-stat-value">{member.monthsPaid || 0}</span>
+              </div>
+              <div className="detail-stat-item">
+                <span className="detail-info-label">Months Free</span>
+                <span className="detail-stat-value">{member.monthsFree || 0}</span>
+              </div>
+            </div>
+            <InfoRow label="Start Date" value={formatDateOnly(member.startDate)} icon={Icons.Event} />
+          </div>
+        </motion.div>
+
+        {/* Workout Timing */}
+        <motion.div variants={itemVariants} className="detail-section">
+          <SectionHeader icon={Icons.Clock} title="Workout Timing" />
+          <div className="detail-timing-card">
+            {timing}
+          </div>
+        </motion.div>
+
+        {/* Payment Details */}
+        <motion.div variants={itemVariants} className="detail-section">
+          <SectionHeader icon={Icons.Payment} title="Payment Details" />
+          <div className="detail-card">
+              <div className="detail-payment-item">
+                <span className="detail-info-label">Registration Fee</span>
+                <span className="detail-payment-value">₹{member.registrationFee?.toFixed(2)}</span>
+              </div>
+              <div className="detail-payment-item">
+                <span className="detail-info-label">Plan Price</span>
+                <span className="detail-payment-value">₹{member.planPrice?.toFixed(2)}</span>
+              </div>
+              <div className="detail-payment-item">
+                <span className="detail-info-label">Discount</span>
+                <span className="detail-payment-value discount">-₹{member.discount?.toFixed(2)}</span>
+              </div>
+              <div className="detail-divider-dashed" />
+              <div className="detail-payment-total">
+                <span className="total-label">Total Paid</span>
+                <span className="total-value">₹{member.totalPaid?.toFixed(2)}</span>
+              </div>
+              <InfoRow label="Payment Method" value={member.paymentMethod} icon={Icons.CreditCard} />
+          </div>
+        </motion.div>
+
+        {/* Record Info */}
+        <motion.div variants={itemVariants} className="detail-section">
+          <SectionHeader icon={Icons.Event} title="Record Info" />
+          <div className="detail-card record-info">
+            <div className="detail-stats-row">
+              <div className="detail-stat-item">
+                <span className="detail-info-label">Created At</span>
+                <span className="detail-record-timestamp">
+                  {new Date(member.createdAt).toLocaleString()}
+                </span>
+              </div>
+              <div className="detail-stat-item">
+                <span className="detail-info-label">Updated At</span>
+                <span className="detail-record-timestamp">
+                  {new Date(member.updatedAt).toLocaleString()}
+                </span>
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      </div>
+
+      {onClose && (
+        <div className="detail-view-footer">
+          <button className="db-btn db-btn-primary" onClick={onClose} style={{ width: '100%' }}>
+            Close Profile
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default function MemberDetailModal({ open, onClose, member }) {
+  return (
+    <AnimatePresence>
+      {open && (
+        <div className="db-modal-overlay" onClick={onClose}>
+          <motion.div 
+            className="db-modal-container detail-modal"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+            exit="exit"
+            onClick={e => e.stopPropagation()}
           >
-            Member Profile
-          </Typography>
-          <IconButton onClick={onClose} size={isJioPhone ? "small" : "medium"}>
-            <Close />
-          </IconButton>
-        </Box>
-      </DialogTitle>
-
-      <DialogContent
-        dividers
-        sx={{
-          px: { xs: 1.5, sm: 3 },
-          py: 2,
-          overflowY: "auto",
-          bgcolor: "#fafcfa",
-        }}
-      >
-        <Paper
-          elevation={0}
-          sx={{
-            p: { xs: 1.5, sm: 2.5 },
-            borderRadius: 2,
-            bgcolor: "#f8fdfb",
-            border: "1px solid #d1fae5",
-          }}
-        >
-          <Stack spacing={2}>
-
-            {/* ---------- PERSONAL INFO ---------- */}
-            <Box>
-              <SectionTitle icon={Person} title="Personal Information" />
-              <Stack spacing={2}>
-                <Box>
-                  <Typography variant="caption" color="text.secondary" fontSize="0.7rem">
-                    Full Name
-                  </Typography>
-                  <Typography
-                    fontWeight={600}
-                    fontSize={{ xs: "0.95rem", sm: "1.1rem" }}
-                    noWrap
-                    sx={{ overflow: "hidden", textOverflow: "ellipsis" }}
-                  >
-                    {member.fullName || "—"}
-                  </Typography>
-                </Box>
-
-                {/* EMAIL – SINGLE LINE WITH ELLIPSIS */}
-                <Box>
-                  <Typography variant="caption" color="text.secondary" fontSize="0.7rem">
-                    Email
-                  </Typography>
-                  <Typography
-                    fontSize={{ xs: "0.9rem", sm: "1rem" }}
-                    sx={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: 0.5,
-                      whiteSpace: "nowrap",
-                      overflow: "hidden",
-                      textOverflow: "ellipsis",
-                      maxWidth: "100%",
-                    }}
-                  >
-                    <Email sx={{ fontSize: 16, color: "#059669", flexShrink: 0 }} />
-                    <Box
-                      component="span"
-                      sx={{
-                        overflow: "hidden",
-                        textOverflow: "ellipsis",
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {member.email || "—"}
-                    </Box>
-                  </Typography>
-                </Box>
-
-                <Box>
-                  <Typography variant="caption" color="text.secondary" fontSize="0.7rem">
-                    Phone
-                  </Typography>
-                  <Typography
-                    fontSize={{ xs: "0.9rem", sm: "1rem" }}
-                    sx={{ display: "flex", alignItems: "center", gap: 0.5 }}
-                  >
-                    <Phone sx={{ fontSize: 16, color: "#059669" }} />
-                    {member.phoneNo || member.phoneNumber || "—"}
-                  </Typography>
-                </Box>
-              </Stack>
-            </Box>
-
-            <Divider sx={{ borderColor: "#d1fae5" }} />
-
-            {/* ---------- MEMBERSHIP PLAN ---------- */}
-            <Box>
-              <SectionTitle icon={CalendarToday} title="Membership Plan" />
-              <Stack spacing={2}>
-                {/* PLAN – VALUE ON NEXT LINE */}
-                <Box>
-                  <Typography variant="caption" color="text.secondary" fontSize="0.7rem">
-                    Plan
-                  </Typography>
-                  <Box mt={0.5}>
-                    <Chip
-                      label={member.membershipPlan || "—"}
-                      color="primary"
-                      size={isJioPhone ? "small" : "medium"}
-                      sx={{
-                        fontWeight: 600,
-                        height: { xs: 28, sm: 36 },
-                        fontSize: { xs: "0.8rem", sm: "0.875rem" },
-                      }}
-                    />
-                  </Box>
-                </Box>
-
-                <Box>
-                  <Typography variant="caption" color="text.secondary" fontSize="0.7rem">
-                    Months Paid
-                  </Typography>
-                  <Typography fontWeight={600} fontSize={{ xs: "0.9rem", sm: "1rem" }}>
-                    {member.monthsPaid ?? "—"}
-                  </Typography>
-                </Box>
-
-                <Box>
-                  <Typography variant="caption" color="text.secondary" fontSize="0.7rem">
-                    Months Free
-                  </Typography>
-                  <Typography fontWeight={600} fontSize={{ xs: "0.9rem", sm: "1rem" }}>
-                    {member.monthsFree ?? "—"}
-                  </Typography>
-                </Box>
-
-                <Box>
-                  <Typography variant="caption" color="text.secondary" fontSize="0.7rem">
-                    Start Date
-                  </Typography>
-                  <Typography fontSize={{ xs: "0.9rem", sm: "1rem" }}>
-                    {formatDateOnly(member.startDate)}
-                  </Typography>
-                </Box>
-              </Stack>
-            </Box>
-
-            <Divider sx={{ borderColor: "#d1fae5" }} />
-
-            {/* ---------- WORKOUT TIMING ---------- */}
-            <Box>
-              <SectionTitle icon={AccessTime} title="Workout Timing" />
-              <Paper
-                variant="outlined"
-                sx={{
-                  p: { xs: 1.5, sm: 2 },
-                  bgcolor: "#f0fdf4",
-                  borderRadius: 2,
-                  textAlign: "center",
-                }}
-              >
-                <Typography
-                  fontWeight={700}
-                  fontSize={{ xs: "1rem", sm: "1.25rem" }}
-                  color="#059669"
-                >
-                  {timing}
-                </Typography>
-              </Paper>
-            </Box>
-
-            <Divider sx={{ borderColor: "#d1fae5" }} />
-
-            {/* ---------- PAYMENT DETAILS ---------- */}
-            <Box>
-              <SectionTitle icon={Payment} title="Payment Details" />
-              <Stack spacing={1.5}>
-                <Box display="flex" justifyContent="space-between">
-                  <Typography fontSize={{ xs: "0.8rem", sm: "0.9rem" }}>
-                    Registration Fee
-                  </Typography>
-                  <Typography fontWeight={600} fontSize={{ xs: "0.85rem", sm: "1rem" }}>
-                    ₹{registrationFee.toFixed(2)}
-                  </Typography>
-                </Box>
-                <Box display="flex" justifyContent="space-between">
-                  <Typography fontSize={{ xs: "0.8rem", sm: "0.9rem" }}>
-                    Plan Price
-                  </Typography>
-                  <Typography fontWeight={600} fontEmail= {{ xs: "0.85rem", sm: "1rem" }}>
-                    ₹{planPrice.toFixed(2)}
-                  </Typography>
-                </Box>
-                <Box display="flex" justifyContent="space-between">
-                  <Typography fontSize={{ xs: "0.8rem", sm: "0.9rem" }}>
-                    Discount
-                  </Typography>
-                  <Typography fontWeight={600} color="error.main" fontSize={{ xs: "0.85rem", sm: "1rem" }}>
-                    -₹{discount.toFixed(2)}
-                  </Typography>
-                </Box>
-                <Divider />
-                <Box display="flex" justifyContent="space-between">
-                  <Typography fontWeight={700} fontSize={{ xs: "0.9rem", sm: "1rem" }}>
-                    Total Paid
-                  </Typography>
-                  <Typography
-                    fontWeight={700}
-                    color="#059669"
-                    fontSize={{ xs: "1rem", sm: "1.1rem" }}
-                  >
-                    ₹{totalPaid.toFixed(2)}
-                  </Typography>
-                </Box>
-
-                {/* PAYMENT METHOD – VALUE ON NEXT LINE */}
-                <Box>
-                  <Typography variant="caption" color="text.secondary" fontSize="0.7rem">
-                    Payment Method
-                  </Typography>
-                  <Box mt={0.5}>
-                    <Chip
-                      label={member.paymentMethod || "—"}
-                      color="info"
-                      size={isJioPhone ? "small" : "medium"}
-                      sx={{
-                        fontWeight: 600,
-                        height: { xs: 28, sm: 36 },
-                        fontSize: { xs: "0.8rem", sm: "0.875rem" },
-                      }}
-                    />
-                  </Box>
-                </Box>
-              </Stack>
-            </Box>
-
-            <Divider sx={{ borderColor: "#d1fae5" }} />
-
-            {/* ---------- RECORD INFO ---------- */}
-            <Box>
-              <SectionTitle icon={CalendarToday} title="Record Info" />
-              <Stack spacing={1}>
-                <Box>
-                  <Typography variant="caption" color="text.secondary" fontSize="0.7rem">
-                    Created At
-                  </Typography>
-                  <Typography fontSize={{ xs: "0.8rem", sm: "0.9rem" }} sx={{ fontFamily: "monospace" }}>
-                    {formatDateOnly(member.createdAt)}
-                  </Typography>
-                </Box>
-                <Box>
-                  <Typography variant="caption" color="text.secondary" fontSize="0.7rem">
-                    Updated At
-                  </Typography>
-                  <Typography fontSize={{ xs: "0.8rem", sm: "0.9rem" }} sx={{ fontFamily: "monospace" }}>
-                    {formatDateOnly(member.updatedAt)}
-                  </Typography>
-                </Box>
-              </Stack>
-            </Box>
-
-          </Stack>
-        </Paper>
-      </DialogContent>
-
-      <DialogActions
-        sx={{
-          p: { xs: 2, sm: 3 },
-          pt: 2,
-          bgcolor: "#f8fdfb",
-          justifyContent: "center",
-        }}
-      >
-        <Button
-          onClick={onClose}
-          variant="contained"
-          size={isJioPhone ? "medium" : "large"}
-          fullWidth={isJioPhone}
-          sx={{
-            minHeight: 44,
-            fontSize: { xs: "0.9rem", sm: "1rem" },
-          }}
-        >
-          Close
-        </Button>
-      </DialogActions>
-    </Dialog>
+            <MemberDetailView member={member} onClose={onClose} />
+          </motion.div>
+        </div>
+      )}
+    </AnimatePresence>
   );
 }

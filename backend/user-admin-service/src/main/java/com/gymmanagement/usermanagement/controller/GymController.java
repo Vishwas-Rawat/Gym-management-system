@@ -6,9 +6,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
-import com.gymmanagement.commonservices.entity.User;
 import com.gymmanagement.usermanagement.Response.GymRegisterResponse;
-import com.gymmanagement.usermanagement.repository.UserRepository;
 import com.gymmanagement.usermanagement.service.GymService;
 import com.gymmanagement.commonservices.entity.Gym;
 
@@ -18,59 +16,46 @@ import java.util.List;
 @RequestMapping("/gym")
 public class GymController {
 
-	@Autowired
-	private GymService gymService;
+    @Autowired
+    private GymService gymService;
 
-	@Autowired
-	private UserRepository userRepository;
+    // ✅ Create multiple gyms (Admin only)
+    @PostMapping("/create")
+    public List<GymRegisterResponse> createGyms(@RequestBody List<Gym> gyms, Authentication authentication) {
+        String email = authentication.getName(); // email from JWT
+        return gymService.createGyms(gyms, email);
+    }
 
-	// ✅ Create multiple gyms (Admin only)
-	@PostMapping("/create")
-	public List<GymRegisterResponse> createGyms(@RequestBody List<Gym> gyms, Authentication authentication) {
-		String identity = authentication.getName(); // this is email from JWT
+    // ✅ Get all gyms by logged-in admin
+    @GetMapping("/my-gyms")
+    public List<GymRegisterResponse> getGymsByAdmin(Authentication authentication) {
+        String email = authentication.getName(); // from JWT
+        return gymService.getAllGymsByAdmin(email);
+    }
 
-		User admin = userRepository.findByEmail(identity).orElseThrow(() -> new RuntimeException("Admin not found"));
+    // ✅ Update gym by gymId (JWT + gymId)
+    @PutMapping("/update/{gymId}")
+    public GymRegisterResponse updateGym(
+            @PathVariable Long gymId,
+            @RequestBody Gym updatedGym,
+            Authentication authentication
+    ) {
+        String email = authentication.getName(); // from JWT
+        return gymService.updateGym(gymId, updatedGym, email);
+    }
 
-		return gymService.createGyms(gyms, admin.getUserId());
-	}
+    // 🗑 Soft Delete gym with Admin check
+    @DeleteMapping("/delete/{gymId}")
+    public ResponseEntity<String> softDeleteGym(
+            @PathVariable Long gymId,
+            Authentication authentication
+    ) {
+        String email = authentication.getName(); // from JWT
+        boolean deleted = gymService.softDeleteGym(gymId, email);
 
-	// ✅ Get all gyms by logged-in admin
-	@GetMapping("/my-gyms")
-//	public List<GymRegisterResponse> getGymsByAdmin(Authentication authentication) {
-//		String identity = authentication.getName(); // this is email from JWT
-//
-//		User admin = userRepository.findByEmail(identity).orElseThrow(() -> new RuntimeException("Admin not found"));
-//
-//		return gymService.getAllGymsByAdmin(admin.getUserId());
-//	}
-	public List<GymRegisterResponse> getGymsByAdmin(Authentication authentication) {
-	    String email = authentication.getName(); // from JWT
-	    User admin = userRepository.findByEmail(email)
-	            .orElseThrow(() -> new RuntimeException("Admin not found"));
-	    return gymService.getAllGymsByAdmin(admin.getUserId());
-	}
-
-	// ✅ Update gym by gymId (JWT + gymId)
-	@PutMapping("/update/{gymId}")
-	public GymRegisterResponse updateGym(@PathVariable Long gymId, @RequestBody Gym updatedGym,
-			Authentication authentication) {
-		String identity = authentication.getName(); // this is email from JWT
-
-		User admin = userRepository.findByEmail(identity).orElseThrow(() -> new RuntimeException("Admin not found"));
-
-		return gymService.updateGym(gymId, updatedGym, admin.getUserId());
-	}
-
-	@DeleteMapping("/delete/{gymId}")
-	public ResponseEntity<String> softDeleteGym(@PathVariable Long gymId, Authentication authentication) {
-		User admin = userRepository.findByEmail(authentication.getName())
-				.orElseThrow(() -> new RuntimeException("Admin not found"));
-
-		boolean deleted = gymService.softDeleteGym(gymId, admin.getUserId());
-
-		if (deleted)
-			return ResponseEntity.ok("Gym soft deleted successfully.");
-		else
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to delete gym.");
-	}
+        if (deleted)
+            return ResponseEntity.ok("Gym soft deleted successfully.");
+        else
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Failed to delete gym.");
+    }
 }
