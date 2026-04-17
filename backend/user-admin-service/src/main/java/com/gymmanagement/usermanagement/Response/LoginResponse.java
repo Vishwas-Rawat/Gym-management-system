@@ -7,7 +7,8 @@ public class LoginResponse {
     private Integer userId;
     private String email;
     private String message;
-    private String token;
+    private String token; // Access Token
+    private String refreshToken;
 
     public LoginResponse(Integer userId, String email, String message) {
         this.userId = userId;
@@ -15,11 +16,12 @@ public class LoginResponse {
         this.message = message;
     }
     
- // Constructor with token
-    public LoginResponse(Integer userId, String email, String token, String message) {
+    // Constructor with both tokens
+    public LoginResponse(Integer userId, String email, String token, String refreshToken, String message) {
         this.userId = userId;
         this.email = email;
         this.token = token;
+        this.refreshToken = refreshToken;
         this.message = message;
     }
 }

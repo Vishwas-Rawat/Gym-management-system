@@ -1,0 +1,456 @@
+[INFO] Scanning for projects...
+[INFO] 
+[INFO] --------------< com.gymmanagement.trainer:trainer-panel >---------------
+[INFO] Building trainer-panel 0.0.1-SNAPSHOT
+[INFO]   from pom.xml
+[INFO] --------------------------------[ jar ]---------------------------------
+[INFO] 
+[INFO] --- maven-clean-plugin:3.3.2:clean (default-clean) @ trainer-panel ---
+[INFO] Deleting E:\Gym management new version\Gym-management-system\backend\trainer-panel\trainer-panel\target
+[INFO] 
+[INFO] >>> spring-boot-maven-plugin:3.3.5:run (default-cli) > test-compile @ trainer-panel >>>
+[INFO] 
+[INFO] --- maven-resources-plugin:3.3.1:resources (default-resources) @ trainer-panel ---
+[INFO] Copying 1 resource from src\main\resources to target\classes
+[INFO] Copying 0 resource from src\main\resources to target\classes
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.13.0:compile (default-compile) @ trainer-panel ---
+[INFO] Recompiling the module because of changed source code.
+[INFO] Compiling 93 source files with javac [debug parameters release 17] to target\classes
+[INFO] 
+[INFO] --- maven-resources-plugin:3.3.1:testResources (default-testResources) @ trainer-panel ---
+[INFO] skip non existing resourceDirectory E:\Gym management new version\Gym-management-system\backend\trainer-panel\trainer-panel\src\test\resources
+[INFO] 
+[INFO] --- maven-compiler-plugin:3.13.0:testCompile (default-testCompile) @ trainer-panel ---
+[INFO] Recompiling the module because of changed dependency.
+[INFO] Compiling 1 source file with javac [debug parameters release 17] to target\test-classes
+[INFO] 
+[INFO] <<< spring-boot-maven-plugin:3.3.5:run (default-cli) < test-compile @ trainer-panel <<<
+[INFO] 
+[INFO] 
+[INFO] --- spring-boot-maven-plugin:3.3.5:run (default-cli) @ trainer-panel ---
+[INFO] Attaching agents: []
+
+  .   ____          _            __ _ _
+ /\\ / ___'_ __ _ _(_)_ __  __ _ \ \ \ \
+( ( )\___ | '_ | '_| | '_ \/ _` | \ \ \ \
+ \\/  ___)| |_)| | | | | || (_| |  ) ) ) )
+  '  |____| .__|_| |_|_| |_\__, | / / / /
+ =========|_|==============|___/=/_/_/_/
+
+ :: Spring Boot ::                (v3.3.5)
+
+2026-01-10T06:18:40.605+05:30  INFO 22980 --- [trainer-panel] [           main] c.g.t.t.TrainerPanelApplication          : Starting TrainerPanelApplication using Java 17.0.12 with PID 22980 (E:\Gym management new version\Gym-management-system\backend\trainer-panel\trainer-panel\target\classes started by hp in E:\Gym management new version\Gym-management-system\backend\trainer-panel\trainer-panel)
+2026-01-10T06:18:40.608+05:30  INFO 22980 --- [trainer-panel] [           main] c.g.t.t.TrainerPanelApplication          : No active profile set, falling back to 1 default profile: "default"
+2026-01-10T06:18:41.567+05:30  INFO 22980 --- [trainer-panel] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Bootstrapping Spring Data JPA repositories in DEFAULT mode.
+2026-01-10T06:18:41.788+05:30  INFO 22980 --- [trainer-panel] [           main] .s.d.r.c.RepositoryConfigurationDelegate : Finished Spring Data repository scanning in 214 ms. Found 17 JPA repository interfaces.
+2026-01-10T06:18:42.244+05:30  INFO 22980 --- [trainer-panel] [           main] o.s.cloud.context.scope.GenericScope     : BeanFactory id=f794e037-3698-34bc-8976-3ceb20eb744e
+2026-01-10T06:18:42.488+05:30  WARN 22980 --- [trainer-panel] [           main] trationDelegate$BeanPostProcessorChecker : Bean 'org.springframework.cloud.client.loadbalancer.LoadBalancerAutoConfiguration$DeferringLoadBalancerInterceptorConfig' of type [org.springframework.cloud.client.loadbalancer.LoadBalancerAutoConfiguration$DeferringLoadBalancerInterceptorConfig] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). The currently created BeanPostProcessor [lbRestClientPostProcessor] is declared through a non-static factory method on that class; consider declaring it as static instead.
+2026-01-10T06:18:42.491+05:30  WARN 22980 --- [trainer-panel] [           main] trationDelegate$BeanPostProcessorChecker : Bean 'deferringLoadBalancerInterceptor' of type [org.springframework.cloud.client.loadbalancer.DeferringLoadBalancerInterceptor] is not eligible for getting processed by all BeanPostProcessors (for example: not eligible for auto-proxying). Is this bean getting eagerly injected/applied to a currently created BeanPostProcessor [lbRestClientPostProcessor]? Check the corresponding BeanPostProcessor declaration and its dependencies/advisors. If this bean does not have to be post-processed, declare it with ROLE_INFRASTRUCTURE.
+2026-01-10T06:18:42.807+05:30  INFO 22980 --- [trainer-panel] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat initialized with port 8085 (http)
+2026-01-10T06:18:42.818+05:30  INFO 22980 --- [trainer-panel] [           main] o.apache.catalina.core.StandardService   : Starting service [Tomcat]
+2026-01-10T06:18:42.818+05:30  INFO 22980 --- [trainer-panel] [           main] o.apache.catalina.core.StandardEngine    : Starting Servlet engine: [Apache Tomcat/10.1.31]
+2026-01-10T06:18:42.886+05:30  INFO 22980 --- [trainer-panel] [           main] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring embedded WebApplicationContext
+2026-01-10T06:18:42.886+05:30  INFO 22980 --- [trainer-panel] [           main] w.s.c.ServletWebServerApplicationContext : Root WebApplicationContext: initialization completed in 2206 ms
+2026-01-10T06:18:43.117+05:30  WARN 22980 --- [trainer-panel] [           main] JpaBaseConfiguration$JpaWebConfiguration : spring.jpa.open-in-view is enabled by default. Therefore, database queries may be performed during view rendering. Explicitly configure spring.jpa.open-in-view to disable this warning
+2026-01-10T06:18:43.250+05:30  INFO 22980 --- [trainer-panel] [           main] o.hibernate.jpa.internal.util.LogHelper  : HHH000204: Processing PersistenceUnitInfo [name: default]
+2026-01-10T06:18:43.315+05:30  INFO 22980 --- [trainer-panel] [           main] org.hibernate.Version                    : HHH000412: Hibernate ORM core version 6.5.3.Final
+2026-01-10T06:18:43.367+05:30  INFO 22980 --- [trainer-panel] [           main] o.h.c.internal.RegionFactoryInitiator    : HHH000026: Second-level cache disabled
+2026-01-10T06:18:43.716+05:30  INFO 22980 --- [trainer-panel] [           main] o.s.o.j.p.SpringPersistenceUnitInfo      : No LoadTimeWeaver setup: ignoring JPA class transformer
+2026-01-10T06:18:43.760+05:30  INFO 22980 --- [trainer-panel] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Starting...
+2026-01-10T06:18:43.962+05:30  INFO 22980 --- [trainer-panel] [           main] com.zaxxer.hikari.pool.HikariPool        : HikariPool-1 - Added connection org.postgresql.jdbc.PgConnection@26d24d7a
+2026-01-10T06:18:43.963+05:30  INFO 22980 --- [trainer-panel] [           main] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Start completed.
+2026-01-10T06:18:43.998+05:30  WARN 22980 --- [trainer-panel] [           main] org.hibernate.orm.deprecation            : HHH90000025: PostgreSQLDialect does not need to be specified explicitly using 'hibernate.dialect' (remove the property setting and it will be selected by default)
+2026-01-10T06:18:45.326+05:30  INFO 22980 --- [trainer-panel] [           main] o.h.e.t.j.p.i.JtaPlatformInitiator       : HHH000489: No JTA platform available (set 'hibernate.transaction.jta.platform' to enable JTA platform integration)
+Hibernate: alter table if exists chat_messages alter column ciphertext set data type text
+Hibernate: alter table if exists chat_messages alter column sender_ciphertext set data type text
+Hibernate: alter table if exists user_public_keys alter column public_key set data type text
+2026-01-10T06:18:45.657+05:30  INFO 22980 --- [trainer-panel] [           main] j.LocalContainerEntityManagerFactoryBean : Initialized JPA EntityManagerFactory for persistence unit 'default'
+2026-01-10T06:18:45.957+05:30  INFO 22980 --- [trainer-panel] [           main] o.s.d.j.r.query.QueryEnhancerFactory     : Hibernate is in classpath; If applicable, HQL parser will be used.
+2026-01-10T06:18:47.805+05:30  WARN 22980 --- [trainer-panel] [           main] iguration$LoadBalancerCaffeineWarnLogger : Spring Cloud LoadBalancer is currently working with the default cache. While this cache implementation is useful for development and tests, it's recommended to use Caffeine cache in production.You can switch to using Caffeine cache, by adding it and org.springframework.cache.caffeine.CaffeineCacheManager to the classpath.
+2026-01-10T06:18:47.847+05:30  INFO 22980 --- [trainer-panel] [           main] o.s.b.w.embedded.tomcat.TomcatWebServer  : Tomcat started on port 8085 (http) with context path '/'
+2026-01-10T06:18:47.929+05:30  INFO 22980 --- [trainer-panel] [           main] o.s.m.s.b.SimpleBrokerMessageHandler     : Starting...
+2026-01-10T06:18:47.931+05:30  INFO 22980 --- [trainer-panel] [           main] o.s.m.s.b.SimpleBrokerMessageHandler     : BrokerAvailabilityEvent[available=true, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@2089ea49]]
+2026-01-10T06:18:47.931+05:30  INFO 22980 --- [trainer-panel] [           main] o.s.m.s.b.SimpleBrokerMessageHandler     : Started.
+2026-01-10T06:18:47.949+05:30  INFO 22980 --- [trainer-panel] [           main] c.g.t.t.TrainerPanelApplication          : Started TrainerPanelApplication in 7.991 seconds (process running for 8.422)
+2026-01-10T06:18:58.344+05:30  INFO 22980 --- [trainer-panel] [0.0-8085-exec-3] o.a.c.c.C.[Tomcat].[localhost].[/]       : Initializing Spring DispatcherServlet 'dispatcherServlet'
+2026-01-10T06:18:58.345+05:30  INFO 22980 --- [trainer-panel] [0.0-8085-exec-3] o.s.web.servlet.DispatcherServlet        : Initializing Servlet 'dispatcherServlet'
+2026-01-10T06:18:58.348+05:30  INFO 22980 --- [trainer-panel] [0.0-8085-exec-3] o.s.web.servlet.DispatcherServlet        : Completed initialization in 3 ms
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: getMember called with auth: UsernamePasswordAuthenticationToken [Principal=com.gymmanagement.trainer.trainer_panel.security.MemberPrincipal@aa8e8f2, Credentials=[PROTECTED], Authenticated=true, Details=WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=null], Granted Authorities=[ROLE_MEMBER]]
+DEBUG: Principal is MemberPrincipal. userId=238
+DEBUG: Looking up member for userId: 238
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 where m1_0.user_id=?
+Hibernate: select g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at from gym g1_0 where g1_0.gym_id=?
+Hibernate: select dr1_0.request_id,dr1_0.created_at,dr1_0.member_id,dr1_0.note,dr1_0.status,dr1_0.trainer_id from diet_request dr1_0 where dr1_0.member_id=? order by dr1_0.created_at desc
+Hibernate: select wr1_0.request_id,wr1_0.created_at,wr1_0.member_id,wr1_0.note,wr1_0.status,wr1_0.trainer_id from workout_request wr1_0 where wr1_0.member_id=? order by wr1_0.created_at desc
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: getMember called with auth: UsernamePasswordAuthenticationToken [Principal=com.gymmanagement.trainer.trainer_panel.security.MemberPrincipal@71876856, Credentials=[PROTECTED], Authenticated=true, Details=WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=null], Granted Authorities=[ROLE_MEMBER]]
+DEBUG: Principal is MemberPrincipal. userId=238
+DEBUG: Looking up member for userId: 238
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 where m1_0.user_id=?
+Hibernate: select g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at from gym g1_0 where g1_0.gym_id=?
+Hibernate: select wr1_0.request_id,wr1_0.created_at,wr1_0.member_id,wr1_0.note,wr1_0.status,wr1_0.trainer_id from workout_request wr1_0 where wr1_0.member_id=? order by wr1_0.created_at desc
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: getMember called with auth: UsernamePasswordAuthenticationToken [Principal=com.gymmanagement.trainer.trainer_panel.security.MemberPrincipal@5dd8c13, Credentials=[PROTECTED], Authenticated=true, Details=WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=null], Granted Authorities=[ROLE_MEMBER]]
+DEBUG: Principal is MemberPrincipal. userId=238
+DEBUG: Looking up member for userId: 238
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 where m1_0.user_id=?
+Hibernate: select g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at from gym g1_0 where g1_0.gym_id=?
+Hibernate: select dr1_0.request_id,dr1_0.created_at,dr1_0.member_id,dr1_0.note,dr1_0.status,dr1_0.trainer_id from diet_request dr1_0 where dr1_0.member_id=? order by dr1_0.created_at desc
+Hibernate: select wr1_0.request_id,wr1_0.created_at,wr1_0.member_id,wr1_0.note,wr1_0.status,wr1_0.trainer_id from workout_request wr1_0 where wr1_0.member_id=? order by wr1_0.created_at desc
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: getMember called with auth: UsernamePasswordAuthenticationToken [Principal=com.gymmanagement.trainer.trainer_panel.security.MemberPrincipal@11077aa8, Credentials=[PROTECTED], Authenticated=true, Details=WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=null], Granted Authorities=[ROLE_MEMBER]]
+DEBUG: Principal is MemberPrincipal. userId=238
+DEBUG: Looking up member for userId: 238
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 where m1_0.user_id=?
+Hibernate: select g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at from gym g1_0 where g1_0.gym_id=?
+Hibernate: select wr1_0.request_id,wr1_0.created_at,wr1_0.member_id,wr1_0.note,wr1_0.status,wr1_0.trainer_id from workout_request wr1_0 where wr1_0.member_id=? order by wr1_0.created_at desc
+2026-01-10T06:19:47.846+05:30  INFO 22980 --- [trainer-panel] [MessageBroker-1] o.s.w.s.c.WebSocketMessageBrokerStats    : WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 1, active threads = 1, queued tasks = 0, completed tasks = 0]
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 where m1_0.user_id=?
+Hibernate: select g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at from gym g1_0 where g1_0.gym_id=?
+Hibernate: select mwl1_0.id,mwl1_0.date,mwl1_0.exercise_id,mwl1_0.member_id,mwl1_0.reps,mwl1_0.sets,mwl1_0.weight_kg from member_workout_logs mwl1_0 where mwl1_0.member_id=? and mwl1_0.date=?
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+Hibernate: select dp1_0.plan_id,dp1_0.created_at,dp1_0.diet_type,dp1_0.member_id,dp1_0.plan_name,dp1_0.trainer_id from diet_plans dp1_0 where dp1_0.member_id=? order by dp1_0.created_at desc fetch first ? rows only
+Hibernate: select t1_0.trainer_id,t1_0.availability,t1_0.created_at,t1_0.deleted,t1_0.deleted_at,t1_0.email,t1_0.experience_years,t1_0.full_name,t1_0.gym_id,g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at,t1_0.is_active,t1_0.phone_no,t1_0.salary,t1_0.specialization,t1_0.status,t1_0.updated_at,t1_0.user_id from trainers t1_0 join gym g1_0 on g1_0.gym_id=t1_0.gym_id where t1_0.trainer_id=?
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 join gym g1_0 on g1_0.gym_id=m1_0.gym_id where m1_0.member_id=?
+Hibernate: select m1_0.plan_id,m1_0.meal_id,m1_0.meal_name,p1_0.protein_id,p1_0.protein_name,p1_0.protein_quantity from diet_meals m1_0 left join diet_proteins p1_0 on m1_0.meal_id=p1_0.meal_id where m1_0.plan_id=?
+Hibernate: select f1_0.meal_id,f1_0.food_id,f1_0.food_name,f1_0.notes,f1_0.quantity from diet_foods f1_0 where f1_0.meal_id=?
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 where m1_0.user_id=?
+Hibernate: select g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at from gym g1_0 where g1_0.gym_id=?
+Hibernate: select mdl1_0.id,mdl1_0.date,mdl1_0.food_item_id,mdl1_0.meal_name,mdl1_0.member_id,mdl1_0.quantity,mdl1_0.total_calories,mdl1_0.total_carbs,mdl1_0.total_fat,mdl1_0.total_protein from member_diet_logs mdl1_0 where mdl1_0.member_id=? and mdl1_0.date=?
+Hibernate: select mfi1_0.id,mfi1_0.calories_per100g,mfi1_0.carbs_per100g,mfi1_0.created_by_member_id,mfi1_0.fat_per100g,mfi1_0.name,mfi1_0.protein_per100g,mfi1_0.serving_unit from master_food_items mfi1_0 where mfi1_0.id=?
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 where m1_0.user_id=?
+Hibernate: select g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at from gym g1_0 where g1_0.gym_id=?
+Hibernate: select mdl1_0.id,mdl1_0.date,mdl1_0.food_item_id,mdl1_0.meal_name,mdl1_0.member_id,mdl1_0.quantity,mdl1_0.total_calories,mdl1_0.total_carbs,mdl1_0.total_fat,mdl1_0.total_protein from member_diet_logs mdl1_0 where mdl1_0.member_id=? and mdl1_0.date=?
+Hibernate: select mfi1_0.id,mfi1_0.calories_per100g,mfi1_0.carbs_per100g,mfi1_0.created_by_member_id,mfi1_0.fat_per100g,mfi1_0.name,mfi1_0.protein_per100g,mfi1_0.serving_unit from master_food_items mfi1_0 where mfi1_0.id=?
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+Hibernate: select dp1_0.plan_id,dp1_0.created_at,dp1_0.diet_type,dp1_0.member_id,dp1_0.plan_name,dp1_0.trainer_id from diet_plans dp1_0 where dp1_0.member_id=? order by dp1_0.created_at desc fetch first ? rows only
+Hibernate: select t1_0.trainer_id,t1_0.availability,t1_0.created_at,t1_0.deleted,t1_0.deleted_at,t1_0.email,t1_0.experience_years,t1_0.full_name,t1_0.gym_id,g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at,t1_0.is_active,t1_0.phone_no,t1_0.salary,t1_0.specialization,t1_0.status,t1_0.updated_at,t1_0.user_id from trainers t1_0 join gym g1_0 on g1_0.gym_id=t1_0.gym_id where t1_0.trainer_id=?
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 join gym g1_0 on g1_0.gym_id=m1_0.gym_id where m1_0.member_id=?
+Hibernate: select m1_0.plan_id,m1_0.meal_id,m1_0.meal_name,p1_0.protein_id,p1_0.protein_name,p1_0.protein_quantity from diet_meals m1_0 left join diet_proteins p1_0 on m1_0.meal_id=p1_0.meal_id where m1_0.plan_id=?
+Hibernate: select f1_0.meal_id,f1_0.food_id,f1_0.food_name,f1_0.notes,f1_0.quantity from diet_foods f1_0 where f1_0.meal_id=?
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: getMember called with auth: UsernamePasswordAuthenticationToken [Principal=com.gymmanagement.trainer.trainer_panel.security.MemberPrincipal@b734fcb, Credentials=[PROTECTED], Authenticated=true, Details=WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=null], Granted Authorities=[ROLE_MEMBER]]
+DEBUG: Principal is MemberPrincipal. userId=238
+DEBUG: Looking up member for userId: 238
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 where m1_0.user_id=?
+Hibernate: select g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at from gym g1_0 where g1_0.gym_id=?
+Hibernate: select dr1_0.request_id,dr1_0.created_at,dr1_0.member_id,dr1_0.note,dr1_0.status,dr1_0.trainer_id from diet_request dr1_0 where dr1_0.member_id=? order by dr1_0.created_at desc
+Hibernate: select wr1_0.request_id,wr1_0.created_at,wr1_0.member_id,wr1_0.note,wr1_0.status,wr1_0.trainer_id from workout_request wr1_0 where wr1_0.member_id=? order by wr1_0.created_at desc
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: getMember called with auth: UsernamePasswordAuthenticationToken [Principal=com.gymmanagement.trainer.trainer_panel.security.MemberPrincipal@28991f25, Credentials=[PROTECTED], Authenticated=true, Details=WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=null], Granted Authorities=[ROLE_MEMBER]]
+DEBUG: Principal is MemberPrincipal. userId=238
+DEBUG: Looking up member for userId: 238
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 where m1_0.user_id=?
+Hibernate: select g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at from gym g1_0 where g1_0.gym_id=?
+Hibernate: select dr1_0.request_id,dr1_0.created_at,dr1_0.member_id,dr1_0.note,dr1_0.status,dr1_0.trainer_id from diet_request dr1_0 where dr1_0.member_id=? order by dr1_0.created_at desc
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: getMember called with auth: UsernamePasswordAuthenticationToken [Principal=com.gymmanagement.trainer.trainer_panel.security.MemberPrincipal@4bdd3ad6, Credentials=[PROTECTED], Authenticated=true, Details=WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=null], Granted Authorities=[ROLE_MEMBER]]
+DEBUG: Principal is MemberPrincipal. userId=238
+DEBUG: Looking up member for userId: 238
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 where m1_0.user_id=?
+Hibernate: select g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at from gym g1_0 where g1_0.gym_id=?
+Hibernate: select dr1_0.request_id,dr1_0.created_at,dr1_0.member_id,dr1_0.note,dr1_0.status,dr1_0.trainer_id from diet_request dr1_0 where dr1_0.member_id=? order by dr1_0.created_at desc
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 where m1_0.user_id=?
+Hibernate: select g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at from gym g1_0 where g1_0.gym_id=?
+Hibernate: select wp1_0.plan_id,wp1_0.created_at,wp1_0.member_id,wp1_0.plan_name,wp1_0.trainer_id from workout_plans wp1_0 where wp1_0.member_id=? order by wp1_0.created_at desc fetch first ? rows only
+Hibernate: select t1_0.trainer_id,t1_0.availability,t1_0.created_at,t1_0.deleted,t1_0.deleted_at,t1_0.email,t1_0.experience_years,t1_0.full_name,t1_0.gym_id,g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at,t1_0.is_active,t1_0.phone_no,t1_0.salary,t1_0.specialization,t1_0.status,t1_0.updated_at,t1_0.user_id from trainers t1_0 join gym g1_0 on g1_0.gym_id=t1_0.gym_id where t1_0.trainer_id=?
+Hibernate: select i1_0.plan_id,i1_0.item_id,i1_0.exercise_name,i1_0.notes,i1_0.reps,i1_0.rest_seconds,i1_0.sets from workout_plan_items i1_0 where i1_0.plan_id=?
+Hibernate: select d1_0.item_id,d1_0.days from workout_days d1_0 where d1_0.item_id=?
+Hibernate: select d1_0.item_id,d1_0.days from workout_days d1_0 where d1_0.item_id=?
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: getMember called with auth: UsernamePasswordAuthenticationToken [Principal=com.gymmanagement.trainer.trainer_panel.security.MemberPrincipal@2968a8f2, Credentials=[PROTECTED], Authenticated=true, Details=WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=null], Granted Authorities=[ROLE_MEMBER]]
+DEBUG: Principal is MemberPrincipal. userId=238
+DEBUG: Looking up member for userId: 238
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 where m1_0.user_id=?
+Hibernate: select g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at from gym g1_0 where g1_0.gym_id=?
+Hibernate: select dr1_0.request_id,dr1_0.created_at,dr1_0.member_id,dr1_0.note,dr1_0.status,dr1_0.trainer_id from diet_request dr1_0 where dr1_0.member_id=? order by dr1_0.created_at desc
+Hibernate: select wr1_0.request_id,wr1_0.created_at,wr1_0.member_id,wr1_0.note,wr1_0.status,wr1_0.trainer_id from workout_request wr1_0 where wr1_0.member_id=? order by wr1_0.created_at desc
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+Hibernate: select dp1_0.plan_id,dp1_0.created_at,dp1_0.diet_type,dp1_0.member_id,dp1_0.plan_name,dp1_0.trainer_id from diet_plans dp1_0 where dp1_0.member_id=? order by dp1_0.created_at desc fetch first ? rows only
+Hibernate: select t1_0.trainer_id,t1_0.availability,t1_0.created_at,t1_0.deleted,t1_0.deleted_at,t1_0.email,t1_0.experience_years,t1_0.full_name,t1_0.gym_id,g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at,t1_0.is_active,t1_0.phone_no,t1_0.salary,t1_0.specialization,t1_0.status,t1_0.updated_at,t1_0.user_id from trainers t1_0 join gym g1_0 on g1_0.gym_id=t1_0.gym_id where t1_0.trainer_id=?
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 join gym g1_0 on g1_0.gym_id=m1_0.gym_id where m1_0.member_id=?
+Hibernate: select m1_0.plan_id,m1_0.meal_id,m1_0.meal_name,p1_0.protein_id,p1_0.protein_name,p1_0.protein_quantity from diet_meals m1_0 left join diet_proteins p1_0 on m1_0.meal_id=p1_0.meal_id where m1_0.plan_id=?
+Hibernate: select f1_0.meal_id,f1_0.food_id,f1_0.food_name,f1_0.notes,f1_0.quantity from diet_foods f1_0 where f1_0.meal_id=?
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 where m1_0.user_id=?
+Hibernate: select g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at from gym g1_0 where g1_0.gym_id=?
+Hibernate: select mwl1_0.id,mwl1_0.date,mwl1_0.exercise_id,mwl1_0.member_id,mwl1_0.reps,mwl1_0.sets,mwl1_0.weight_kg from member_workout_logs mwl1_0 where mwl1_0.member_id=? and mwl1_0.date=?
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 where m1_0.user_id=?
+Hibernate: select g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at from gym g1_0 where g1_0.gym_id=?
+Hibernate: select wp1_0.plan_id,wp1_0.created_at,wp1_0.member_id,wp1_0.plan_name,wp1_0.trainer_id from workout_plans wp1_0 where wp1_0.member_id=? order by wp1_0.created_at desc fetch first ? rows only
+Hibernate: select t1_0.trainer_id,t1_0.availability,t1_0.created_at,t1_0.deleted,t1_0.deleted_at,t1_0.email,t1_0.experience_years,t1_0.full_name,t1_0.gym_id,g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at,t1_0.is_active,t1_0.phone_no,t1_0.salary,t1_0.specialization,t1_0.status,t1_0.updated_at,t1_0.user_id from trainers t1_0 join gym g1_0 on g1_0.gym_id=t1_0.gym_id where t1_0.trainer_id=?
+Hibernate: select i1_0.plan_id,i1_0.item_id,i1_0.exercise_name,i1_0.notes,i1_0.reps,i1_0.rest_seconds,i1_0.sets from workout_plan_items i1_0 where i1_0.plan_id=?
+Hibernate: select d1_0.item_id,d1_0.days from workout_days d1_0 where d1_0.item_id=?
+Hibernate: select d1_0.item_id,d1_0.days from workout_days d1_0 where d1_0.item_id=?
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: getMember called with auth: UsernamePasswordAuthenticationToken [Principal=com.gymmanagement.trainer.trainer_panel.security.MemberPrincipal@78e82b5c, Credentials=[PROTECTED], Authenticated=true, Details=WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=null], Granted Authorities=[ROLE_MEMBER]]
+DEBUG: Principal is MemberPrincipal. userId=238
+DEBUG: Looking up member for userId: 238
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 where m1_0.user_id=?
+Hibernate: select g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at from gym g1_0 where g1_0.gym_id=?
+Hibernate: select wr1_0.request_id,wr1_0.created_at,wr1_0.member_id,wr1_0.note,wr1_0.status,wr1_0.trainer_id from workout_request wr1_0 where wr1_0.member_id=? order by wr1_0.created_at desc
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+Hibernate: select dp1_0.plan_id,dp1_0.created_at,dp1_0.diet_type,dp1_0.member_id,dp1_0.plan_name,dp1_0.trainer_id from diet_plans dp1_0 where dp1_0.member_id=? order by dp1_0.created_at desc fetch first ? rows only
+Hibernate: select t1_0.trainer_id,t1_0.availability,t1_0.created_at,t1_0.deleted,t1_0.deleted_at,t1_0.email,t1_0.experience_years,t1_0.full_name,t1_0.gym_id,g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at,t1_0.is_active,t1_0.phone_no,t1_0.salary,t1_0.specialization,t1_0.status,t1_0.updated_at,t1_0.user_id from trainers t1_0 join gym g1_0 on g1_0.gym_id=t1_0.gym_id where t1_0.trainer_id=?
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 join gym g1_0 on g1_0.gym_id=m1_0.gym_id where m1_0.member_id=?
+Hibernate: select m1_0.plan_id,m1_0.meal_id,m1_0.meal_name,p1_0.protein_id,p1_0.protein_name,p1_0.protein_quantity from diet_meals m1_0 left join diet_proteins p1_0 on m1_0.meal_id=p1_0.meal_id where m1_0.plan_id=?
+Hibernate: select f1_0.meal_id,f1_0.food_id,f1_0.food_name,f1_0.notes,f1_0.quantity from diet_foods f1_0 where f1_0.meal_id=?
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 where m1_0.user_id=?
+Hibernate: select g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at from gym g1_0 where g1_0.gym_id=?
+Hibernate: select wp1_0.plan_id,wp1_0.created_at,wp1_0.member_id,wp1_0.plan_name,wp1_0.trainer_id from workout_plans wp1_0 where wp1_0.member_id=? order by wp1_0.created_at desc fetch first ? rows only
+Hibernate: select t1_0.trainer_id,t1_0.availability,t1_0.created_at,t1_0.deleted,t1_0.deleted_at,t1_0.email,t1_0.experience_years,t1_0.full_name,t1_0.gym_id,g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at,t1_0.is_active,t1_0.phone_no,t1_0.salary,t1_0.specialization,t1_0.status,t1_0.updated_at,t1_0.user_id from trainers t1_0 join gym g1_0 on g1_0.gym_id=t1_0.gym_id where t1_0.trainer_id=?
+Hibernate: select i1_0.plan_id,i1_0.item_id,i1_0.exercise_name,i1_0.notes,i1_0.reps,i1_0.rest_seconds,i1_0.sets from workout_plan_items i1_0 where i1_0.plan_id=?
+Hibernate: select d1_0.item_id,d1_0.days from workout_days d1_0 where d1_0.item_id=?
+Hibernate: select d1_0.item_id,d1_0.days from workout_days d1_0 where d1_0.item_id=?
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+Hibernate: select dp1_0.plan_id,dp1_0.created_at,dp1_0.diet_type,dp1_0.member_id,dp1_0.plan_name,dp1_0.trainer_id from diet_plans dp1_0 where dp1_0.member_id=? order by dp1_0.created_at desc fetch first ? rows only
+Hibernate: select t1_0.trainer_id,t1_0.availability,t1_0.created_at,t1_0.deleted,t1_0.deleted_at,t1_0.email,t1_0.experience_years,t1_0.full_name,t1_0.gym_id,g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at,t1_0.is_active,t1_0.phone_no,t1_0.salary,t1_0.specialization,t1_0.status,t1_0.updated_at,t1_0.user_id from trainers t1_0 join gym g1_0 on g1_0.gym_id=t1_0.gym_id where t1_0.trainer_id=?
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 join gym g1_0 on g1_0.gym_id=m1_0.gym_id where m1_0.member_id=?
+Hibernate: select m1_0.plan_id,m1_0.meal_id,m1_0.meal_name,p1_0.protein_id,p1_0.protein_name,p1_0.protein_quantity from diet_meals m1_0 left join diet_proteins p1_0 on m1_0.meal_id=p1_0.meal_id where m1_0.plan_id=?
+Hibernate: select f1_0.meal_id,f1_0.food_id,f1_0.food_name,f1_0.notes,f1_0.quantity from diet_foods f1_0 where f1_0.meal_id=?
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 where m1_0.user_id=?
+Hibernate: select g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at from gym g1_0 where g1_0.gym_id=?
+Hibernate: select mwl1_0.id,mwl1_0.date,mwl1_0.exercise_id,mwl1_0.member_id,mwl1_0.reps,mwl1_0.sets,mwl1_0.weight_kg from member_workout_logs mwl1_0 where mwl1_0.member_id=? and mwl1_0.date=?
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 where m1_0.user_id=?
+Hibernate: select g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at from gym g1_0 where g1_0.gym_id=?
+Hibernate: select wp1_0.plan_id,wp1_0.created_at,wp1_0.member_id,wp1_0.plan_name,wp1_0.trainer_id from workout_plans wp1_0 where wp1_0.member_id=? order by wp1_0.created_at desc fetch first ? rows only
+Hibernate: select t1_0.trainer_id,t1_0.availability,t1_0.created_at,t1_0.deleted,t1_0.deleted_at,t1_0.email,t1_0.experience_years,t1_0.full_name,t1_0.gym_id,g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at,t1_0.is_active,t1_0.phone_no,t1_0.salary,t1_0.specialization,t1_0.status,t1_0.updated_at,t1_0.user_id from trainers t1_0 join gym g1_0 on g1_0.gym_id=t1_0.gym_id where t1_0.trainer_id=?
+Hibernate: select i1_0.plan_id,i1_0.item_id,i1_0.exercise_name,i1_0.notes,i1_0.reps,i1_0.rest_seconds,i1_0.sets from workout_plan_items i1_0 where i1_0.plan_id=?
+Hibernate: select d1_0.item_id,d1_0.days from workout_days d1_0 where d1_0.item_id=?
+Hibernate: select d1_0.item_id,d1_0.days from workout_days d1_0 where d1_0.item_id=?
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: getMember called with auth: UsernamePasswordAuthenticationToken [Principal=com.gymmanagement.trainer.trainer_panel.security.MemberPrincipal@12fa59f9, Credentials=[PROTECTED], Authenticated=true, Details=WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=null], Granted Authorities=[ROLE_MEMBER]]
+DEBUG: Principal is MemberPrincipal. userId=238
+DEBUG: Looking up member for userId: 238
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 where m1_0.user_id=?
+Hibernate: select g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at from gym g1_0 where g1_0.gym_id=?
+Hibernate: select dr1_0.request_id,dr1_0.created_at,dr1_0.member_id,dr1_0.note,dr1_0.status,dr1_0.trainer_id from diet_request dr1_0 where dr1_0.member_id=? order by dr1_0.created_at desc
+Hibernate: select wr1_0.request_id,wr1_0.created_at,wr1_0.member_id,wr1_0.note,wr1_0.status,wr1_0.trainer_id from workout_request wr1_0 where wr1_0.member_id=? order by wr1_0.created_at desc
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: getMember called with auth: UsernamePasswordAuthenticationToken [Principal=com.gymmanagement.trainer.trainer_panel.security.MemberPrincipal@1229a804, Credentials=[PROTECTED], Authenticated=true, Details=WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=null], Granted Authorities=[ROLE_MEMBER]]
+DEBUG: Principal is MemberPrincipal. userId=238
+DEBUG: Looking up member for userId: 238
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 where m1_0.user_id=?
+Hibernate: select g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at from gym g1_0 where g1_0.gym_id=?
+Hibernate: select wr1_0.request_id,wr1_0.created_at,wr1_0.member_id,wr1_0.note,wr1_0.status,wr1_0.trainer_id from workout_request wr1_0 where wr1_0.member_id=? order by wr1_0.created_at desc
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: getMember called with auth: UsernamePasswordAuthenticationToken [Principal=com.gymmanagement.trainer.trainer_panel.security.MemberPrincipal@5260bf6f, Credentials=[PROTECTED], Authenticated=true, Details=WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=null], Granted Authorities=[ROLE_MEMBER]]
+DEBUG: Principal is MemberPrincipal. userId=238
+DEBUG: Looking up member for userId: 238
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 where m1_0.user_id=?
+Hibernate: select g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at from gym g1_0 where g1_0.gym_id=?
+Hibernate: select dr1_0.request_id,dr1_0.created_at,dr1_0.member_id,dr1_0.note,dr1_0.status,dr1_0.trainer_id from diet_request dr1_0 where dr1_0.member_id=? order by dr1_0.created_at desc
+Hibernate: select wr1_0.request_id,wr1_0.created_at,wr1_0.member_id,wr1_0.note,wr1_0.status,wr1_0.trainer_id from workout_request wr1_0 where wr1_0.member_id=? order by wr1_0.created_at desc
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+Hibernate: select dp1_0.plan_id,dp1_0.created_at,dp1_0.diet_type,dp1_0.member_id,dp1_0.plan_name,dp1_0.trainer_id from diet_plans dp1_0 where dp1_0.member_id=? order by dp1_0.created_at desc fetch first ? rows only
+Hibernate: select t1_0.trainer_id,t1_0.availability,t1_0.created_at,t1_0.deleted,t1_0.deleted_at,t1_0.email,t1_0.experience_years,t1_0.full_name,t1_0.gym_id,g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at,t1_0.is_active,t1_0.phone_no,t1_0.salary,t1_0.specialization,t1_0.status,t1_0.updated_at,t1_0.user_id from trainers t1_0 join gym g1_0 on g1_0.gym_id=t1_0.gym_id where t1_0.trainer_id=?
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 join gym g1_0 on g1_0.gym_id=m1_0.gym_id where m1_0.member_id=?
+Hibernate: select m1_0.plan_id,m1_0.meal_id,m1_0.meal_name,p1_0.protein_id,p1_0.protein_name,p1_0.protein_quantity from diet_meals m1_0 left join diet_proteins p1_0 on m1_0.meal_id=p1_0.meal_id where m1_0.plan_id=?
+Hibernate: select f1_0.meal_id,f1_0.food_id,f1_0.food_name,f1_0.notes,f1_0.quantity from diet_foods f1_0 where f1_0.meal_id=?
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 where m1_0.user_id=?
+Hibernate: select g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at from gym g1_0 where g1_0.gym_id=?
+Hibernate: select wp1_0.plan_id,wp1_0.created_at,wp1_0.member_id,wp1_0.plan_name,wp1_0.trainer_id from workout_plans wp1_0 where wp1_0.member_id=? order by wp1_0.created_at desc fetch first ? rows only
+Hibernate: select t1_0.trainer_id,t1_0.availability,t1_0.created_at,t1_0.deleted,t1_0.deleted_at,t1_0.email,t1_0.experience_years,t1_0.full_name,t1_0.gym_id,g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at,t1_0.is_active,t1_0.phone_no,t1_0.salary,t1_0.specialization,t1_0.status,t1_0.updated_at,t1_0.user_id from trainers t1_0 join gym g1_0 on g1_0.gym_id=t1_0.gym_id where t1_0.trainer_id=?
+Hibernate: select i1_0.plan_id,i1_0.item_id,i1_0.exercise_name,i1_0.notes,i1_0.reps,i1_0.rest_seconds,i1_0.sets from workout_plan_items i1_0 where i1_0.plan_id=?
+Hibernate: select d1_0.item_id,d1_0.days from workout_days d1_0 where d1_0.item_id=?
+Hibernate: select d1_0.item_id,d1_0.days from workout_days d1_0 where d1_0.item_id=?
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: getMember called with auth: UsernamePasswordAuthenticationToken [Principal=com.gymmanagement.trainer.trainer_panel.security.MemberPrincipal@149b88eb, Credentials=[PROTECTED], Authenticated=true, Details=WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=null], Granted Authorities=[ROLE_MEMBER]]
+DEBUG: Principal is MemberPrincipal. userId=238
+DEBUG: Looking up member for userId: 238
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 where m1_0.user_id=?
+Hibernate: select g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at from gym g1_0 where g1_0.gym_id=?
+Hibernate: select dr1_0.request_id,dr1_0.created_at,dr1_0.member_id,dr1_0.note,dr1_0.status,dr1_0.trainer_id from diet_request dr1_0 where dr1_0.member_id=? order by dr1_0.created_at desc
+Hibernate: select wr1_0.request_id,wr1_0.created_at,wr1_0.member_id,wr1_0.note,wr1_0.status,wr1_0.trainer_id from workout_request wr1_0 where wr1_0.member_id=? order by wr1_0.created_at desc
+2026-01-10T06:49:47.863+05:30  INFO 22980 --- [trainer-panel] [MessageBroker-1] o.s.w.s.c.WebSocketMessageBrokerStats    : WebSocketSession[0 current WS(0)-HttpStream(0)-HttpPoll(0), 0 total, 0 closed abnormally (0 connect failure, 0 send limit, 0 transport error)], stompSubProtocol[processed CONNECT(0)-CONNECTED(0)-DISCONNECT(0)], stompBrokerRelay[null], inboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], outboundChannel[pool size = 0, active threads = 0, queued tasks = 0, completed tasks = 0], sockJsScheduler[pool size = 2, active threads = 1, queued tasks = 0, completed tasks = 1]
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 where m1_0.user_id=?
+Hibernate: select g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at from gym g1_0 where g1_0.gym_id=?
+Hibernate: select wp1_0.plan_id,wp1_0.created_at,wp1_0.member_id,wp1_0.plan_name,wp1_0.trainer_id from workout_plans wp1_0 where wp1_0.member_id=? order by wp1_0.created_at desc fetch first ? rows only
+Hibernate: select t1_0.trainer_id,t1_0.availability,t1_0.created_at,t1_0.deleted,t1_0.deleted_at,t1_0.email,t1_0.experience_years,t1_0.full_name,t1_0.gym_id,g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at,t1_0.is_active,t1_0.phone_no,t1_0.salary,t1_0.specialization,t1_0.status,t1_0.updated_at,t1_0.user_id from trainers t1_0 join gym g1_0 on g1_0.gym_id=t1_0.gym_id where t1_0.trainer_id=?
+Hibernate: select i1_0.plan_id,i1_0.item_id,i1_0.exercise_name,i1_0.notes,i1_0.reps,i1_0.rest_seconds,i1_0.sets from workout_plan_items i1_0 where i1_0.plan_id=?
+Hibernate: select d1_0.item_id,d1_0.days from workout_days d1_0 where d1_0.item_id=?
+Hibernate: select d1_0.item_id,d1_0.days from workout_days d1_0 where d1_0.item_id=?
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: getMember called with auth: UsernamePasswordAuthenticationToken [Principal=com.gymmanagement.trainer.trainer_panel.security.MemberPrincipal@4771d58e, Credentials=[PROTECTED], Authenticated=true, Details=WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=null], Granted Authorities=[ROLE_MEMBER]]
+DEBUG: Principal is MemberPrincipal. userId=238
+DEBUG: Looking up member for userId: 238
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 where m1_0.user_id=?
+Hibernate: select g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at from gym g1_0 where g1_0.gym_id=?
+Hibernate: select dr1_0.request_id,dr1_0.created_at,dr1_0.member_id,dr1_0.note,dr1_0.status,dr1_0.trainer_id from diet_request dr1_0 where dr1_0.member_id=? order by dr1_0.created_at desc
+Hibernate: select wr1_0.request_id,wr1_0.created_at,wr1_0.member_id,wr1_0.note,wr1_0.status,wr1_0.trainer_id from workout_request wr1_0 where wr1_0.member_id=? order by wr1_0.created_at desc
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: getMember called with auth: UsernamePasswordAuthenticationToken [Principal=com.gymmanagement.trainer.trainer_panel.security.MemberPrincipal@2fdc8657, Credentials=[PROTECTED], Authenticated=true, Details=WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=null], Granted Authorities=[ROLE_MEMBER]]
+DEBUG: Principal is MemberPrincipal. userId=238
+DEBUG: Looking up member for userId: 238
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 where m1_0.user_id=?
+Hibernate: select g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at from gym g1_0 where g1_0.gym_id=?
+Hibernate: select dr1_0.request_id,dr1_0.created_at,dr1_0.member_id,dr1_0.note,dr1_0.status,dr1_0.trainer_id from diet_request dr1_0 where dr1_0.member_id=? order by dr1_0.created_at desc
+Hibernate: select wr1_0.request_id,wr1_0.created_at,wr1_0.member_id,wr1_0.note,wr1_0.status,wr1_0.trainer_id from workout_request wr1_0 where wr1_0.member_id=? order by wr1_0.created_at desc
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 where m1_0.user_id=?
+Hibernate: select g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at from gym g1_0 where g1_0.gym_id=?
+Hibernate: select wp1_0.plan_id,wp1_0.created_at,wp1_0.member_id,wp1_0.plan_name,wp1_0.trainer_id from workout_plans wp1_0 where wp1_0.member_id=? order by wp1_0.created_at desc fetch first ? rows only
+Hibernate: select t1_0.trainer_id,t1_0.availability,t1_0.created_at,t1_0.deleted,t1_0.deleted_at,t1_0.email,t1_0.experience_years,t1_0.full_name,t1_0.gym_id,g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at,t1_0.is_active,t1_0.phone_no,t1_0.salary,t1_0.specialization,t1_0.status,t1_0.updated_at,t1_0.user_id from trainers t1_0 join gym g1_0 on g1_0.gym_id=t1_0.gym_id where t1_0.trainer_id=?
+Hibernate: select i1_0.plan_id,i1_0.item_id,i1_0.exercise_name,i1_0.notes,i1_0.reps,i1_0.rest_seconds,i1_0.sets from workout_plan_items i1_0 where i1_0.plan_id=?
+Hibernate: select d1_0.item_id,d1_0.days from workout_days d1_0 where d1_0.item_id=?
+Hibernate: select d1_0.item_id,d1_0.days from workout_days d1_0 where d1_0.item_id=?
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: getMember called with auth: UsernamePasswordAuthenticationToken [Principal=com.gymmanagement.trainer.trainer_panel.security.MemberPrincipal@4eadbf7a, Credentials=[PROTECTED], Authenticated=true, Details=WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=null], Granted Authorities=[ROLE_MEMBER]]
+DEBUG: Principal is MemberPrincipal. userId=238
+DEBUG: Looking up member for userId: 238
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 where m1_0.user_id=?
+Hibernate: select g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at from gym g1_0 where g1_0.gym_id=?
+Hibernate: select dr1_0.request_id,dr1_0.created_at,dr1_0.member_id,dr1_0.note,dr1_0.status,dr1_0.trainer_id from diet_request dr1_0 where dr1_0.member_id=? order by dr1_0.created_at desc
+Hibernate: select wr1_0.request_id,wr1_0.created_at,wr1_0.member_id,wr1_0.note,wr1_0.status,wr1_0.trainer_id from workout_request wr1_0 where wr1_0.member_id=? order by wr1_0.created_at desc
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 where m1_0.user_id=?
+Hibernate: select g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at from gym g1_0 where g1_0.gym_id=?
+Hibernate: select wp1_0.plan_id,wp1_0.created_at,wp1_0.member_id,wp1_0.plan_name,wp1_0.trainer_id from workout_plans wp1_0 where wp1_0.member_id=? order by wp1_0.created_at desc fetch first ? rows only
+Hibernate: select t1_0.trainer_id,t1_0.availability,t1_0.created_at,t1_0.deleted,t1_0.deleted_at,t1_0.email,t1_0.experience_years,t1_0.full_name,t1_0.gym_id,g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at,t1_0.is_active,t1_0.phone_no,t1_0.salary,t1_0.specialization,t1_0.status,t1_0.updated_at,t1_0.user_id from trainers t1_0 join gym g1_0 on g1_0.gym_id=t1_0.gym_id where t1_0.trainer_id=?
+Hibernate: select i1_0.plan_id,i1_0.item_id,i1_0.exercise_name,i1_0.notes,i1_0.reps,i1_0.rest_seconds,i1_0.sets from workout_plan_items i1_0 where i1_0.plan_id=?
+Hibernate: select d1_0.item_id,d1_0.days from workout_days d1_0 where d1_0.item_id=?
+Hibernate: select d1_0.item_id,d1_0.days from workout_days d1_0 where d1_0.item_id=?
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: getMember called with auth: UsernamePasswordAuthenticationToken [Principal=com.gymmanagement.trainer.trainer_panel.security.MemberPrincipal@6e958048, Credentials=[PROTECTED], Authenticated=true, Details=WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=null], Granted Authorities=[ROLE_MEMBER]]
+DEBUG: Principal is MemberPrincipal. userId=238
+DEBUG: Looking up member for userId: 238
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 where m1_0.user_id=?
+Hibernate: select g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at from gym g1_0 where g1_0.gym_id=?
+Hibernate: select dr1_0.request_id,dr1_0.created_at,dr1_0.member_id,dr1_0.note,dr1_0.status,dr1_0.trainer_id from diet_request dr1_0 where dr1_0.member_id=? order by dr1_0.created_at desc
+Hibernate: select wr1_0.request_id,wr1_0.created_at,wr1_0.member_id,wr1_0.note,wr1_0.status,wr1_0.trainer_id from workout_request wr1_0 where wr1_0.member_id=? order by wr1_0.created_at desc
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: getMember called with auth: UsernamePasswordAuthenticationToken [Principal=com.gymmanagement.trainer.trainer_panel.security.MemberPrincipal@52f6f59a, Credentials=[PROTECTED], Authenticated=true, Details=WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=null], Granted Authorities=[ROLE_MEMBER]]
+DEBUG: Principal is MemberPrincipal. userId=238
+DEBUG: Looking up member for userId: 238
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 where m1_0.user_id=?
+Hibernate: select g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at from gym g1_0 where g1_0.gym_id=?
+Hibernate: select dr1_0.request_id,dr1_0.created_at,dr1_0.member_id,dr1_0.note,dr1_0.status,dr1_0.trainer_id from diet_request dr1_0 where dr1_0.member_id=? order by dr1_0.created_at desc
+Hibernate: select wr1_0.request_id,wr1_0.created_at,wr1_0.member_id,wr1_0.note,wr1_0.status,wr1_0.trainer_id from workout_request wr1_0 where wr1_0.member_id=? order by wr1_0.created_at desc
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: getMember called with auth: UsernamePasswordAuthenticationToken [Principal=com.gymmanagement.trainer.trainer_panel.security.MemberPrincipal@49d10aee, Credentials=[PROTECTED], Authenticated=true, Details=WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=null], Granted Authorities=[ROLE_MEMBER]]
+DEBUG: Principal is MemberPrincipal. userId=238
+DEBUG: Looking up member for userId: 238
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 where m1_0.user_id=?
+Hibernate: select g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at from gym g1_0 where g1_0.gym_id=?
+Hibernate: select wr1_0.request_id,wr1_0.created_at,wr1_0.member_id,wr1_0.note,wr1_0.status,wr1_0.trainer_id from workout_request wr1_0 where wr1_0.request_id=?
+Hibernate: delete from workout_request where request_id=?
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: getMember called with auth: UsernamePasswordAuthenticationToken [Principal=com.gymmanagement.trainer.trainer_panel.security.MemberPrincipal@37f5da2d, Credentials=[PROTECTED], Authenticated=true, Details=WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=null], Granted Authorities=[ROLE_MEMBER]]
+DEBUG: Principal is MemberPrincipal. userId=238
+DEBUG: Looking up member for userId: 238
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 where m1_0.user_id=?
+Hibernate: select g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at from gym g1_0 where g1_0.gym_id=?
+Hibernate: select dr1_0.request_id,dr1_0.created_at,dr1_0.member_id,dr1_0.note,dr1_0.status,dr1_0.trainer_id from diet_request dr1_0 where dr1_0.member_id=? order by dr1_0.created_at desc
+Hibernate: select wr1_0.request_id,wr1_0.created_at,wr1_0.member_id,wr1_0.note,wr1_0.status,wr1_0.trainer_id from workout_request wr1_0 where wr1_0.member_id=? order by wr1_0.created_at desc
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: getMember called with auth: UsernamePasswordAuthenticationToken [Principal=com.gymmanagement.trainer.trainer_panel.security.MemberPrincipal@10c6d36f, Credentials=[PROTECTED], Authenticated=true, Details=WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=null], Granted Authorities=[ROLE_MEMBER]]
+DEBUG: Principal is MemberPrincipal. userId=238
+DEBUG: Looking up member for userId: 238
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 where m1_0.user_id=?
+Hibernate: select g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at from gym g1_0 where g1_0.gym_id=?
+Hibernate: select dr1_0.request_id,dr1_0.created_at,dr1_0.member_id,dr1_0.note,dr1_0.status,dr1_0.trainer_id from diet_request dr1_0 where dr1_0.member_id=? order by dr1_0.created_at desc
+Hibernate: select wr1_0.request_id,wr1_0.created_at,wr1_0.member_id,wr1_0.note,wr1_0.status,wr1_0.trainer_id from workout_request wr1_0 where wr1_0.member_id=? order by wr1_0.created_at desc
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: JwtAuthFilter - Email: qawetoly@forexzig.com, Role: MEMBER
+DEBUG: JwtAuthFilter - User found: 238
+DEBUG: getMember called with auth: UsernamePasswordAuthenticationToken [Principal=com.gymmanagement.trainer.trainer_panel.security.MemberPrincipal@227fc8, Credentials=[PROTECTED], Authenticated=true, Details=WebAuthenticationDetails [RemoteIpAddress=0:0:0:0:0:0:0:1, SessionId=null], Granted Authorities=[ROLE_MEMBER]]
+DEBUG: Principal is MemberPrincipal. userId=238
+DEBUG: Looking up member for userId: 238
+Hibernate: select m1_0.member_id,m1_0.amount_paid,m1_0.created_at,m1_0.deleted_at,m1_0.discount,m1_0.fitness_goal,m1_0.from_hour,m1_0.from_minute,m1_0.from_period,m1_0.gym_id,m1_0.is_active,m1_0.joining_date,m1_0.membership_plan,m1_0.months_free,m1_0.months_paid,m1_0.payment_method,m1_0.plan_price,m1_0.plan_start_date,m1_0.registration_fee,m1_0.to_hour,m1_0.to_minute,m1_0.to_period,m1_0.total_amount,m1_0.trainer_id,m1_0.updated_at,m1_0.user_id,m1_0.workout_time_slot from members m1_0 where m1_0.user_id=?
+Hibernate: select g1_0.gym_id,g1_0.address,g1_0.city,g1_0.contact_number,g1_0.created_at,g1_0.created_by_admin,g1_0.email,g1_0.gym_name,g1_0.is_active,g1_0.opening_hours,g1_0.state,g1_0.updated_at from gym g1_0 where g1_0.gym_id=?
+Hibernate: select wr1_0.request_id,wr1_0.created_at,wr1_0.member_id,wr1_0.note,wr1_0.status,wr1_0.trainer_id from workout_request wr1_0 where wr1_0.request_id=?
+^CTerminate batch job (Y/N)? 2026-01-10T07:04:43.575+05:30  INFO 22980 --- [trainer-panel] [ionShutdownHook] o.s.m.s.b.SimpleBrokerMessageHandler     : Stopping...
+2026-01-10T07:04:43.575+05:30  INFO 22980 --- [trainer-panel] [ionShutdownHook] o.s.m.s.b.SimpleBrokerMessageHandler     : BrokerAvailabilityEvent[available=false, SimpleBrokerMessageHandler [org.springframework.messaging.simp.broker.DefaultSubscriptionRegistry@2089ea49]]
+2026-01-10T07:04:43.575+05:30  INFO 22980 --- [trainer-panel] [ionShutdownHook] o.s.m.s.b.SimpleBrokerMessageHandler     : Stopped.
+2026-01-10T07:04:43.722+05:30  INFO 22980 --- [trainer-panel] [ionShutdownHook] j.LocalContainerEntityManagerFactoryBean : Closing JPA EntityManagerFactory for persistence unit 'default'
+2026-01-10T07:04:43.728+05:30  INFO 22980 --- [trainer-panel] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown initiated...
+2026-01-10T07:04:43.739+05:30  INFO 22980 --- [trainer-panel] [ionShutdownHook] com.zaxxer.hikari.HikariDataSource       : HikariPool-1 - Shutdown completed.
+[INFO] ------------------------------------------------------------------------
+[INFO] BUILD SUCCESS
+[INFO] ------------------------------------------------------------------------
+[INFO] Total time:  46:12 min
+[INFO] Finished at: 2026-01-10T07:04:43+05:30
+[INFO] ------------------------------------------------------------------------

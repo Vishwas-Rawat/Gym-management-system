@@ -1,0 +1,333 @@
+/* PlanViews.css - Clean & Modern Theme */
+
+:root {
+  --primary-color: #38bdf8; /* Sky 400 */
+  --primary-light: #7dd3fc;
+  --bg-dark: #0f172a;
+  --card-bg-dark: #1e293b;
+  --text-main: #f1f5f9;
+  --text-secondary: #94a3b8;
+  --border-color: rgba(255, 255, 255, 0.08);
+  --success-color: #51cf66;
+  --warning-color: #fcc419;
+  --radius-lg: 16px;
+  --radius-md: 12px;
+}
+
+/* Base Container */
+.plan-view-v2 {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  color: var(--text-main);
+  width: 100%;
+}
+
+/* Header Section */
+.plan-header-mini {
+  margin-bottom: 2.5rem;
+  padding: 0;
+}
+
+.plan-title-mini {
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin: 0 0 0.5rem 0;
+  color: var(--text-main);
+  letter-spacing: -0.5px;
+}
+
+.plan-meta-mini {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.highlight-text {
+  color: var(--success-color);
+  font-weight: 600;
+}
+
+.separator {
+  color: var(--border-color);
+}
+
+/* Days Stack & Group */
+.days-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.day-group-header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.day-name {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  color: var(--text-secondary);
+  min-width: 100px;
+}
+
+.day-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border-color);
+}
+
+.day-count {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--success-color);
+  background: rgba(81, 207, 102, 0.1);
+  padding: 4px 10px;
+  border-radius: 20px;
+}
+
+/* Grid Layout - Larger Cards */
+.exercises-grid-compact {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); /* Increased min-width from 260px */
+  gap: 1.5rem;
+}
+
+/* Exercise Card - Clean Design */
+.exercise-card-compact {
+  background: var(--card-bg-dark);
+  padding: 1.5rem;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border-color);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.exercise-card-compact:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+  border-color: rgba(255, 255, 255, 0.15);
+}
+
+.ex-header-compact {
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.ex-name-compact {
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: var(--text-main);
+  line-height: 1.4;
+}
+
+.ex-muscle-compact {
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px 8px;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+
+/* Stats Row - Better Alignment */
+.ex-stats-compact {
+  display: flex;
+  gap: 1rem;
+  justify-content: stretch;
+}
+
+.stat-box {
+  flex: 1;
+  background: rgba(0, 0, 0, 0.2);
+  padding: 1rem;
+  border-radius: var(--radius-md);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.stat-label {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.stat-value {
+  font-size: 1.4rem; /* Slightly reduced nicely */
+  font-weight: 800;
+  color: var(--text-main);
+  line-height: 1;
+  white-space: nowrap; /* Prevent wrapping */
+}
+
+.stat-value.highlight {
+  color: var(--warning-color);
+}
+
+.ex-notes-compact {
+  margin-top: 1rem;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.03);
+  padding: 0.75rem;
+  border-radius: 8px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+  line-height: 1.5;
+}
+
+/* Light Theme Overrides */
+.light-theme .plan-title-mini { color: #0f172a; }
+.light-theme .plan-meta-mini { color: #64748b; }
+.light-theme .exercise-card-compact {
+  background: #ffffff;
+  border-color: #e2e8f0;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+.light-theme .exercise-card-compact:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
+}
+.light-theme .ex-name-compact { color: #0f172a; }
+.light-theme .ex-muscle-compact { background: #f1f5f9; color: #475569; }
+.light-theme .stat-box { background: #f8fafc; }
+.light-theme .stat-label { color: #64748b; }
+.light-theme .stat-value { color: #0f172a; }
+.light-theme .ex-notes-compact { background: #f8fafc; color: #475569; }
+
+/* Scroll Container adjustment */
+.plan-scroll-container {
+    padding-bottom: 2rem;
+}
+
+/* Tab Navigation */
+.detail-tabs {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: 1rem;
+}
+
+.detail-tab {
+  padding: 0.8rem 1.5rem;
+  border-radius: var(--radius-md);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  color: var(--text-secondary);
+  background: var(--card-bg-dark);
+  border: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.detail-tab:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-main);
+  border-color: rgba(255, 255, 255, 0.1);
+}
+
+.detail-tab.active {
+  background: var(--card-bg-dark);
+  color: var(--success-color);
+  border-color: var(--success-color);
+  box-shadow: 0 4px 12px rgba(81, 207, 102, 0.15);
+}
+
+.light-theme .detail-tab {
+    background: #ffffff;
+    border-color: #e2e8f0;
+}
+.light-theme .detail-tab:hover {
+    background: #f8fafc;
+    color: #0f172a;
+}
+.light-theme .detail-tab.active {
+    background: #ffffff;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 600px) {
+  .plan-title-mini {
+    font-size: 1.6rem;
+  }
+  
+  .plan-meta-mini {
+    flex-wrap: wrap;
+    font-size: 0.85rem;
+  }
+
+  .day-group-header {
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  .day-name {
+    min-width: 80px;
+    font-size: 0.9rem;
+  }
+
+  .exercises-grid-compact {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .exercise-card-compact {
+    padding: 1.25rem;
+  }
+
+  .ex-header-compact {
+    margin-bottom: 1rem;
+  }
+
+  .ex-name-compact {
+    font-size: 1.05rem;
+  }
+
+  .stat-box {
+    padding: 0.75rem 0.5rem;
+  }
+
+  .stat-value {
+    font-size: 1.2rem;
+  }
+}
+
+@media (max-width: 380px) {
+  .plan-title-mini {
+    font-size: 1.4rem;
+  }
+  
+  .day-group-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .day-line {
+    width: 100%;
+    margin: 0.25rem 0;
+  }
+}

@@ -13,13 +13,7 @@ public class UpdateMemberRequest {
     private Integer monthsPaid;
     private Integer monthsFree;
 
-    // Timing fields (String to allow "1", "12", etc.)
-    private String fromHour;
-    private String fromMinute;
-    private String fromPeriod; // AM/PM
-    private String toHour;
-    private String toMinute;
-    private String toPeriod;
+    private String workoutTimeSlot;
 
     private Double registrationFee;
     private Double planPrice;

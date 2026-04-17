@@ -1,64 +1,61 @@
 package com.gymmanagement.commonservices.entity;
 
-import java.time.LocalDate;
+import jakarta.persistence.*;
+import lombok.Data;
+import lombok.ToString;
+
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.gymmanagement.commonservices.enumeration.RegistrationStatus;
 import com.gymmanagement.commonservices.enumeration.Role;
-import jakarta.persistence.*;
-import lombok.Data;
 
 @Data
+@ToString(onlyExplicitlyIncluded = true)
 @Entity
-@Table(name = "users")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@Table(name = "users", uniqueConstraints = {
+        @UniqueConstraint(columnNames = "email"),
+        @UniqueConstraint(columnNames = "phone_number"),
+        @UniqueConstraint(columnNames = "username")
+}, indexes = {
+        @Index(name = "idx_user_email", columnList = "email"),
+        @Index(name = "idx_user_username", columnList = "username"),
+        @Index(name = "idx_user_role", columnList = "role")
+})
 public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "user_id")
-    private int userId;
+    @ToString.Include // SAFE field
+    private Integer userId;
 
-    @Column(unique = true, nullable = true)
-    private String username;
-
-    @Column(name = "first_name", nullable = false)
-    private String firstName;
-
-    @Column(name = "last_name")
-    private String lastName;
-
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(nullable = false, unique = true)
+    @ToString.Include // SAFE field
     private String email;
 
-    @Column(name = "phone_number")
+    @Column(name = "phone_number", unique = true)
     private String phoneNumber;
 
-    @Column(name = "date_of_birth")
-    private LocalDate dateOfBirth;
+    @Column(name = "password_hash")
+    private String password;
 
-    @Column(name = "gender")
-    private String gender;
+    @Column(nullable = false)
+    @Enumerated(EnumType.STRING)
+    @ToString.Include // SAFE field
+    private Role role;
 
-    @Column(name = "address")
-    private String address;
+    @Column(name = "username", unique = true)
+    private String username;
 
     @Column(name = "is_active")
     private Boolean isActive = false;
 
-    @Column(name = "password_hash", nullable = true) // can be null for members
-    private String password;
-
-    @Enumerated(EnumType.STRING)
-    @Column(name = "role", nullable = false)
-    private Role role;
-
     @Column(name = "is_email_verified")
     private Boolean isEmailVerified = false;
-
-    @Column(name = "is_phone_verified")
-    private Boolean isPhoneVerified = false;
 
     @Column(name = "created_at")
     private LocalDateTime createdAt = LocalDateTime.now();
@@ -66,23 +63,37 @@ public class User {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
 
-    // ✅ One admin can have multiple gyms
+    @Column(name = "failed_login_attempts")
+    private Integer failedLoginAttempts = 0;
+
+    @Column(name = "lockout_expiry")
+    private LocalDateTime lockoutExpiry;
+
+    // ❌ EXCLUDE — Lazy collection -> cause of crash
     @OneToMany(mappedBy = "createdByAdmin", cascade = CascadeType.ALL)
     @JsonManagedReference
     private List<Gym> gyms;
-    
-    
+
     @Column(name = "registration_token")
-    private String registrationToken; // unique token for registration link
+    private String registrationToken;
 
     @Column(name = "token_generated_at")
-    private LocalDateTime tokenGeneratedAt; // when token was generated
+    private LocalDateTime tokenGeneratedAt;
 
     @Enumerated(EnumType.STRING)
-    @Column(name = "registration_status")
     private RegistrationStatus registrationStatus = RegistrationStatus.PENDING;
 
+    // ⭐ CHAT KEYS (E2EE)
+    @Column(name = "public_key", columnDefinition = "TEXT")
+    private String publicKey;
 
+    @Column(name = "encrypted_private_key", columnDefinition = "TEXT")
+    private String encryptedPrivateKey;
+
+    // ❌ EXCLUDE — Lazy fetch -> cause of LazyInitializationException
+    @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
+    private UserProfile userProfile;
 
     @PreUpdate
     public void setLastUpdate() {

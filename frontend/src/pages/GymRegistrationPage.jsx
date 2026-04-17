@@ -1,10 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import axios from 'axios';
 import {
-  ThemeProvider,
-  createTheme,
   CssBaseline,
   Typography,
   TextField,
@@ -14,75 +11,26 @@ import {
   IconButton,
 } from '@mui/material';
 import { Add, Delete } from '@mui/icons-material';
+import { useGym } from '../context/GymContext';
+import AuthLayout from '../components/AuthLayout';
 
 const GymRegistrationPage = () => {
   const navigate = useNavigate();
+  // ... existing code ...
+  // Skipping down to JSX replacement for background
+  
+  // NOTE: replace_file_content cannot handle non-contiguous blocks elegantly if I want to update import AND usage.
+  // I will update the IMPORT first, and then usage in a second step or if the tool allows splitting.
+  // The tool instructions say: "Do NOT use this tool if you are only editing a single contiguous block of lines." (Use replace for single). "Use multi_replace... for multiple non-contiguous".
+  
+  // I will use multi_replace interaction.
+  const { createGyms, loading } = useGym();
   const [gyms, setGyms] = useState([{ gymName: '', address: '', city: '', state: '', contactNumber: '', email: '', openingHours: '' }]);
   const [activeGymIndex, setActiveGymIndex] = useState(0);
   const [errors, setErrors] = useState({});
   const [apiError, setApiError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const [isLoading, setIsLoading] = useState(false);
   const [showErrors, setShowErrors] = useState(false);
-
-  // 🔍 DEBUG: Log base URL
-  const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-  console.log("VITE_API_BASE_URL:", API_BASE_URL);
-
-  const theme = createTheme({
-    palette: {
-      mode: 'light',
-      primary: { main: '#342bddff' },
-      secondary: { main: '#4F46E5' },
-      background: { default: 'linear-gradient(135deg, #E5E7EB 0%, #F3F4F6 100%)' },
-      text: { primary: '#111827', secondary: '#4B5563' },
-      success: { main: '#46e546ff' },
-      error: { main: '#EF4444' },
-    },
-    typography: {
-      fontFamily: "'Inter', sans-serif",
-      h5: { fontWeight: 700, letterSpacing: '0.3px' },
-      body2: { fontSize: '0.875rem' },
-    },
-    components: {
-      MuiTextField: {
-        styleOverrides: {
-          root: {
-            '& .MuiOutlinedInput-root': {
-              borderRadius: '10px',
-              backgroundColor: 'rgba(255, 255, 255, 0.5)',
-              transition: 'all 0.3s ease',
-              '&:hover fieldset': { borderColor: '#342bddff' },
-              '&.Mui-focused fieldset': { borderColor: '#342bddff' },
-            },
-            '& .MuiInputLabel-root': {
-              color: '#4B5563',
-              '&.Mui-focused': { color: '#342bddff' },
-            },
-          },
-        },
-      },
-      MuiButton: {
-        styleOverrides: {
-          root: {
-            textTransform: 'none',
-            borderRadius: '10px',
-            padding: '12px 24px',
-            fontWeight: 600,
-            background: 'linear-gradient(90deg, #4F46E5, #4F46E5)',
-            color: '#FFFFFF',
-            transition: 'all 0.3s ease',
-            '&:hover': {
-              transform: 'translateY(-2px)',
-              boxShadow: '0 6px 12px rgba(0, 0, 0, 0.2)',
-              background: 'linear-gradient(90deg, #342bddff, #342bddff)',
-            },
-            '&:disabled': { background: 'grey', color: '#FFFFFF', opacity: 0.6 },
-          },
-        },
-      },
-    },
-  });
 
   const validateForm = (gym) => {
     const newErrors = {};
@@ -137,183 +85,177 @@ const GymRegistrationPage = () => {
 
     if (Object.keys(allErrors).length > 0) return;
 
-    setIsLoading(true);
-    try {
-      const token = localStorage.getItem('token');
-      console.log("Using token:", token);
+    const result = await createGyms(gyms);
 
-      const response = await axios.post(
-        `${API_BASE_URL}/gym/create`,
-        gyms,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-
-      if (response.data && response.data[0]?.message === 'Gym created successfully') {
-        setSuccessMessage('Gyms registered successfully! Redirecting...');
-        setTimeout(() => navigate('/dashboard'), 2000);
-      } else {
-        setApiError('Unexpected response from server');
-      }
-    } catch (error) {
-      const errorMsg = error.response?.data?.message || error.message || 'Failed to register gyms';
-      setApiError(errorMsg.includes('already exists') ? 'Gym already exists with this name/address' : errorMsg);
-    } finally {
-      setIsLoading(false);
+    if (result.success) {
+      setSuccessMessage('Gyms registered successfully! Redirecting...');
+      setTimeout(() => navigate('/admin/dashboard'), 2000);
+    } else {
+      setApiError(result.message);
     }
   };
 
+  // ... form states ...
+
   return (
-    <ThemeProvider theme={theme}>
+    <>
       <CssBaseline />
-      <CssBaseline />
-      <Box
-        sx={{
-          display: 'flex',
-          minHeight: '100vh',
-          background: theme.palette.background.default,
-        }}
+      <AuthLayout
+        title="Gym Registration"
+        subHeadline="MANAGE YOUR FITNESS EMPIRE"
+        headline="SCALE YOUR <span style='color: #f97316'>GYM</span>, STREAMLINE <br /> OPERATIONS!"
+        navText="Add your fitness centers to manage them efficiently and track performance."
+        navAction="Already have gyms?"
+        navLink="/admin/gyms"
+        navButtonText="View Gyms"
       >
-        {/* Left Image Area */}
-        <Box
-          sx={{
-            flex: 1,
-            position: 'relative',
-            display: { xs: 'none', md: 'block' },
-          }}
-        >
-          <Box
-            sx={{
-              height: '100%',
-              backgroundImage: `url('https://images.unsplash.com/photo-1517836357463-d25dfeac3438?ixlib=rb-4.0.3&auto=format&fit=crop&w=2070&q=80')`,
-              backgroundSize: 'cover',
-              backgroundPosition: 'center',
-            }}
-          />
-          <Box
-            sx={{
-              position: 'absolute',
-              inset: 0,
-              background: 'rgba(0, 0, 0, 0.4)',
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              justifyContent: 'center',
-              color: 'white',
-              textAlign: 'center',
-              px: 4,
-            }}
-            component={motion.div}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8 }}
-          >
-            <Typography variant="h3" component="h2" gutterBottom sx={{ fontWeight: 700 }}>
-              Register Your Gym
-            </Typography>
-            <Typography variant="h6" sx={{ maxWidth: '80%' }}>
-              Add your fitness centers to manage them efficiently
-            </Typography>
-          </Box>
-        </Box>
-
-        {/* Right Form Area */}
-        <Box
-          sx={{
-            flex: 1,
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            p: { xs: 2, sm: 4, md: 6 },
-          }}
+        <Box 
           component={motion.div}
-          initial={{ opacity: 0, x: 50 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.8 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
         >
-          <Box sx={{ width: '100%', maxWidth: 500 }}>
-            <Box display="flex" justifyContent="start" alignItems="center" mb={4}>
-              <Typography variant="h5" component="h1" sx={{ fontWeight: 700 }}>
-                Gym Registration
-              </Typography>
-            </Box>
-
-            <Box sx={{ mb: 3 }}>
-              {gyms.map((gym, index) => (
-                <Button
-                  key={index}
-                  variant={activeGymIndex === index ? 'contained' : 'outlined'}
-                  color="primary"
-                  onClick={() => setActiveGymIndex(index)}
-                  sx={{ mr: 1, mb: 1 }}
-                >
-                  {gym.gymName.length > 8 ? `${gym.gymName.slice(0, 8)}...` : gym.gymName || `Gym ${index + 1}`}
-                  {gyms.length > 1 && activeGymIndex === index && (
-                    <IconButton
-                      color="error"
-                      onClick={(e) => { e.stopPropagation(); removeGym(index); }}
-                      sx={{ ml: 1 }}
-                    >
-                      <Delete />
-                    </IconButton>
-                  )}
-                </Button>
-              ))}
+          {/* Gym Tabs (Horizontal Scrollable for card width) */}
+          <Box 
+             sx={{ 
+               mb: 3, 
+               display: 'flex', 
+               alignItems: 'center', 
+               overflowX: 'auto', 
+               pb: 1, 
+               ml: -1,
+               '&::-webkit-scrollbar': { height: '4px' },
+               '&::-webkit-scrollbar-thumb': { backgroundColor: 'rgba(0,0,0,0.1)', borderRadius: '4px' } 
+             }}
+          >
+            {gyms.map((gym, index) => (
               <Button
-                variant="contained"
-                color="primary"
-                startIcon={<Add />}
-                onClick={addGym}
-                sx={{ mb: 1 }}
+                key={index}
+                variant={activeGymIndex === index ? 'contained' : 'outlined'}
+                onClick={() => setActiveGymIndex(index)}
+                size="small"
+                sx={{ 
+                  ml: 1, 
+                  minWidth: 'auto',
+                  whiteSpace: 'nowrap',
+                  borderRadius: '8px',
+                  textTransform: 'none',
+                  borderColor: activeGymIndex === index ? 'primary.main' : 'rgba(0,0,0,0.12)',
+                  color: activeGymIndex === index ? 'white' : 'text.secondary'
+                }}
               >
-                Add Gym
+                {gym.gymName ? (gym.gymName.length > 8 ? `${gym.gymName.slice(0, 8)}...` : gym.gymName) : `Gym ${index + 1}`}
+                {gyms.length > 1 && activeGymIndex === index && (
+                  <IconButton
+                    size="small"
+                    component="span"
+                    onClick={(e) => { e.stopPropagation(); removeGym(index); }}
+                    sx={{ ml: 0.5, p: 0.5, color: 'inherit' }}
+                  >
+                    <Delete fontSize="small" />
+                  </IconButton>
+                )}
               </Button>
-            </Box>
+            ))}
+            <IconButton 
+              color="primary" 
+              onClick={addGym} 
+              sx={{ ml: 1, border: '1px dashed', borderColor: 'primary.main' }}
+              title="Add another gym"
+            >
+              <Add fontSize="small" />
+            </IconButton>
+          </Box>
 
-            <AnimatePresence mode="wait">
-              <Box
-                component="form"
-                onSubmit={handleSubmit}
-                sx={{ display: 'flex', flexDirection: 'column', gap: 2 }}
+          <AnimatePresence mode="wait">
+            <Box
+              component="form"
+              onSubmit={handleSubmit}
+              sx={{ 
+                display: 'flex', 
+                flexDirection: 'column', 
+                gap: 2.5,
+                '& .MuiInputLabel-root': { fontSize: '0.95rem' },
+                '& .MuiOutlinedInput-root': { borderRadius: '12px' }
+              }}
+            >
+              <motion.div
+                key={activeGymIndex}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -20 }}
+                transition={{ duration: 0.3 }}
               >
-                <motion.div
-                  key={activeGymIndex}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: -20 }}
-                  transition={{ duration: 0.4 }}
-                >
-                  <Typography variant="h6" sx={{ mb: 1 }}>
-                    {gyms[activeGymIndex].gymName.trim() || `Gym ${activeGymIndex + 1}`} Details
-                  </Typography>
-                  <TextField
-                    fullWidth
-                    label="Gym Name"
-                    name="gymName"
-                    value={gyms[activeGymIndex].gymName}
-                    onChange={(e) => handleChange(activeGymIndex, e)}
-                    error={showErrors && !!errors[activeGymIndex]?.gymName}
-                    helperText={showErrors && errors[activeGymIndex]?.gymName}
-                    required
-                    variant="outlined"
-                    sx={{ mb: 2 }}
-                  />
-                  <TextField
-                    fullWidth
-                    label="Address"
-                    name="address"
-                    value={gyms[activeGymIndex].address}
-                    onChange={(e) => handleChange(activeGymIndex, e)}
-                    error={showErrors && !!errors[activeGymIndex]?.address}
-                    helperText={showErrors && errors[activeGymIndex]?.address}
-                    required
-                    variant="outlined"
-                    sx={{ mb: 2 }}
-                  />
-                  <TextField
+                <Typography variant="h6" sx={{ mb: 2, fontSize: '1.1rem', fontWeight: 700, color: 'text.primary' }}>
+                  {gyms[activeGymIndex].gymName.trim() || `Gym ${activeGymIndex + 1}`} Details
+                </Typography>
+
+                <TextField
+                  fullWidth
+                  label="Gym Name"
+                  name="gymName"
+                  value={gyms[activeGymIndex].gymName}
+                  onChange={(e) => handleChange(activeGymIndex, e)}
+                  error={showErrors && !!errors[activeGymIndex]?.gymName}
+                  helperText={showErrors && errors[activeGymIndex]?.gymName}
+                  required
+                  variant="outlined"
+                  sx={{ mb: 2 }}
+                />
+                
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, mb: 2 }}>
+                    <TextField
+                      fullWidth
+                      label="Contact Number"
+                      name="contactNumber"
+                      value={gyms[activeGymIndex].contactNumber}
+                      onChange={(e) => handleChange(activeGymIndex, e)}
+                      error={showErrors && !!errors[activeGymIndex]?.contactNumber}
+                      helperText={showErrors && errors[activeGymIndex]?.contactNumber}
+                      required
+                      variant="outlined"
+                    />
+                     <TextField
+                      fullWidth
+                      label="Opening Hours"
+                      name="openingHours"
+                      value={gyms[activeGymIndex].openingHours}
+                      onChange={(e) => handleChange(activeGymIndex, e)}
+                      error={showErrors && !!errors[activeGymIndex]?.openingHours}
+                      helperText={showErrors && errors[activeGymIndex]?.openingHours}
+                      required
+                      variant="outlined"
+                    />
+                </Box>
+
+                <TextField
+                  fullWidth
+                  label="Email"
+                  name="email"
+                  value={gyms[activeGymIndex].email}
+                  onChange={(e) => handleChange(activeGymIndex, e)}
+                  error={showErrors && !!errors[activeGymIndex]?.email}
+                  helperText={showErrors && errors[activeGymIndex]?.email}
+                  required
+                  variant="outlined"
+                  sx={{ mb: 2 }}
+                />
+
+                <TextField
+                  fullWidth
+                  label="Address"
+                  name="address"
+                  value={gyms[activeGymIndex].address}
+                  onChange={(e) => handleChange(activeGymIndex, e)}
+                  error={showErrors && !!errors[activeGymIndex]?.address}
+                  helperText={showErrors && errors[activeGymIndex]?.address}
+                  required
+                  variant="outlined"
+                  sx={{ mb: 2 }}
+                />
+
+                <Box sx={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2 }}>
+                   <TextField
                     fullWidth
                     label="City"
                     name="city"
@@ -323,7 +265,6 @@ const GymRegistrationPage = () => {
                     helperText={showErrors && errors[activeGymIndex]?.city}
                     required
                     variant="outlined"
-                    sx={{ mb: 2 }}
                   />
                   <TextField
                     fullWidth
@@ -335,78 +276,49 @@ const GymRegistrationPage = () => {
                     helperText={showErrors && errors[activeGymIndex]?.state}
                     required
                     variant="outlined"
-                    sx={{ mb: 2 }}
                   />
-                  <TextField
-                    fullWidth
-                    label="Contact Number"
-                    name="contactNumber"
-                    value={gyms[activeGymIndex].contactNumber}
-                    onChange={(e) => handleChange(activeGymIndex, e)}
-                    error={showErrors && !!errors[activeGymIndex]?.contactNumber}
-                    helperText={showErrors && errors[activeGymIndex]?.contactNumber}
-                    required
-                    variant="outlined"
-                    sx={{ mb: 2 }}
-                  />
-                  <TextField
-                    fullWidth
-                    label="Email"
-                    name="email"
-                    value={gyms[activeGymIndex].email}
-                    onChange={(e) => handleChange(activeGymIndex, e)}
-                    error={showErrors && !!errors[activeGymIndex]?.email}
-                    helperText={showErrors && errors[activeGymIndex]?.email}
-                    required
-                    variant="outlined"
-                    sx={{ mb: 2 }}
-                  />
-                  <TextField
-                    fullWidth
-                    label="Opening Hours"
-                    name="openingHours"
-                    value={gyms[activeGymIndex].openingHours}
-                    onChange={(e) => handleChange(activeGymIndex, e)}
-                    error={showErrors && !!errors[activeGymIndex]?.openingHours}
-                    helperText={showErrors && errors[activeGymIndex]?.openingHours}
-                    required
-                    variant="outlined"
-                    sx={{ mb: 2 }}
-                  />
-                </motion.div>
+                </Box>
+              </motion.div>
 
-                {(apiError || successMessage) && (
-                  <Typography
-                    color={successMessage ? 'success.main' : 'error.main'}
-                    align="center"
-                    variant="body2"
-                    sx={{ my: 1, fontWeight: 500 }}
-                  >
-                    {successMessage || apiError}
-                    {successMessage && (
-                      <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
-                        <CircularProgress size={20} color="inherit" />
-                      </Box>
-                    )}
-                  </Typography>
-                )}
-
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="primary"
-                  disabled={isLoading}
-                  startIcon={isLoading ? <CircularProgress size={20} color="inherit" /> : null}
-                  fullWidth
+              {(apiError || successMessage) && (
+                <Typography
+                  color={successMessage ? 'success.main' : 'error.main'}
+                  align="center"
+                  variant="body2"
+                  sx={{ my: 1, fontWeight: 600 }}
                 >
-                  Register Gyms
-                </Button>
-              </Box>
-            </AnimatePresence>
-          </Box>
+                  {successMessage || apiError}
+                  {successMessage && (
+                    <Box sx={{ display: 'flex', justifyContent: 'center', mt: 1 }}>
+                      <CircularProgress size={20} color="inherit" />
+                    </Box>
+                  )}
+                </Typography>
+              )}
+
+              <Button
+                type="submit"
+                variant="contained"
+                color="primary"
+                disabled={loading}
+                startIcon={loading ? <CircularProgress size={20} color="inherit" /> : null}
+                fullWidth
+                sx={{ 
+                    mt: 2, 
+                    py: 1.5, 
+                    fontSize: '1rem', 
+                    fontWeight: 700, 
+                    borderRadius: '12px',
+                    textTransform: 'none'
+                }}
+              >
+                Register Gyms
+              </Button>
+            </Box>
+          </AnimatePresence>
         </Box>
-      </Box>
-    </ThemeProvider>
+      </AuthLayout>
+    </>
   );
 };
 

@@ -1,273 +1,120 @@
-// src/components/MemberRow.jsx
 import React from "react";
-import {
-  TableRow,
-  TableCell,
-  Box,
-  Typography,
-  Chip,
-  IconButton,
-  Tooltip,
-  Stack,
-  useMediaQuery,
-} from "@mui/material";
-import {
-  People,
-  Visibility,
-  Edit,
-  Notifications,
-  Refresh,
-  Delete,
-} from "@mui/icons-material";
+import { motion } from "framer-motion";
+import '../styles/dashboard.css';
+
+// Custom SVG Icons
+const IconEye = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+);
+const IconEdit = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+);
+const IconMoney = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+);
+const IconTrash = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/><line x1="10" y1="11" x2="10" y2="17"/><line x1="14" y1="11" x2="14" y2="17"/></svg>
+);
+const IconPerson = () => (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+);
+
+const buttonVariants = {
+  hover: { scale: 1.15 },
+  tap: { scale: 0.9 },
+};
 
 const MemberRow = React.memo(
-  ({ member, onDetail, onEdit, onNotify, onResend, onDelete }) => {
-    const isMobile = useMediaQuery("(max-width:600px)");
-    const isJioPhone = useMediaQuery("(max-width:280px)"); // Jio Phone 2
-
+  ({ member, gymName, onDetail, onEdit, onPaymentReminder, onDelete, isSelected }) => {
     const planText =
       member.membershipPlan ||
       (member.monthsPaid
         ? `${member.monthsPaid} mo${member.monthsPaid > 1 ? "s" : ""}${
-            member.monthsFree ? ` + ${member.monthsFree}f` : ""
+            member.monthsFree ? ` + ${member.monthsFree} free` : ""
           }`
         : "—");
 
     const timing = member.workoutTimeSlot || member.timing || "—";
+    const id = member.memberId || member.id || member.gymMemberId;
 
-    const singleLine = {
-      whiteSpace: "nowrap",
-      overflow: "hidden",
-      textOverflow: "ellipsis",
-      maxWidth: "100%",
-    };
-
-    // ────── JIO PHONE 2 (≤ 280px) ──────
-    if (isJioPhone) {
-      return (
-        <Box
-          sx={{
-            border: "1px solid",
-            borderColor: "divider",
-            borderRadius: 1.5,
-            p: 1,
-            mb: 1.5,
-            bgcolor: "background.paper",
-            cursor: "pointer",
-            fontSize: "12px",
-          }}
-          onClick={onDetail}
-        >
-          <Stack spacing={0.8}>
-            {/* Name + Tiny Avatar */}
-            <Box sx={{ display: "flex", alignItems: "center", gap: 0.8 }}>
-              <Box
-                sx={{
-                  width: 24,
-                  height: 24,
-                  borderRadius: "8px",
-                  background: "linear-gradient(135deg, #10b981, #34d399)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <People sx={{ color: "white", fontSize: 14 }} />
-              </Box>
-              <Typography fontWeight={600} sx={singleLine} fontSize="13px">
-                {member.fullName}
-              </Typography>
-            </Box>
-
-            {/* Email */}
-            <Typography variant="caption" color="text.secondary" sx={singleLine}>
-              {member.email}
-            </Typography>
-
-            {/* Phone */}
-            <Typography variant="caption" color="text.secondary" sx={singleLine}>
-              {member.phoneNo || member.phoneNumber || "—"}
-            </Typography>
-
-            {/* Plan & Timing */}
-            <Box sx={{ display: "flex", gap: 0.5, flexWrap: "wrap" }}>
-              <Chip label={planText} size="small" color="primary" sx={{ fontSize: 10, py: 0.2 }} />
-              {timing !== "—" && (
-                <Chip label={timing} size="small" variant="outlined" sx={{ fontSize: 10, py: 0.2, ...singleLine }} />
-              )}
-            </Box>
-
-            {/* HORIZONTAL ACTIONS – LEFT ALIGNED + SCROLLABLE */}
-            <Stack
-              direction="row"
-              justifyContent="flex-start"
-              spacing={0.3}
-              sx={{
-                flexWrap: "nowrap",
-                overflowX: "auto",
-                "&::-webkit-scrollbar": { display: "none" },
-                scrollbarWidth: "none",
-                py: 0.5,
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Tooltip title="View">
-                <IconButton size="small" color="primary" onClick={onDetail} sx={{ p: 0.8 }}>
-                  <Visibility fontSize="small" />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Edit">
-                <IconButton size="small" color="secondary" onClick={onEdit} sx={{ p: 0.8 }}>
-                  <Edit fontSize="small" />
-                </IconButton>
-              </Tooltip>
-              <Tooltip title="Notify">
-                <IconButton size="small" color="warning" onClick={onNotify} sx={{ p: 0.8 }}>
-                  <Notifications fontSize="small" />
-                </IconButton>
-              </Tooltip>
-              {member.registrationStatus === "PENDING" && (
-                <Tooltip title="Resend">
-                  <IconButton size="small" color="info" onClick={onResend} sx={{ p: 0.8 }}>
-                    <Refresh fontSize="small" />
-                  </IconButton>
-                </Tooltip>
-              )}
-              <Tooltip title="Delete">
-                <IconButton size="small" color="error" onClick={onDelete} sx={{ p: 0.8 }}>
-                  <Delete fontSize="small" />
-                </IconButton>
-              </Tooltip>
-            </Stack>
-          </Stack>
-        </Box>
-      );
-    }
-
-    // ────── MOBILE CARD (281px – 600px) ──────
-    if (isMobile) {
-      return (
-        <Box
-          sx={{
-            border: "1px solid",
-            borderColor: "divider",
-            borderRadius: 2,
-            p: 2,
-            mb: 2,
-            bgcolor: "background.paper",
-            cursor: "pointer",
-          }}
-          onClick={onDetail}
-        >
-          <Stack spacing={1.5}>
-            <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              <Box
-                sx={{
-                  width: 36,
-                  height: 36,
-                  borderRadius: "10px",
-                  background: "linear-gradient(135deg, #10b981, #34d399)",
-                  display: "flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                }}
-              >
-                <People sx={{ color: "white", fontSize: 18 }} />
-              </Box>
-              <Typography fontWeight={600} sx={singleLine}>
-                {member.fullName}
-              </Typography>
-            </Box>
-
-            <Typography variant="body2" color="text.secondary" sx={singleLine}>
-              {member.email}
-            </Typography>
-
-            <Typography variant="body2" color="text.secondary" sx={singleLine}>
-              {member.phoneNo || member.phoneNumber || "—"}
-            </Typography>
-
-            <Box sx={{ display: "flex", gap: 1, flexWrap: "wrap" }}>
-              <Chip label={planText} size="small" color="primary" />
-              {timing !== "—" && <Chip label={timing} size="small" variant="outlined" sx={singleLine} />}
-            </Box>
-
-            {/* HORIZONTAL LEFT-ALIGNED */}
-            <Stack
-              direction="row"
-              justifyContent="flex-start"
-              spacing={0.5}
-              sx={{
-                flexWrap: "nowrap",
-                overflowX: "auto",
-                "&::-webkit-scrollbar": { display: "none" },
-                scrollbarWidth: "none",
-              }}
-              onClick={(e) => e.stopPropagation()}
-            >
-              <Tooltip title="View Details"><IconButton size="small" color="primary" onClick={onDetail}><Visibility fontSize="small" /></IconButton></Tooltip>
-              <Tooltip title="Edit"><IconButton size="small" color="secondary" onClick={onEdit}><Edit fontSize="small" /></IconButton></Tooltip>
-              <Tooltip title="Notify"><IconButton size="small" color="warning" onClick={onNotify}><Notifications fontSize="small" /></IconButton></Tooltip>
-              {member.registrationStatus === "PENDING" && (
-                <Tooltip title="Resend"><IconButton size="small" color="info" onClick={onResend}><Refresh fontSize="small" /></IconButton></Tooltip>
-              )}
-              <Tooltip title="Delete"><IconButton size="small" color="error" onClick={onDelete}><Delete fontSize="small" /></IconButton></Tooltip>
-            </Stack>
-          </Stack>
-        </Box>
-      );
-    }
-
-    // ────── DESKTOP TABLE (≥ 601px) ──────
     return (
-      <TableRow hover onClick={onDetail} sx={{ cursor: "pointer" }}>
-        <TableCell>
-          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-            <Box
-              sx={{
-                width: 36,
-                height: 36,
-                borderRadius: "10px",
-                background: "linear-gradient(135deg, #10b981, #34d399)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-              }}
-            >
-              <People sx={{ color: "white", fontSize: 18 }} />
-            </Box>
-            <Typography fontWeight={600} sx={singleLine}>
-              {member.fullName}
-            </Typography>
-          </Box>
-        </TableCell>
+      <motion.tr
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        exit={{ opacity: 0, x: -20 }}
+        whileHover={{ backgroundColor: 'rgba(255, 255, 255, 0.02)' }}
+        className={isSelected ? "member-row-selected" : ""}
+        onClick={onDetail}
+        style={{
+          cursor: "pointer",
+          backgroundColor: isSelected ? 'rgba(var(--db-accent-rgb, 251, 146, 60), 0.05)' : 'transparent',
+          transition: 'background-color 0.2s'
+        }}
+      >
+        <td style={{ width: '35%' }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+            <div className="avatar-sm" style={{ 
+              backgroundColor: 'rgba(var(--db-accent-rgb, 251, 146, 60), 0.1)', 
+              color: 'var(--db-accent)',
+              borderRadius: '10px',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }}>
+              <IconPerson />
+            </div>
+            <div>
+              <div style={{ fontWeight: 700, fontSize: '0.9rem', color: 'var(--db-text-primary)' }}>{member.fullName}</div>
+              <div style={{ fontSize: '0.75rem', color: 'var(--db-text-secondary)' }}>{member.email}</div>
+              {gymName && (
+                <div style={{ fontSize: '0.7rem', color: 'var(--db-accent)', marginTop: '2px', display: 'flex', alignItems: 'center', gap: '3px' }}>
+                   <span style={{opacity: 0.7}}>Gym:</span> {gymName}
+                </div>
+              )}
+            </div>
+          </div>
+        </td>
 
-        <TableCell sx={{ maxWidth: 200, ...singleLine }}>{member.email}</TableCell>
-        <TableCell sx={{ maxWidth: 140, ...singleLine }}>
-          {member.phoneNo || member.phoneNumber || "—"}
-        </TableCell>
-        <TableCell>
-          <Chip label={planText} size="small" color="primary" sx={{ minWidth: 80 }} />
-        </TableCell>
-        <TableCell sx={{ maxWidth: 180, ...singleLine }}>{timing}</TableCell>
+        <td data-label="Phone">
+          <div style={{ fontSize: "0.85rem", color: "var(--db-text-secondary)" }}>
+            {member.phoneNo || member.phoneNumber || "—"}
+          </div>
+        </td>
 
-        <TableCell
-          align="center"
-          sx={{
-            whiteSpace: "nowrap",
-            "& .MuiButtonBase-root": { mx: 0.25 },
-          }}
-          onClick={(e) => e.stopPropagation()}
-        >
-          <Tooltip title="View Details"><IconButton color="primary" size="small" onClick={onDetail}><Visibility fontSize="small" /></IconButton></Tooltip>
-          <Tooltip title="Edit"><IconButton color="secondary" size="small" onClick={onEdit}><Edit fontSize="small" /></IconButton></Tooltip>
-          <Tooltip title="Notify"><IconButton color="warning" size="small" onClick={onNotify}><Notifications fontSize="small" /></IconButton></Tooltip>
-          {member.registrationStatus === "PENDING" && (
-            <Tooltip title="Resend"><IconButton color="info" size="small" onClick={onResend}><Refresh fontSize="small" /></IconButton></Tooltip>
-          )}
-          <Tooltip title="Delete"><IconButton size="small" color="error" onClick={onDelete}><Delete fontSize="small" /></IconButton></Tooltip>
-        </TableCell>
-      </TableRow>
+        <td data-label="Plan">
+          <span className="db-badge badge-member db-badge-outline">
+            {planText}
+          </span>
+        </td>
+
+        <td data-label="Timing">
+          <div style={{ fontSize: "0.85rem", color: "var(--db-text-secondary)" }}>{timing}</div>
+        </td>
+
+        <td onClick={(e) => e.stopPropagation()}>
+          <div style={{ display: "flex", gap: "0.5rem", justifyContent: "flex-end" }}>
+            <motion.button variants={buttonVariants} whileHover="hover" whileTap="tap" 
+              className="db-btn-icon" onClick={onDetail} title="View Details">
+              <IconEye />
+            </motion.button>
+
+            <motion.button variants={buttonVariants} whileHover="hover" whileTap="tap" 
+              className="db-btn-icon" onClick={onEdit} title="Edit Member">
+              <IconEdit />
+            </motion.button>
+
+            <motion.button variants={buttonVariants} whileHover="hover" whileTap="tap" 
+              className="db-btn-icon" onClick={onPaymentReminder} title="Payment Reminder" style={{ color: 'var(--db-green)' }}>
+              <IconMoney />
+            </motion.button>
+
+            <motion.button variants={buttonVariants} whileHover="hover" whileTap="tap" 
+              className="db-btn-icon btn-delete" onClick={onDelete} title="Delete Member">
+              <IconTrash />
+            </motion.button>
+          </div>
+        </td>
+      </motion.tr>
     );
   }
 );
