@@ -39,6 +39,7 @@ public class MemberDashboardServiceImpl implements MemberDashboardService {
         res.setUserId(userId);
         res.setFullName(member.getUser().getUsername());
         res.setEmail(member.getUser().getEmail());
+        res.setGymId(member.getGym().getGymId());
 
         // TRAINER DETAILS
         Trainer trainer = member.getTrainer();
@@ -56,16 +57,39 @@ public class MemberDashboardServiceImpl implements MemberDashboardService {
         }
 
         // ATTENDANCE COUNT
-        res.setAttendanceCount(attendanceRepo.countAttendance(userId));
+        List<LocalDate> allDates = attendanceRepo.findAllAttendanceDates(userId);
+        res.setAttendanceCount(allDates.size());
+        res.setAttendanceHistory(allDates);
 
         // STREAK CALCULATION
-        res.setAttendanceStreak(calculateStreak(attendanceRepo.findAllAttendanceDates(userId)));
+        res.setAttendanceStreak(calculateStreak(allDates));
+        res.setBestStreak(calculateBestStreak(allDates));
 
         // PLANS (from other microservices later)
         res.setWorkoutPlan(null);
         res.setDietPlan(null);
 
         return res;
+    }
+
+    private int calculateBestStreak(List<LocalDate> dates) {
+        if (dates.isEmpty())
+            return 0;
+        int maxStreak = 0;
+        int current = 0;
+        LocalDate lastDate = null;
+
+        for (int i = dates.size() - 1; i >= 0; i--) {
+            LocalDate d = dates.get(i);
+            if (lastDate == null || d.equals(lastDate.plusDays(1))) {
+                current++;
+            } else if (!d.equals(lastDate)) {
+                current = 1;
+            }
+            maxStreak = Math.max(maxStreak, current);
+            lastDate = d;
+        }
+        return maxStreak;
     }
 
     private int calculateStreak(List<LocalDate> dates) {

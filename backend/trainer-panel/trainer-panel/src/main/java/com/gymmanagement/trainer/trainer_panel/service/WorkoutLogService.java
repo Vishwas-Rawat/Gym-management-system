@@ -10,6 +10,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 @RequiredArgsConstructor
@@ -19,8 +21,8 @@ public class WorkoutLogService {
     private final MemberWorkoutLogRepository logRepo;
 
     // --- EXERCISE DATABASE ---
-    public List<MasterExercise> searchExercises(String query, Integer memberId) {
-        return exerciseRepo.searchExercises(query, memberId);
+    public Page<MasterExercise> searchExercises(String query, Integer memberId, Pageable pageable) {
+        return exerciseRepo.searchExercises(query, memberId, pageable);
     }
 
     public MasterExercise addExerciseToDatabase(MasterExercise exercise, Integer memberId) {

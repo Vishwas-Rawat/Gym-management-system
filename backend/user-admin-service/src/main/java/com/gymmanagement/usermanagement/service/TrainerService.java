@@ -1,15 +1,18 @@
 // src/main/java/com/gymmanagement/usermanagement/service/TrainerService.java
 package com.gymmanagement.usermanagement.service;
 
+import java.util.List;
+
 import com.gymmanagement.commonservices.entity.Trainer;
 import com.gymmanagement.usermanagement.Request.AddTrainerRequest;
 import com.gymmanagement.usermanagement.Request.AssignMembersToTrainerRequest;
 import com.gymmanagement.usermanagement.Request.CompleteTrainerRegistrationRequest;
+import com.gymmanagement.usermanagement.Request.TrainerProfileUpdateRequest;
 import com.gymmanagement.usermanagement.Request.UpdateTrainerRequest;
 import com.gymmanagement.usermanagement.Response.AddTrainerResponse;
+import com.gymmanagement.usermanagement.Response.MemberAssignmentResponse;
+import com.gymmanagement.usermanagement.Response.TrainerProfileResponse;
 import com.gymmanagement.usermanagement.Response.TrainerResponse;
-
-import java.util.List;
 
 public interface TrainerService {
     List<AddTrainerResponse> addTrainersByAdmin(List<AddTrainerRequest> requests); // ← Fixed return type
@@ -34,5 +37,11 @@ public interface TrainerService {
 
     List<TrainerResponse> getTrainersByAdminId(Integer adminId);
 
-    void assignMembersToTrainer(AssignMembersToTrainerRequest request);
+    MemberAssignmentResponse assignMembersToTrainer(AssignMembersToTrainerRequest request);
+
+    List<com.gymmanagement.usermanagement.Response.GymMemberResponse> getPotentialMembers(Integer trainerId);
+
+    TrainerProfileResponse getTrainerProfileByUserId(Integer userId);
+
+    TrainerProfileResponse updateTrainerProfile(Integer userId, TrainerProfileUpdateRequest request);
 }

@@ -1,10 +1,13 @@
 package com.gymmanagement.usermanagement.controller;
 
+import com.gymmanagement.usermanagement.Request.ForgotPasswordRequest;
 import com.gymmanagement.usermanagement.Request.LoginRequest;
 import com.gymmanagement.usermanagement.Request.RegisterRequest;
+import com.gymmanagement.usermanagement.Request.ResetPasswordRequest;
 import com.gymmanagement.usermanagement.Response.LoginResponse;
 import com.gymmanagement.usermanagement.Response.RegisterResponse;
 import com.gymmanagement.usermanagement.service.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,7 +22,7 @@ public class RegisterController {
     // → You said you don't want to block multiple admin registrations
 
     @PostMapping("/register")
-    public RegisterResponse register(@RequestBody RegisterRequest request) {
+    public RegisterResponse register(@Valid @RequestBody RegisterRequest request) {
         // Anyone can register as admin → no restrictions
         return userService.registerUser(request);
     }
@@ -37,6 +40,16 @@ public class RegisterController {
     @PostMapping("/login")
     public LoginResponse login(@RequestBody LoginRequest request) {
         return userService.login(request.getIdentifier(), request.getPassword());
+    }
+
+    @PostMapping("/forgot-password")
+    public RegisterResponse forgotPassword(@RequestBody ForgotPasswordRequest request) {
+        return userService.forgotPassword(request);
+    }
+
+    @PostMapping("/reset-password")
+    public RegisterResponse resetPassword(@Valid @RequestBody ResetPasswordRequest request) {
+        return userService.resetPassword(request);
     }
 
     // ===================================

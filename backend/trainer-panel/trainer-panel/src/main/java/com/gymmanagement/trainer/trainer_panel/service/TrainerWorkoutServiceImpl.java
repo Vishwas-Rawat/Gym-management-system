@@ -79,9 +79,29 @@ public class TrainerWorkoutServiceImpl implements TrainerWorkoutService {
             plan.setTrainerId(trainerId);
             plan.setCreatedAt(LocalDateTime.now());
 
-            // STRATEGY CHECK: Only wipe if NOT "APPEND"
-            String strategy = req.getStrategy(); // "REPLACE" or "APPEND"
-            if (!"APPEND".equalsIgnoreCase(strategy)) {
+            // STRATEGY CHECK:
+            String strategy = req.getStrategy(); // "REPLACE", "APPEND", or "REPLACE_DAYS"
+            if ("REPLACE_DAYS".equalsIgnoreCase(strategy) && req.getExercises() != null) {
+                // GRANULAR REPLACE: Only remove the days being assigned in this request
+                Set<DayOfWeek> daysToReplace = req.getExercises().stream()
+                        .filter(ex -> ex.getDays() != null)
+                        .flatMap(ex -> ex.getDays().stream())
+                        .map(String::toUpperCase)
+                        .map(DayOfWeek::valueOf)
+                        .collect(Collectors.toSet());
+
+                List<WorkoutPlanItem> itemsToRemove = new java.util.ArrayList<>();
+                for (WorkoutPlanItem item : plan.getItems()) {
+                    item.getDays().removeAll(daysToReplace);
+                    if (item.getDays().isEmpty()) {
+                        itemsToRemove.add(item);
+                    }
+                }
+                // Cleanup
+                itemRepo.deleteAll(itemsToRemove);
+                plan.getItems().removeAll(itemsToRemove);
+
+            } else if (!"APPEND".equalsIgnoreCase(strategy)) {
                 // Default behavior: REPLACE -> Wipe existing
                 itemRepo.deleteAll(plan.getItems());
                 plan.getItems().clear();

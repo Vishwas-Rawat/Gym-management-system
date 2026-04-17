@@ -3,6 +3,7 @@ package com.gymmanagement.usermanagement.service.impl;
 import com.gymmanagement.commonservices.entity.Gym;
 import com.gymmanagement.commonservices.entity.User;
 import com.gymmanagement.commonservices.enumeration.Role;
+import com.gymmanagement.usermanagement.Response.GymMinimalResponse;
 import com.gymmanagement.usermanagement.Response.GymRegisterResponse;
 import com.gymmanagement.usermanagement.repository.GymRepository;
 import com.gymmanagement.usermanagement.repository.MemberRepository;
@@ -69,6 +70,19 @@ public class GymServiceImpl implements GymService {
 
         return gyms.stream()
                 .map(gym -> toResponse(gym, admin, null))
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public List<GymMinimalResponse> getMinimalGymsByAdmin(int adminId) {
+        User admin = getAdminById(adminId);
+        List<Gym> gyms = gymRepository.findByCreatedByAdminAndIsActiveTrue(admin);
+        
+        return gyms.stream()
+                .map(gym -> GymMinimalResponse.builder()
+                        .gymId(gym.getGymId())
+                        .gymName(gym.getGymName())
+                        .build())
                 .collect(Collectors.toList());
     }
 

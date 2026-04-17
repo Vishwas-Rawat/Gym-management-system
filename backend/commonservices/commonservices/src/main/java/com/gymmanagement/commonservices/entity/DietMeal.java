@@ -28,4 +28,9 @@ public class DietMeal {
 
     @OneToOne(mappedBy = "meal", cascade = CascadeType.ALL, orphanRemoval = true)
     private DietProtein protein;
+
+    @ElementCollection
+    @CollectionTable(name = "diet_meal_days", joinColumns = @JoinColumn(name = "meal_id"))
+    @Enumerated(EnumType.STRING)
+    private java.util.Set<com.gymmanagement.commonservices.enumeration.DayOfWeek> days = new java.util.HashSet<>();
 }

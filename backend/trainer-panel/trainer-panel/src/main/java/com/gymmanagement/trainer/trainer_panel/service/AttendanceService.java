@@ -90,13 +90,37 @@ public class AttendanceService {
                         log -> log,
                         (existing, replacement) -> existing));
 
-        // 3. Generate last 30 days list
+        // 3. Generate last 30 days list (limited by joining date)
         List<AttendanceResponseDTO> history = new ArrayList<>();
         LocalDate today = LocalDate.now();
 
-        // 0 to 29 = 30 days total
+        // Fetch joining date to avoid showing "NOT MARKED" for days before registration
+        LocalDate startDate = today.minusDays(30); // Default fallback
+
+        var memberOpt = memberRepository.findByUser_UserId(userId);
+        if (memberOpt.isPresent()) {
+            startDate = memberOpt.get().getJoiningDate();
+        } else {
+            var trainerOpt = trainerRepository.findByUser_UserId(userId);
+            if (trainerOpt.isPresent() && trainerOpt.get().getCreatedAt() != null) {
+                startDate = trainerOpt.get().getCreatedAt().toLocalDate();
+            }
+        }
+
+        // Limit window to 30 days ago OR joining date, whichever is later
+        LocalDate windowStart = today.minusDays(30);
+        if (startDate != null && startDate.isAfter(windowStart)) {
+            windowStart = startDate;
+        }
+
         for (int i = 0; i < 30; i++) {
             LocalDate date = today.minusDays(i);
+
+            // Stop if we go before our calculated start window
+            if (date.isBefore(windowStart)) {
+                // However, if we HAVE a log for this date (legacy/edge case), we still show it
+                if (!logMap.containsKey(date)) continue;
+            }
 
             if (logMap.containsKey(date)) {
                 // Return 'PRESENT' record from DB
@@ -105,8 +129,6 @@ public class AttendanceService {
                 // Identify missing day -> 'NOT MARKED'
                 AttendanceResponseDTO dto = new AttendanceResponseDTO();
                 dto.setUserId(userId);
-                // ID is null for virtual records
-                // Role is unknown here but optional for display
                 dto.setDate(date);
                 dto.setStatus("NOT MARKED");
                 history.add(dto);

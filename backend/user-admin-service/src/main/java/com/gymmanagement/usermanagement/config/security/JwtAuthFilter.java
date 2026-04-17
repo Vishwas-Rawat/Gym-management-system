@@ -34,11 +34,12 @@ public class JwtAuthFilter extends OncePerRequestFilter {
         // 🔥 SKIP JWT FOR FEIGN + PUBLIC APIs
         if (path.startsWith("/member/active")
                 || path.startsWith("/user/internal")
+                || path.startsWith("/user/email")
+                || path.startsWith("/user/profile/")
                 || path.startsWith("/user/login")
                 || path.startsWith("/user/register")
                 || path.startsWith("/member/complete-registration")
                 || path.startsWith("/trainer/complete-registration")) {
-
             filterChain.doFilter(request, response);
             return;
         }

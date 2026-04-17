@@ -4,7 +4,6 @@ import com.gymmanagement.trainer.trainer_panel.dto.*;
 import com.gymmanagement.trainer.trainer_panel.security.TrainerPrincipal;
 import com.gymmanagement.trainer.trainer_panel.security.MemberPrincipal;
 import com.gymmanagement.trainer.trainer_panel.service.TrainerWorkoutServiceImpl;
-import com.gymmanagement.trainer.trainer_panel.client.UserManagementClient;
 import com.gymmanagement.trainer.trainer_panel.repository.MemberRepository;
 
 import com.gymmanagement.commonservices.entity.Member;
@@ -21,19 +20,16 @@ import java.util.List;
 public class WorkoutController {
 
     private final TrainerWorkoutServiceImpl workoutService;
-    private final UserManagementClient userClient;
     private final MemberRepository memberRepo;
 
     public WorkoutController(TrainerWorkoutServiceImpl workoutService,
-                             UserManagementClient userClient,
-                             MemberRepository memberRepo) {
+            MemberRepository memberRepo) {
         this.workoutService = workoutService;
-        this.userClient = userClient;
         this.memberRepo = memberRepo;
     }
 
     // -------------------------
-    //  ASSIGN WORKOUT PLAN
+    // ASSIGN WORKOUT PLAN
     // -------------------------
     @PostMapping("/assign")
     @PreAuthorize("hasRole('TRAINER')")
@@ -97,7 +93,7 @@ public class WorkoutController {
         }
         // Correct member principal
         else if (principal instanceof MemberPrincipal mp) {
-        	userId = mp.userId();
+            userId = mp.userId();
         }
         // Fallback (rare)
         else {

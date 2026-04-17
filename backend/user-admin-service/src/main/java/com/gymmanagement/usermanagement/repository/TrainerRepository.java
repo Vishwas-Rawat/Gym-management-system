@@ -15,12 +15,12 @@ public interface TrainerRepository extends JpaRepository<Trainer, Integer> {
 
   List<Trainer> findByUser(User user);
 
-  @Query("SELECT t FROM Trainer t WHERE t.user = :user AND t.gym = :gym AND t.deleted = false")
+  @Query("SELECT t FROM Trainer t WHERE t.user = :user AND t.gym = :gym")
   Optional<Trainer> findByUserAndGym(@Param("user") User user,
       @Param("gym") com.gymmanagement.commonservices.entity.Gym gym);
 
   // Only active trainers
-  @Query("SELECT t FROM Trainer t WHERE t.isActive = true AND t.deleted = false")
+  @Query("SELECT t FROM Trainer t WHERE t.isActive = true AND t.deleted = false AND t.gym.isActive = true")
   List<Trainer> findAllActive();
 
   @Query("SELECT t FROM Trainer t WHERE t.trainerId = :id AND t.isActive = true AND t.deleted = false")

@@ -2,10 +2,10 @@ package com.gymmanagement.trainer.trainer_panel.service;
 
 import com.gymmanagement.trainer.trainer_panel.client.UserManagementClient;
 import com.gymmanagement.trainer.trainer_panel.dto.*;
-import com.gymmanagement.trainer.trainer_panel.repository.AttendanceRepository;
-import com.gymmanagement.trainer.trainer_panel.repository.ChatMessageRepository;
+import com.gymmanagement.trainer.trainer_panel.repository.*;
 
 import com.gymmanagement.commonservices.entity.ChatMessage;
+import com.gymmanagement.commonservices.entity.Member;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -20,6 +20,10 @@ public class TrainerDashboardService {
     private final UserManagementClient userClient;
     private final AttendanceRepository attendanceRepo;
     private final ChatMessageRepository chatRepo;
+    private final MemberRepository memberRepo;
+    private final WorkoutRequestRepository workoutRequestRepo;
+    private final DietRequestRepository dietRequestRepo;
+    private final MemberWorkoutLogRepository workoutLogRepo;
 
     public TrainerDashboardResponse getDashboard(Integer trainerUserId) {
 
@@ -33,8 +37,7 @@ public class TrainerDashboardService {
         // -------------------------
         // ASSIGNED MEMBERS
         // -------------------------
-        List<ViewMemberResponse> members =
-                userClient.getMembersByTrainer(gymId, trainerId);
+        List<ViewMemberResponse> members = userClient.getMembersByTrainer(gymId, trainerId);
 
         res.setAssignedMembersCount(members.size());
 
@@ -46,8 +49,7 @@ public class TrainerDashboardService {
                     dto.setFullName(m.getFullName());
                     dto.setEmail(m.getEmail());
                     return dto;
-                }).toList()
-        );
+                }).toList());
 
         // -------------------------
         // PENDING REQUESTS
@@ -76,8 +78,7 @@ public class TrainerDashboardService {
                     dto.setCiphertext(msg.getCiphertext());
                     dto.setCreatedAt(msg.getCreatedAt());
                     return dto;
-                }).toList()
-        );
+                }).toList());
 
         // -------------------------
         // RECENT ACTIVITY (Placeholder)
@@ -86,4 +87,62 @@ public class TrainerDashboardService {
 
         return res;
     }
+
+    public List<MemberSummaryDTO> getActiveMembers(Integer trainerId) {
+        return memberRepo.findByTrainer_TrainerId(trainerId).stream()
+                .filter(Member::getIsActive)
+                .map(m -> {
+                    MemberSummaryDTO dto = new MemberSummaryDTO();
+                    dto.setMemberId(m.getMemberId());
+                    dto.setUserId(m.getUser().getUserId());
+                    dto.setFullName(m.getUser().getUsername());
+                    dto.setEmail(m.getUser().getEmail());
+                    return dto;
+                }).toList();
+    }
+
+    public List<MemberConsistencyDTO> getConsistencyStats(Integer trainerId, boolean consistent) {
+        LocalDate startDate = LocalDate.now().minusDays(30);
+        List<MemberConsistencyDTO> stats = attendanceRepo.getConsistencyStats(trainerId, startDate);
+
+        if (consistent) {
+            return stats.stream().limit(5).toList();
+        } else {
+            // Reverse order for inconsistent
+            java.util.Collections.reverse(stats);
+            return stats.stream().limit(5).toList();
+        }
+    }
+
+    public List<MemberRequestSummaryDTO> getRequestSummary(Integer trainerId) {
+        List<Member> members = memberRepo.findByTrainer_TrainerId(trainerId);
+        return members.stream().map(m -> {
+            MemberRequestSummaryDTO dto = new MemberRequestSummaryDTO();
+            dto.setMemberId(m.getMemberId());
+            dto.setFullName(m.getUser().getUsername());
+            dto.setPendingWorkoutRequests(workoutRequestRepo.findByMemberIdOrderByCreatedAtDesc(m.getMemberId())
+                    .stream().filter(r -> "PENDING".equals(r.getStatus().toString())).count());
+            dto.setPendingDietRequests(dietRequestRepo.findByMemberIdOrderByCreatedAtDesc(m.getMemberId())
+                    .stream().filter(r -> "PENDING".equals(r.getStatus().toString())).count());
+            return dto;
+        }).filter(d -> d.getPendingDietRequests() > 0 || d.getPendingWorkoutRequests() > 0).toList();
+    }
+
+    public List<SubscriptionExpiryDTO> getSubscriptionExpiries(Integer trainerId) {
+        List<Member> members = memberRepo.findByTrainer_TrainerId(trainerId);
+        LocalDate today = LocalDate.now();
+        return members.stream()
+                .filter(m -> m.getPlanStartDate() != null && m.getMonthsPaid() != null)
+                .map(m -> {
+                    LocalDate expiryDate = m.getPlanStartDate().plusMonths(m.getMonthsPaid());
+                    long daysLeft = java.time.temporal.ChronoUnit.DAYS.between(today, expiryDate);
+                    return new SubscriptionExpiryDTO(m.getMemberId(), m.getUser().getUsername(), expiryDate, daysLeft);
+                })
+                .filter(s -> s.getDaysLeft() >= 0 && s.getDaysLeft() <= 7)
+                .toList();
+    }
+
+    // Keep old chart methods as placeholders or remove them if not used by
+    // controller
+    // Removing them since the user said "remove all dashboard apis"
 }

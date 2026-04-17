@@ -7,6 +7,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import com.gymmanagement.commonservices.entity.User;
+import com.gymmanagement.usermanagement.Response.GymMinimalResponse;
 import com.gymmanagement.usermanagement.Response.GymRegisterResponse;
 import com.gymmanagement.usermanagement.repository.UserRepository;
 import com.gymmanagement.usermanagement.service.GymService;
@@ -46,6 +47,13 @@ public class GymController {
 	public List<GymRegisterResponse> getGymsByAdmin(Authentication authentication) {
 		User admin = (User) authentication.getPrincipal();
 		return gymService.getAllGymsByAdmin(admin.getUserId());
+	}
+
+	// ✅ Get minimal gym list (ID + Name) for dropdowns
+	@GetMapping("/minimal-list")
+	public List<GymMinimalResponse> getMinimalGymsByAdmin(Authentication authentication) {
+		User admin = (User) authentication.getPrincipal();
+		return gymService.getMinimalGymsByAdmin(admin.getUserId());
 	}
 
 	// ✅ Update gym by gymId (JWT + gymId)

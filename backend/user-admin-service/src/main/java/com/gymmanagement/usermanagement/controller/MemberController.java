@@ -12,6 +12,7 @@ import com.gymmanagement.usermanagement.Response.UpdateMemberResponse;
 import com.gymmanagement.usermanagement.Response.ViewMemberResponse;
 import com.gymmanagement.usermanagement.repository.MemberRepository;
 import com.gymmanagement.usermanagement.service.MemberService;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -37,7 +38,7 @@ public class MemberController {
 
     // Admin adds member → generates invite link
     @PostMapping("/admin/add-multiple")
-    public ResponseEntity<ApiResponse> addMultipleMembersByAdmin(@RequestBody List<AdminAddMemberRequest> requests) {
+    public ResponseEntity<ApiResponse> addMultipleMembersByAdmin(@RequestBody List<@Valid AdminAddMemberRequest> requests) {
         try {
             List<AddMemberResponse> responses = memberService.addMultipleMembersByAdmin(requests);
             return ResponseEntity.ok(new ApiResponse(true,
@@ -60,7 +61,7 @@ public class MemberController {
 
     // Member completes registration
     @PostMapping("/complete-registration")
-    public ResponseEntity<ApiResponse> completeRegistration(@RequestBody CompleteRegistrationRequest request) {
+    public ResponseEntity<ApiResponse> completeRegistration(@Valid @RequestBody CompleteRegistrationRequest request) {
         try {
             memberService.completeRegistration(request);
             return ResponseEntity.ok(new ApiResponse(true, "Registration completed successfully"));
@@ -103,7 +104,7 @@ public class MemberController {
     }
 
     // Update member details
-    @PutMapping("/{memberId:\\d+}")
+    @PutMapping("/admin/{memberId:\\d+}")
     public ResponseEntity<UpdateMemberResponse> updateMember(@PathVariable Integer memberId,
             @RequestBody UpdateMemberRequest request) {
         try {
@@ -115,7 +116,7 @@ public class MemberController {
     }
 
     // Delete member
-    @DeleteMapping("/{memberId:\\d+}")
+    @DeleteMapping("/admin/{memberId:\\d+}")
     public ResponseEntity<ApiResponse> deleteMember(@PathVariable Integer memberId) {
         try {
             memberService.deleteMember(memberId);

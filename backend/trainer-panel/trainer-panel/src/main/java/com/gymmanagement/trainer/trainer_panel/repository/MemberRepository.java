@@ -27,4 +27,16 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
             "u.username LIKE %:query% OR p.firstName LIKE %:query% OR p.lastName LIKE %:query%)")
     List<Member> searchByGymAndName(@Param("gymId") Long gymId, @Param("query") String query);
 
+    @Query("SELECT new com.gymmanagement.trainer.trainer_panel.dto.ChartDataDTO(m.fitnessGoal, COUNT(m)) " +
+            "FROM Member m WHERE m.trainer.trainerId = :trainerId AND m.isActive = true " +
+            "GROUP BY m.fitnessGoal")
+    List<com.gymmanagement.trainer.trainer_panel.dto.ChartDataDTO> countByFitnessGoal(
+            @Param("trainerId") Integer trainerId);
+
+    @Query("SELECT new com.gymmanagement.trainer.trainer_panel.dto.TimeChartDataDTO(m.joiningDate, COUNT(m)) " +
+            "FROM Member m WHERE m.trainer.trainerId = :trainerId AND m.joiningDate >= :startDate " +
+            "GROUP BY m.joiningDate ORDER BY m.joiningDate ASC")
+    List<com.gymmanagement.trainer.trainer_panel.dto.TimeChartDataDTO> getEnrollmentTrend(
+            @Param("trainerId") Integer trainerId, @Param("startDate") java.time.LocalDate startDate);
+
 }

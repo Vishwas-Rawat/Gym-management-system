@@ -15,7 +15,8 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import java.util.Arrays;
 import java.util.List;
 
-import org.springframework.http.HttpMethod; // ✅ Add Import
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.http.HttpMethod;
 
 @Configuration
 @EnableWebSecurity
@@ -23,6 +24,9 @@ import org.springframework.http.HttpMethod; // ✅ Add Import
 public class SecurityConfig {
 
     private final JwtAuthFilter jwtAuthFilter;
+
+    @Value("${spring.web.cors.allowed-origins:http://localhost:5173}")
+    private String allowedOrigins;
 
     public SecurityConfig(JwtAuthFilter jwtAuthFilter) {
         this.jwtAuthFilter = jwtAuthFilter;
@@ -43,16 +47,15 @@ public class SecurityConfig {
                         .requestMatchers("/ws/**").permitAll()
                         .requestMatchers("/debug/**").permitAll() // ✅ DEBUG ENDPOINT
 
-                        // Allow chat REST APIs
-                        .requestMatchers("/chat/**").permitAll()
-                        .requestMatchers(HttpMethod.POST, "/chat/**").permitAll() // ✅ CRITICAL FIX for Key Upload
+                        // Require authentication for chat REST APIs
+                        .requestMatchers("/chat/**").authenticated() // ✅ CHANGED from permitAll to authenticated
 
                         // Allow Food Search (Global Fallback)
                         .requestMatchers(HttpMethod.GET, "/api/food/search").permitAll()
 
                         // Allow Workout Search & Dictionary (Global Fallback)
-                        .requestMatchers(HttpMethod.GET, "/api/exercise/search").permitAll()
-                        .requestMatchers(HttpMethod.GET, "/api/exercise/dictionary").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/workout/exercise/search").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/workout/exercise/dictionary").permitAll()
 
                         // Trainer routes
                         .requestMatchers("/trainer/**").hasAnyRole("TRAINER", "ADMIN")
@@ -89,10 +92,9 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
-        // Allow all origin patterns to support mobile app and dynamic local IPs
-        configuration.addAllowedOriginPattern("*");
+        configuration.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
         configuration.setAllowedMethods(Arrays.asList("GET", "POST", "PUT", "DELETE", "OPTIONS"));
-        configuration.setAllowedHeaders(Arrays.asList("Authorization", "Content-Type", "X-Requested-With"));
+        configuration.setAllowedHeaders(Arrays.asList("*"));
         configuration.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();

@@ -2,10 +2,12 @@ package com.gymmanagement.usermanagement.config;
 
 import com.gymmanagement.usermanagement.config.security.JwtAuthFilter;
 import com.gymmanagement.usermanagement.config.security.JwtUtil;
+import com.gymmanagement.usermanagement.config.security.RateLimitingFilter;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
@@ -19,6 +21,7 @@ import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 
+import java.util.Arrays;
 import java.util.List;
 
 @Configuration
@@ -31,6 +34,10 @@ public class SecurityConfig {
 
     private final JwtUtil jwtUtil;
     private final JwtAuthFilter jwtAuthFilter;
+    private final RateLimitingFilter rateLimitingFilter;
+
+    @Value("${spring.web.cors.allowed-origins:http://localhost:5173}")
+    private String allowedOrigins;
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
@@ -55,7 +62,11 @@ public class SecurityConfig {
 
                         // ⭐ REQUIRED for Feign Client to work
                         .requestMatchers("/user/email/**").permitAll()
+                        .requestMatchers(org.springframework.http.HttpMethod.GET, "/user/plans").permitAll()
                         .requestMatchers("/error").permitAll() // ⭐ FIX — allow Spring error page
+
+                        // Swagger UI & OpenAPI Docs
+                        .requestMatchers("/v3/api-docs/**", "/swagger-ui/**", "/swagger-ui.html").permitAll()
 
                         // If you want to call without JWT, use:
                         // .requestMatchers("/user/email/**").permitAll()
@@ -63,6 +74,7 @@ public class SecurityConfig {
                         // Admin APIs
                         .requestMatchers("/member/admin/**").hasRole("ADMIN")
                         .requestMatchers("/trainer/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/user/plans/**").hasRole("ADMIN")
                         .requestMatchers("/gym/**").hasRole("ADMIN")
                         .requestMatchers("/workout/addExercise").hasRole("ADMIN")
 
@@ -71,6 +83,9 @@ public class SecurityConfig {
 
                         // Everything else
                         .anyRequest().authenticated())
+
+                // Rate Limiting Filter (First)
+                .addFilterBefore(rateLimitingFilter, UsernamePasswordAuthenticationFilter.class)
 
                 // JWT Filter
                 .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class)
@@ -95,7 +110,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.addAllowedOriginPattern("*");
+        config.setAllowedOrigins(Arrays.asList(allowedOrigins.split(",")));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setExposedHeaders(List.of("Authorization"));

@@ -14,15 +14,15 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
   List<Member> findByUser(User user);
 
   // ✅ Multi-Gym Support
-  @Query("SELECT m FROM Member m WHERE m.user = :user AND m.gym = :gym AND m.deletedAt IS NULL")
+  @Query("SELECT m FROM Member m WHERE m.user = :user AND m.gym = :gym")
   Optional<Member> findByUserAndGym(@Param("user") User user,
       @Param("gym") com.gymmanagement.commonservices.entity.Gym gym);
 
-  @Query("SELECT COUNT(m) > 0 FROM Member m WHERE m.user = :user AND m.gym = :gym AND m.deletedAt IS NULL")
+  @Query("SELECT COUNT(m) > 0 FROM Member m WHERE m.user = :user AND m.gym = :gym")
   boolean existsByUserAndGym(@Param("user") User user, @Param("gym") com.gymmanagement.commonservices.entity.Gym gym);
 
   // ACTIVE MEMBERS ONLY
-  @Query("SELECT m FROM Member m WHERE m.isActive = true AND m.deletedAt IS NULL")
+  @Query("SELECT m FROM Member m WHERE m.isActive = true AND m.deletedAt IS NULL AND m.gym.isActive = true")
   List<Member> findAllActive();
 
   @Query("SELECT m FROM Member m WHERE m.memberId = :id AND m.isActive = true AND m.deletedAt IS NULL")
@@ -67,7 +67,7 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
       @Param("trainerId") Integer trainerId,
       @Param("gymId") Long gymId);
 
-  @Query("SELECT COUNT(m) FROM Member m WHERE m.gym.gymId = :gymId AND m.isActive = true")
+  @Query("SELECT COUNT(m) FROM Member m WHERE m.gym.gymId = :gymId AND m.isActive = true AND m.deletedAt IS NULL")
   long countActiveMembers(Long gymId);
 
   @Query("SELECT m FROM Member m WHERE m.gym.gymId = :gymId AND m.planStartDate IS NOT NULL")

@@ -26,48 +26,42 @@ public class EmailService {
     @Value("${app.frontend.url}")
     private String frontendUrl;
 
+    @Value("${spring.mail.username}")
+    private String mailFrom;
+
     // 1. Send OTP Verification Email
     public void sendVerificationEmail(String toEmail, Integer userId, String otpCode) {
         String subject = "Verify your account";
         String verifyUrl = frontendUrl + "/verify?userId=" + userId + "&otp=" + otpCode;
 
-        String body = """
-                <p>Hello,</p>
-                <p>Thank you for registering! Please verify your email address by clicking the button below:</p>
-                <div style="text-align:center; margin:30px 0;">
-                    <a href="%s" style="display:inline-block; padding:14px 32px; font-size:16px; color:white; background-color:#28a745; text-decoration:none; border-radius:8px; font-weight:bold;">
-                        Verify Email Address
-                    </a>
-                </div>
-                <p>If the button doesn't work, copy and paste this link:</p>
-                <p><a href="%s">%s</a></p>
-                <p>Or use this OTP directly: <strong style="font-size:18px; color:#d32f2f;">%s</strong></p>
-                <p>This OTP expires in 10 minutes.</p>
-                """
-                .formatted(verifyUrl, verifyUrl, verifyUrl, otpCode);
+        Context context = new Context();
+        context.setVariable("otp", otpCode);
+        context.setVariable("verifyUrl", verifyUrl);
 
-        sendHtmlEmail(toEmail, subject, body);
+        String htmlBody = templateEngine.process("email/otp-verification.html", context);
+        sendHtmlEmail(toEmail, subject, htmlBody);
+    }
+
+    // 1.1 Send Forgot Password OTP Email
+    public void sendForgotPasswordEmail(String toEmail, String otpCode) {
+        String subject = "Password Reset Request";
+
+        Context context = new Context();
+        context.setVariable("otp", otpCode);
+
+        String htmlBody = templateEngine.process("email/forgot-password.html", context);
+        sendHtmlEmail(toEmail, subject, htmlBody);
     }
 
     // 2. Send Registration Link (for Admin-added members/trainers)
     public void sendRegistrationLink(String toEmail, String link) {
         String subject = "Complete Your Gym Registration";
 
-        String body = """
-                <p>Hello,</p>
-                <p>Welcome to the gym! Your account has been created. Please complete your registration by setting your password.</p>
-                <div style="text-align:center; margin:30px 0;">
-                    <a href="%s" style="display:inline-block; padding:14px 32px; font-size:16px; color:white; background-color:#007bff; text-decoration:none; border-radius:8px; font-weight:bold;">
-                        Complete Registration
-                    </a>
-                </div>
-                <p>If the button doesn't work, please copy and paste this link into your browser:</p>
-                <p><a href="%s">%s</a></p>
-                <p>This link expires in 24 hours.</p>
-                """
-                .formatted(link, link, link);
+        Context context = new Context();
+        context.setVariable("link", link);
 
-        sendHtmlEmail(toEmail, subject, body);
+        String htmlBody = templateEngine.process("email/registration-invite.html", context);
+        sendHtmlEmail(toEmail, subject, htmlBody);
     }
 
     // 3. Send Membership Expiry Reminder (Uses Thymeleaf Templates)
@@ -89,19 +83,29 @@ public class EmailService {
 
     // 4. Core HTML Email Sender
     private void sendHtmlEmail(String to, String subject, String htmlBody) {
+        System.out.println("DEBUG: Preparing to send email to: " + to + " | Subject: " + subject);
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true, "UTF-8");
 
+            helper.setFrom(mailFrom);
             helper.setTo(to);
             helper.setSubject(subject);
             helper.setText(htmlBody, true); // true = is HTML
 
             mailSender.send(message);
-            System.out.println("Email successfully sent to: " + to);
+            System.out.println("✅ SUCCESS: Email sent to: " + to);
+        } catch (jakarta.mail.AuthenticationFailedException e) {
+            System.err.println("❌ AUTHENTICATION FAILURE: Check your Gmail App Password! Target: " + to);
+            System.err.println("DETAILS: " + e.getMessage());
         } catch (MessagingException e) {
-            System.err.println("Failed to send email to: " + to);
-            throw new RuntimeException("Could not send email: " + e.getMessage(), e);
+            System.err.println("❌ MESSAGING ERROR: Failed to build or send email to: " + to);
+            System.err.println("DETAILS: " + e.getMessage());
+        } catch (Exception e) {
+            System.err.println("❌ UNEXPECTED EMAIL FAILURE to: " + to);
+            System.err.println("TYPE: " + e.getClass().getName());
+            System.err.println("MESSAGE: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 }

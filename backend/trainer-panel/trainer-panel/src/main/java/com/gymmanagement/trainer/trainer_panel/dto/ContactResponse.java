@@ -13,4 +13,5 @@ public class ContactResponse {
     private String role; // MEMBER, TRAINER, ADMIN
     private String publicKey;
     private boolean online;
+    private String registrationStatus; // PENDING, REGISTERED
 }

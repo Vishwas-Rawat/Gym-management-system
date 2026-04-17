@@ -11,6 +11,8 @@ import com.gymmanagement.usermanagement.Response.MemberWithExpiryResponse;
 import com.gymmanagement.usermanagement.repository.*;
 import com.gymmanagement.usermanagement.service.EmailService;
 import com.gymmanagement.usermanagement.service.MemberService;
+import com.gymmanagement.usermanagement.service.PlanService;
+import com.gymmanagement.usermanagement.service.TimeSlotService;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,6 +23,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.List;
+import java.util.Random;
 import java.util.UUID;
 
 @Service
@@ -34,6 +37,9 @@ public class MemberServiceImpl implements MemberService {
     private final UserVerificationRepository userVerificationRepository;
     private final UserProfileRepository userProfileRepository;
     private final TrainerRepository trainerRepository;
+    private final PlanService planService;
+    private final TimeSlotService timeSlotService;
+    private final com.gymmanagement.usermanagement.service.AuditLogService auditLogService;
 
     private static final long TOKEN_VALIDITY_HOURS = 24;
 
@@ -47,7 +53,10 @@ public class MemberServiceImpl implements MemberService {
             PasswordEncoder passwordEncoder,
             UserVerificationRepository userVerificationRepository,
             UserProfileRepository userProfileRepository,
-            TrainerRepository trainerRepository) {
+            TrainerRepository trainerRepository,
+            PlanService planService,
+            TimeSlotService timeSlotService,
+            com.gymmanagement.usermanagement.service.AuditLogService auditLogService) {
         this.memberRepository = memberRepository;
         this.userRepository = userRepository;
         this.emailService = emailService;
@@ -56,6 +65,9 @@ public class MemberServiceImpl implements MemberService {
         this.userVerificationRepository = userVerificationRepository;
         this.userProfileRepository = userProfileRepository;
         this.trainerRepository = trainerRepository;
+        this.planService = planService;
+        this.timeSlotService = timeSlotService;
+        this.auditLogService = auditLogService;
     }
 
     /* --------------------------------------------------------------------- */
@@ -73,6 +85,24 @@ public class MemberServiceImpl implements MemberService {
     }
 
     private AddMemberResponse addSingleMember(AdminAddMemberRequest req) {
+        // --- VALIDATION (All except discount) ---
+        if (req.getFullName() == null || req.getFullName().trim().isEmpty())
+            throw new IllegalArgumentException("Full Name is required");
+        if (req.getEmail() == null || req.getEmail().trim().isEmpty())
+            throw new IllegalArgumentException("Email is required");
+        if (req.getPhoneNo() == null || req.getPhoneNo().trim().isEmpty())
+            throw new IllegalArgumentException("Phone Number is required");
+        if (req.getPlanId() == null)
+            throw new IllegalArgumentException("Membership Plan is required");
+        if (req.getJoiningFee() == null)
+            throw new IllegalArgumentException("Joining Fee is required");
+        if (req.getPaymentMode() == null || req.getPaymentMode().trim().isEmpty())
+            throw new IllegalArgumentException("Payment Mode is required");
+        if (req.getJoiningDate() == null)
+            throw new IllegalArgumentException("Joining Date is required");
+        if (req.getGymId() == null)
+            throw new IllegalArgumentException("Gym Selection is required");
+
         String[] nameParts = req.getFullName().trim().split("\\s+", 2);
         String firstName = nameParts[0];
         String lastName = nameParts.length > 1 ? nameParts[1] : "";
@@ -81,38 +111,63 @@ public class MemberServiceImpl implements MemberService {
                 .orElseThrow(() -> new IllegalArgumentException("Gym not found: " + req.getGymId()));
 
         User user = userRepository.findByEmail(req.getEmail()).orElse(null);
+        Member member = null;
 
         if (user != null) {
             // ✅ 1. Check if user is already in THIS gym
-            Member existingMember = memberRepository.findByUserAndGym(user, gym).orElse(null);
+            member = memberRepository.findByUserAndGym(user, gym).orElse(null);
 
-            if (existingMember != null) {
-                // ✅ 1a. If PENDING, resend invite
-                if (user.getRegistrationStatus() == RegistrationStatus.PENDING) {
-                    resendRegistrationLink(user.getUserId());
-                    return new AddMemberResponse(existingMember, "User is pending. Invitation re-sent.");
+            if (member != null) {
+                // ✅ 1a. If isActive, handle as duplicate
+                if (Boolean.TRUE.equals(member.getIsActive())) {
+                    if (user.getRegistrationStatus() == RegistrationStatus.PENDING) {
+                        user.setRegistrationToken(UUID.randomUUID().toString());
+                        user.setTokenGeneratedAt(LocalDateTime.now());
+                        userRepository.save(user);
+
+                        String link = buildRegistrationLink(user.getRegistrationToken());
+                        emailService.sendRegistrationLink(user.getEmail(), link);
+                        return new AddMemberResponse(member, "User is pending. New invite re-sent.");
+                    }
+                    throw new IllegalArgumentException("User is already a member of this gym.");
                 }
-                throw new IllegalArgumentException("User is already a member of this gym.");
-            }
+                // ✅ 1b. If NOT active (soft-deleted), we will REACTIVATE below
+                // NEW: Force re-registration email with fresh token
+                user.setRegistrationStatus(RegistrationStatus.PENDING);
+                user.setRegistrationToken(UUID.randomUUID().toString());
+                user.setTokenGeneratedAt(LocalDateTime.now());
+                userRepository.save(user);
+            } else {
+                // ✅ 1c. Check if user is already an ACTIVE TRAINER in this gym
+                boolean isTrainerActiveInGym = trainerRepository.findByUserAndGym(user, gym)
+                        .map(t -> Boolean.TRUE.equals(t.getIsActive()))
+                        .orElse(false);
+                if (isTrainerActiveInGym) {
+                    throw new IllegalArgumentException("User is already an ACTIVE trainer in this gym. Cannot add as member.");
+                }
+                // ✅ 1d. Create NEW Member record for this user in this gym
 
-            // ✅ 1b. Check if user is already a TRAINER in this gym
-            boolean isTrainerInGym = trainerRepository.findByUserAndGym(user, gym).isPresent();
-            if (isTrainerInGym) {
-                throw new IllegalArgumentException("User is already registered as a trainer in this gym.");
-            }
+                // NEW: Even if user exists (from another gym), force PENDING status for this addition?
+                // Actually, if they are already REGISTERED elsewhere, they have a password.
+                // But the user wants to "always send mail with new token". 
+                // So if user status is REGISTERED, we downgrade them to PENDING for the sake of this invitation.
+                user.setRegistrationStatus(RegistrationStatus.PENDING);
+                user.setRegistrationToken(UUID.randomUUID().toString());
+                user.setTokenGeneratedAt(LocalDateTime.now());
+                userRepository.save(user);
 
-            // ✅ 2. User exists but NOT in this gym -> Allow adding new membership
-            // No need to create new User, just use existing one.
+                member = new Member();
+                member.setUser(user);
+                member.setGym(gym);
+            }
         } else {
-            // ✅ 3. Create NEW User
+            // ✅ 2. Create NEW User and Profile
             user = new User();
             user.setEmail(req.getEmail());
             user.setPhoneNumber(req.getPhoneNo());
             user.setRole(Role.MEMBER);
             user.setRegistrationStatus(RegistrationStatus.PENDING);
-            user.setRegistrationToken(UUID.randomUUID().toString());
-            user.setTokenGeneratedAt(LocalDateTime.now());
-            user.setIsActive(false);
+            ensureValidRegistrationToken(user);
             user.setIsEmailVerified(false);
             userRepository.save(user);
 
@@ -122,40 +177,59 @@ public class MemberServiceImpl implements MemberService {
             profile.setLastName(lastName);
             user.setUserProfile(profile);
             userProfileRepository.save(profile);
+
+            // Create NEW Member record
+            member = new Member();
+            member.setUser(user);
+            member.setGym(gym);
         }
 
-        Member member = new Member();
-        member.setUser(user);
-        member.setGym(gym);
-        member.setMonthsPaid(req.getMonthsPaid());
-        member.setMonthsFree(req.getMonthsFree() != null ? req.getMonthsFree() : 0);
+        // --- MANAGE MEMBER STATE (NEW or REACTIVATED) ---
+        Plan plan = planService.getPlanById(req.getPlanId());
+        member.setPlan(plan);
+        member.setMonthsPaid(plan.getDurationMonths());
+        member.setMonthsFree(plan.getFreeMonths());
+        member.setPlanPrice(plan.getPrice());
 
-        member.setWorkoutTimeSlot(req.getWorkoutTimeSlot());
-
-        member.setRegistrationFee(req.getRegistrationFee() != null ? req.getRegistrationFee() : 0.0);
-        member.setPlanPrice(req.getPlanPrice() != null ? req.getPlanPrice() : 0.0);
+        member.setRegistrationFee(req.getJoiningFee());
         member.setDiscount(req.getDiscount() != null ? req.getDiscount() : 0.0);
 
         double total = member.getRegistrationFee() + member.getPlanPrice() - member.getDiscount();
         member.setTotalAmount(Math.max(0, total));
-        member.setPaymentMethod(req.getPaymentMethod());
+        member.setPaymentMethod(req.getPaymentMode());
         member.setJoiningDate(req.getJoiningDate());
-
-        // Set plan_start_date = joining_date for new members
         member.setPlanStartDate(req.getJoiningDate());
+
+        // Calculate End Date
+        int totalMonths = member.getMonthsPaid() + member.getMonthsFree();
+        member.setEndDate(member.getPlanStartDate().plusMonths(totalMonths));
 
         member.setMembershipPlan(member.getMonthsPaid() + " months" +
                 (member.getMonthsFree() > 0 ? " + " + member.getMonthsFree() + " free" : ""));
         member.setAmountPaid(member.getTotalAmount());
         member.setIsActive(true);
         member.setDeletedAt(null);
+        member.setUpdatedAt(LocalDateTime.now());
 
         memberRepository.save(member);
 
-        String link = buildRegistrationLink(user.getRegistrationToken());
-        emailService.sendRegistrationLink(user.getEmail(), link);
+        // Only send registration email if user is still PENDING
+        if (RegistrationStatus.PENDING.equals(user.getRegistrationStatus())) {
+            String link = buildRegistrationLink(user.getRegistrationToken());
+            emailService.sendRegistrationLink(user.getEmail(), link);
 
-        return new AddMemberResponse(member, "Member added successfully. Registration link sent.");
+            // ⭐ AUDIT LOG
+            auditLogService.logAction("ADD", "MEMBER", member.getMemberId().toString(), 
+                "Added member: " + user.getEmail() + " (Welcome Email Sent)");
+
+            return new AddMemberResponse(member, "Member added successfully. Registration email sent.");
+        }
+
+        // ⭐ AUDIT LOG
+        auditLogService.logAction("ADD", "MEMBER", member.getMemberId().toString(), 
+            "Re-added existing member: " + user.getEmail());
+
+        return new AddMemberResponse(member, "Member re-added successfully. User is already registered.");
     }
 
     /* --------------------------------------------------------------------- */
@@ -171,10 +245,8 @@ public class MemberServiceImpl implements MemberService {
             throw new IllegalArgumentException("User already completed registration");
         }
 
-        user.setRegistrationToken(UUID.randomUUID().toString());
-        user.setTokenGeneratedAt(LocalDateTime.now());
-        userRepository.save(user);
-
+        ensureValidRegistrationToken(user);
+ 
         String link = buildRegistrationLink(user.getRegistrationToken());
         emailService.sendRegistrationLink(user.getEmail(), link);
     }
@@ -383,6 +455,10 @@ public class MemberServiceImpl implements MemberService {
         member.setDeletedAt(LocalDateTime.now());
         member.setUpdatedAt(LocalDateTime.now());
         memberRepository.save(member);
+
+        // ⭐ AUDIT LOG
+        auditLogService.logAction("DELETE", "MEMBER", memberId.toString(), 
+            "Soft-deleted member ID: " + memberId);
     }
 
     @Override
@@ -392,7 +468,14 @@ public class MemberServiceImpl implements MemberService {
 
     @Override
     public List<Member> getMembersByTrainerAndGym(Integer trainerId, Long gymId) {
-        return memberRepository.findActiveMembersByTrainerIdAndGymId(trainerId, gymId);
+        // Fix: If gymId is null, 0, or not found, fallback to all assigned members for this trainer.
+        // This resolves the 'No Athletes Found' issue caused by Gym ID mismatches between services.
+        List<Member> members = memberRepository.findActiveMembersByTrainerIdAndGymId(trainerId, gymId);
+        
+        if (members.isEmpty()) {
+            return memberRepository.findActiveMembersByTrainerId(trainerId);
+        }
+        return members;
     }
 
     @Override
@@ -551,5 +634,21 @@ public class MemberServiceImpl implements MemberService {
 
         // 4. Update timestamps and return primary member
         return primaryMember;
+    }
+
+    /**
+     * Reuses the existing token if it's still valid (< 24h),
+     * otherwise generates a fresh one.
+     */
+    private void ensureValidRegistrationToken(User user) {
+        boolean hasValidToken = user.getRegistrationToken() != null &&
+                user.getTokenGeneratedAt() != null &&
+                Duration.between(user.getTokenGeneratedAt(), LocalDateTime.now()).toHours() < TOKEN_VALIDITY_HOURS;
+
+        if (!hasValidToken) {
+            user.setRegistrationToken(UUID.randomUUID().toString());
+            user.setTokenGeneratedAt(LocalDateTime.now());
+            userRepository.save(user);
+        }
     }
 }

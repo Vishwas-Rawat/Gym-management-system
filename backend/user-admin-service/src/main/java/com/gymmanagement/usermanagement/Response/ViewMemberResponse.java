@@ -17,6 +17,7 @@ public class ViewMemberResponse {
     private String email;
     private String phoneNo;
     private String membershipPlan;
+    private Integer planId; // ⭐ NEW: For ID-based plan selection
     private Integer monthsPaid;
     private Integer monthsFree;
     private Long gymId;
@@ -30,6 +31,7 @@ public class ViewMemberResponse {
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
     private String message;
+    private Boolean isActive; // ⭐ NEW: Status Column
 
     // ⭐ NEW FIELDS FOR MEMBER PROFILE
     private String address;
@@ -39,6 +41,7 @@ public class ViewMemberResponse {
 
     // ⭐ NEW: Days Remaining
     private Long daysRemaining;
+    private LocalDate expiryDate;
 
     public ViewMemberResponse(Member member, String message) {
         if (member != null) {
@@ -58,6 +61,7 @@ public class ViewMemberResponse {
             this.gymId = member.getGym() != null ? member.getGym().getGymId() : null;
 
             this.membershipPlan = member.getMembershipPlan() != null ? member.getMembershipPlan() : "No Plan";
+            this.planId = member.getPlan() != null ? member.getPlan().getPlanId() : null; // ⭐ Set Plan ID
             this.monthsPaid = member.getMonthsPaid() != null ? member.getMonthsPaid() : 0;
             this.monthsFree = member.getMonthsFree() != null ? member.getMonthsFree() : 0;
 
@@ -88,9 +92,11 @@ public class ViewMemberResponse {
 
             this.paymentMethod = member.getPaymentMethod() != null ? member.getPaymentMethod() : "Not Specified";
             this.startDate = member.getJoiningDate();
+            this.isActive = member.getIsActive(); // Populate status
             this.createdAt = member.getCreatedAt();
             this.updatedAt = member.getUpdatedAt();
-
+            this.expiryDate = member.getEndDate();
+ 
             // ⭐ Calculate Days Remaining
             try {
                 LocalDate start = member.getPlanStartDate() != null ? member.getPlanStartDate()

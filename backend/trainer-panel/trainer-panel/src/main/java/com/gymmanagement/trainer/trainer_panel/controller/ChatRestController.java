@@ -82,10 +82,16 @@ public class ChatRestController {
     }
 
     private String extractRole(Authentication auth) {
+        if (auth == null || auth.getAuthorities().isEmpty()) {
+            return "UNKNOWN";
+        }
         return auth.getAuthorities().iterator().next().getAuthority();
     }
 
     private Integer extractUserId(Authentication auth) {
+        if (auth == null || auth.getPrincipal() == null) {
+            throw new RuntimeException("User not authenticated. Please log in.");
+        }
         Object p = auth.getPrincipal();
         if (p instanceof TrainerPrincipal tp)
             return tp.userId();
@@ -93,7 +99,7 @@ public class ChatRestController {
             return mp.userId();
         if (p instanceof AdminPrincipal ap)
             return ap.userId();
-        throw new RuntimeException("Unauthorized");
+        throw new RuntimeException("Unauthorized: Invalid principal type");
     }
 
     @Data

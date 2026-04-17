@@ -18,5 +18,7 @@ public class ViewMemberResponse {
     private String paymentMethod;
     private Integer userId;
     private Integer trainerUserId;
+    private String startDate; // Changed from joiningDate to match User Service
+    private Boolean isActive; // Added for UI
 
 }

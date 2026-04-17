@@ -7,16 +7,23 @@ import lombok.ToString;
 import java.time.LocalDateTime;
 import java.util.List;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import com.gymmanagement.commonservices.enumeration.RegistrationStatus;
 import com.gymmanagement.commonservices.enumeration.Role;
 
 @Data
 @ToString(onlyExplicitlyIncluded = true)
 @Entity
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 @Table(name = "users", uniqueConstraints = {
         @UniqueConstraint(columnNames = "email"),
         @UniqueConstraint(columnNames = "phone_number"),
         @UniqueConstraint(columnNames = "username")
+}, indexes = {
+        @Index(name = "idx_user_email", columnList = "email"),
+        @Index(name = "idx_user_username", columnList = "username"),
+        @Index(name = "idx_user_role", columnList = "role")
 })
 public class User {
 
@@ -56,8 +63,15 @@ public class User {
     @Column(name = "updated_at")
     private LocalDateTime updatedAt = LocalDateTime.now();
 
+    @Column(name = "failed_login_attempts")
+    private Integer failedLoginAttempts = 0;
+
+    @Column(name = "lockout_expiry")
+    private LocalDateTime lockoutExpiry;
+
     // ❌ EXCLUDE — Lazy collection -> cause of crash
     @OneToMany(mappedBy = "createdByAdmin", cascade = CascadeType.ALL)
+    @JsonManagedReference
     private List<Gym> gyms;
 
     @Column(name = "registration_token")
@@ -78,6 +92,7 @@ public class User {
 
     // ❌ EXCLUDE — Lazy fetch -> cause of LazyInitializationException
     @OneToOne(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
+    @JsonManagedReference
     private UserProfile userProfile;
 
     @PreUpdate

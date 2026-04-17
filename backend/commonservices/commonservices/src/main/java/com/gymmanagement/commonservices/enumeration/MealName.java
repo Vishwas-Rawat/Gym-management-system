@@ -5,5 +5,6 @@ public enum MealName {
     LUNCH,
     DINNER,
     SNACKS,
+    PRE_WORKOUT,
     POST_WORKOUT
 }

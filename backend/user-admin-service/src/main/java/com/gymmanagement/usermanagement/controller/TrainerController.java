@@ -5,15 +5,20 @@ import com.gymmanagement.usermanagement.Request.AddTrainerRequest;
 import com.gymmanagement.usermanagement.Request.AssignMembersToTrainerRequest;
 import com.gymmanagement.usermanagement.Request.CompleteTrainerRegistrationRequest;
 import com.gymmanagement.usermanagement.Request.UpdateTrainerRequest;
+import com.gymmanagement.usermanagement.Request.TrainerProfileUpdateRequest;
 import com.gymmanagement.usermanagement.Response.AddTrainerResponse;
 import com.gymmanagement.usermanagement.Response.ApiResponse;
+import com.gymmanagement.usermanagement.Response.MemberAssignmentResponse;
+import com.gymmanagement.usermanagement.Response.TrainerProfileResponse;
 import com.gymmanagement.usermanagement.Response.TrainerResponse;
 import com.gymmanagement.usermanagement.repository.TrainerRepository;
 import com.gymmanagement.usermanagement.service.TrainerService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.validation.annotation.Validated;
 
 import org.springframework.security.core.Authentication;
 import com.gymmanagement.commonservices.entity.User;
@@ -21,6 +26,7 @@ import com.gymmanagement.commonservices.enumeration.Role;
 import java.util.List;
 
 @RestController
+@Validated
 @RequestMapping("/trainer") // ← Important: Base path
 public class TrainerController {
 
@@ -33,7 +39,7 @@ public class TrainerController {
     // 1. ADMIN: Add one or multiple trainers
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/add-trainers")
-    public ResponseEntity<List<AddTrainerResponse>> addTrainers(@RequestBody List<AddTrainerRequest> requests) {
+    public ResponseEntity<List<AddTrainerResponse>> addTrainers(@RequestBody List<@Valid AddTrainerRequest> requests) {
         List<AddTrainerResponse> responses = trainerService.addTrainersByAdmin(requests);
         return ResponseEntity.ok(responses);
     }
@@ -49,22 +55,22 @@ public class TrainerController {
     // 3. PUBLIC: Trainer completes registration (no JWT needed!)
     @PostMapping("/complete-registration")
     public ResponseEntity<ApiResponse> completeTrainerRegistration(
-            @RequestBody CompleteTrainerRegistrationRequest request) {
+            @Valid @RequestBody CompleteTrainerRegistrationRequest request) {
         trainerService.completeTrainerRegistration(request);
         return ResponseEntity
                 .ok(new ApiResponse(true, "Trainer registration completed successfully! You can now log in."));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @PutMapping("/{trainerId}")
-    public ResponseEntity<Trainer> updateTrainer(@PathVariable Integer trainerId,
+    @PutMapping("/admin/{trainerId}")
+    public ResponseEntity<TrainerResponse> updateTrainer(@PathVariable Integer trainerId,
             @RequestBody UpdateTrainerRequest request) {
         Trainer updated = trainerService.updateTrainer(trainerId, request);
-        return ResponseEntity.ok(updated);
+        return ResponseEntity.ok(new TrainerResponse(updated));
     }
 
     @PreAuthorize("hasRole('ADMIN')")
-    @DeleteMapping("/{trainerId}")
+    @DeleteMapping("/admin/{trainerId}")
     public ResponseEntity<ApiResponse> deleteTrainer(@PathVariable Integer trainerId) {
         trainerService.deleteTrainer(trainerId);
         return ResponseEntity.ok(new ApiResponse(true, "Trainer deleted successfully (soft delete)"));
@@ -93,8 +99,8 @@ public class TrainerController {
     }
 
     @GetMapping("/{trainerId}")
-    public ResponseEntity<Trainer> getTrainer(@PathVariable Integer trainerId) {
-        return ResponseEntity.ok(trainerService.getTrainerById(trainerId));
+    public ResponseEntity<TrainerResponse> getTrainer(@PathVariable Integer trainerId) {
+        return ResponseEntity.ok(new TrainerResponse(trainerService.getTrainerById(trainerId)));
     }
 
     // SEARCH TRAINERS (by keyword)
@@ -121,22 +127,16 @@ public class TrainerController {
     // In TrainerController.java
     @PreAuthorize("hasRole('ADMIN')")
     @PostMapping("/admin/assign-members")
-    public ResponseEntity<ApiResponse> assignMembersToTrainer(
+    public ResponseEntity<MemberAssignmentResponse> assignMembersToTrainer(
             @RequestBody AssignMembersToTrainerRequest request) {
         try {
-            trainerService.assignMembersToTrainer(request);
-            Trainer trainer = trainerRepository.findById(request.getTrainerId()).get();
-            String trainerName = trainer.getUser().getUserProfile() != null
-                    ? trainer.getUser().getUserProfile().getFirstName() + " " +
-                            (trainer.getUser().getUserProfile().getLastName() != null
-                                    ? trainer.getUser().getUserProfile().getLastName()
-                                    : "")
-                    : "Trainer";
-
-            return ResponseEntity.ok(new ApiResponse(true,
-                    request.getMemberIds().size() + " members successfully assigned to trainer " + trainerName));
+            MemberAssignmentResponse result = trainerService.assignMembersToTrainer(request);
+            return ResponseEntity.ok(result);
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body(new ApiResponse(false, e.getMessage()));
+            return ResponseEntity.badRequest().body(MemberAssignmentResponse.builder()
+                    .success(false)
+                    .message(e.getMessage())
+                    .build());
         }
     }
 
@@ -147,6 +147,30 @@ public class TrainerController {
                 .map(Trainer::getTrainerId)
                 .findFirst()
                 .orElse(null);
+    }
+
+    @GetMapping("/{trainerId}/potential-members")
+    public ResponseEntity<List<com.gymmanagement.usermanagement.Response.GymMemberResponse>> getPotentialMembers(
+            @PathVariable Integer trainerId) {
+        return ResponseEntity.ok(trainerService.getPotentialMembers(trainerId));
+    }
+
+    // ✅ NEW: Get My Profile (For Logged-in Trainer)
+    @PreAuthorize("hasRole('TRAINER')")
+    @GetMapping("/profile/me")
+    public ResponseEntity<TrainerProfileResponse> getMyProfile(Authentication auth) {
+        User user = (User) auth.getPrincipal();
+        return ResponseEntity.ok(trainerService.getTrainerProfileByUserId(user.getUserId()));
+    }
+
+    // ✅ NEW: Update My Profile
+    @PreAuthorize("hasRole('TRAINER')")
+    @PutMapping("/profile/me")
+    public ResponseEntity<TrainerProfileResponse> updateMyProfile(
+            Authentication auth,
+            @RequestBody TrainerProfileUpdateRequest request) {
+        User user = (User) auth.getPrincipal();
+        return ResponseEntity.ok(trainerService.updateTrainerProfile(user.getUserId(), request));
     }
 
 }

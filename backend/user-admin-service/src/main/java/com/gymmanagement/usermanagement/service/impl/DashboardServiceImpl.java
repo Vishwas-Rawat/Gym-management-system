@@ -27,11 +27,10 @@ public class DashboardServiceImpl implements DashboardService {
         DashboardResponse res = new DashboardResponse();
 
         // --- BASIC COUNTS ---
-        long totalMembers = memberRepo.countByGym_GymId(gymId);
         long activeMembers = memberRepo.countActiveMembers(gymId);
         List<Trainer> trainers = trainerRepo.findActiveTrainers(gymId);
 
-        res.setTotalMembers(totalMembers);
+        res.setTotalMembers(activeMembers); // Now only counts non-deleted members
         res.setActiveMembers(activeMembers);
         res.setTotalTrainers(trainers.size());
 
@@ -56,31 +55,10 @@ public class DashboardServiceImpl implements DashboardService {
                 .toList();
 
         res.setExpiringMembers(expiringList);
-        res.setExpiringMembershipCount(expiringList.size());
 
-        // --- TRAINER ACTIVITY ---
-        List<TrainerActivityDTO> trainerActivity = trainers.stream().map(t -> {
-            TrainerActivityDTO dto = new TrainerActivityDTO();
-            dto.setTrainerId(t.getTrainerId());
-            dto.setFullName(t.getFullName());
-            dto.setMemberCount(
-                    members.stream()
-                            .filter(m -> m.getTrainer() != null &&
-                                    m.getTrainer().getTrainerId().equals(t.getTrainerId()))
-                            .count());
-            return dto;
-        }).toList();
-
-        res.setTrainerActivity(trainerActivity);
-
-        // --- FINANCE (simple placeholders) ---
-        double totalRevenue = members.stream().mapToDouble(Member::getTotalAmount).sum();
-        res.setTotalRevenue(totalRevenue);
-        res.setMonthlyRevenue(totalRevenue / 12);
-
-        // --- PENDING REQUESTS (if needed integrate workout/diet repos) ---
-        res.setPendingDietRequests(0);
-        res.setPendingWorkoutRequests(0);
+        // --- ASSIGNMENTS ---
+        res.setMembersWithTrainer(members.stream().filter(m -> m.getTrainer() != null).count());
+        res.setMembersWithoutTrainer(members.stream().filter(m -> m.getTrainer() == null).count());
 
         return res;
     }

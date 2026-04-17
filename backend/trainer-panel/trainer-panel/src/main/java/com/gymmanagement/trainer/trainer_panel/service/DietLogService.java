@@ -11,6 +11,8 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @Service
 @RequiredArgsConstructor
@@ -20,8 +22,8 @@ public class DietLogService {
     private final MemberDietLogRepository logRepo;
 
     // --- FOOD DATABASE ---
-    public List<MasterFoodItem> searchFood(String query, Integer memberId) {
-        return foodRepo.searchFood(query, memberId);
+    public Page<MasterFoodItem> searchFood(String query, Integer memberId, Pageable pageable) {
+        return foodRepo.searchFood(query, memberId, pageable);
     }
 
     public MasterFoodItem addFoodToDatabase(MasterFoodItem item, Integer memberId) {

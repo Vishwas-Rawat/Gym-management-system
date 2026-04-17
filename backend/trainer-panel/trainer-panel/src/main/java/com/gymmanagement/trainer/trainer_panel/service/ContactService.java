@@ -27,29 +27,41 @@ public class ContactService {
     private final UserManagementClient userClient;
     private final com.gymmanagement.trainer.trainer_panel.repository.PublicKeyRepository publicKeyRepo;
 
-    private boolean isMemberValid(Member m) {
-        return m != null &&
-                Boolean.TRUE.equals(m.getIsActive()) &&
-                m.getDeletedAt() == null &&
-                m.getUser() != null &&
-                Boolean.TRUE.equals(m.getUser().getIsActive()) &&
-                m.getGym() != null &&
-                Boolean.TRUE.equals(m.getGym().getIsActive());
+    private boolean isMemberValid(Member m, boolean allowPending) {
+        if (m == null || m.getDeletedAt() != null || m.getUser() == null || m.getGym() == null) return false;
+        
+        boolean gymActive = Boolean.TRUE.equals(m.getGym().getIsActive());
+        if (!gymActive) return false;
+
+        boolean userActive = Boolean.TRUE.equals(m.getUser().getIsActive());
+        boolean isPending = com.gymmanagement.commonservices.enumeration.RegistrationStatus.PENDING.equals(m.getUser().getRegistrationStatus());
+        
+        return Boolean.TRUE.equals(m.getIsActive()) && (userActive || (allowPending && isPending));
     }
 
-    private boolean isTrainerValid(Trainer t) {
-        return t != null &&
-                Boolean.TRUE.equals(t.getIsActive()) &&
-                Boolean.FALSE.equals(t.getDeleted()) &&
-                t.getDeletedAt() == null &&
-                t.getUser() != null &&
-                Boolean.TRUE.equals(t.getUser().getIsActive()) &&
-                t.getGym() != null &&
-                Boolean.TRUE.equals(t.getGym().getIsActive());
+    private boolean isTrainerValid(Trainer t, boolean allowPending) {
+        if (t == null || Boolean.TRUE.equals(t.getDeleted()) || t.getDeletedAt() == null || t.getUser() == null || t.getGym() == null) {
+             // Handle t.getDeletedAt() == null logic from original code (it was actually t.getDeletedAt() == null)
+        }
+        // Original logic was t.getDeletedAt() == null. 
+        // Let's stick closer to original but add the pending check.
+        
+        if (t == null || Boolean.TRUE.equals(t.getDeleted()) || t.getDeletedAt() != null || t.getUser() == null || t.getGym() == null) return false;
+        
+        boolean gymActive = Boolean.TRUE.equals(t.getGym().getIsActive());
+        if (!gymActive) return false;
+
+        boolean userActive = Boolean.TRUE.equals(t.getUser().getIsActive());
+        boolean isPending = com.gymmanagement.commonservices.enumeration.RegistrationStatus.PENDING.equals(t.getUser().getRegistrationStatus());
+
+        return Boolean.TRUE.equals(t.getIsActive()) && (userActive || (allowPending && isPending));
     }
 
-    private boolean isUserActive(com.gymmanagement.commonservices.entity.User u) {
-        return u != null && Boolean.TRUE.equals(u.getIsActive());
+    private boolean isUserActive(com.gymmanagement.commonservices.entity.User u, boolean allowPending) {
+        if (u == null) return false;
+        boolean userActive = Boolean.TRUE.equals(u.getIsActive());
+        boolean isPending = com.gymmanagement.commonservices.enumeration.RegistrationStatus.PENDING.equals(u.getRegistrationStatus());
+        return userActive || (allowPending && isPending);
     }
 
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
@@ -65,14 +77,14 @@ public class ContactService {
 
             System.out.println("🔍 Normalized Role: " + normRole + " (isAdmin=" + isAdmin + ")");
 
-            // 1. If Member: Can chat with Trainer & Admin
+            // 1. If Member: Can chat with Trainer & Admin (Strictly Active only)
             if (isMember) {
                 Member member = memberRepo.findByUser_UserId(userId).orElse(null);
                 if (member != null) {
                     // A. Add Assigned Trainer
                     Trainer trainer = member.getTrainer();
-                    if (isTrainerValid(trainer)) {
-                        contacts.add(createContact(trainer.getUser().getUserId(),
+                    if (isTrainerValid(trainer, false)) {
+                        contacts.add(createContact(trainer.getUser(),
                                 "Trainer: " + getDisplayName(trainer),
                                 "TRAINER"));
                     }
@@ -80,58 +92,74 @@ public class ContactService {
                     // B. Add Gym Admin
                     if (member.getGym() != null && member.getGym().getCreatedByAdmin() != null) {
                         var admin = member.getGym().getCreatedByAdmin();
-                        if (isUserActive(admin)) {
-                            contacts.add(createContact(admin.getUserId(),
+                        if (isUserActive(admin, false)) {
+                            contacts.add(createContact(admin,
                                     "Admin: " + getDisplayName(admin), "ADMIN"));
                         }
                     }
                 }
             }
 
-            // 2. If Trainer: Can chat with assigned Members
+            // 2. If Trainer: Can chat with assigned Members AND Admin (Sync with user-admin-service)
             if (isTrainer) {
                 Trainer trainer = trainerRepo.findByUser_UserId(userId).orElse(null);
-                if (trainer != null) {
-                    List<Member> members = memberRepo.findByTrainer_TrainerId(trainer.getTrainerId());
-                    for (Member m : members) {
-                        if (isMemberValid(m)) {
-                            contacts.add(createContact(m.getUser().getUserId(), m.getUser().getUsername(), "MEMBER"));
+                if (trainer != null && trainer.getGym() != null) {
+                    // A. Add assigned Members (Official list from main database)
+                    Long gymId = trainer.getGym().getGymId();
+                    List<ViewMemberResponse> assignedMembers = userClient.getMembersByTrainer(gymId, trainer.getTrainerId());
+                    
+                    for (ViewMemberResponse vm : assignedMembers) {
+                        // We only show Active members in Chat
+                        if (Boolean.TRUE.equals(vm.getIsActive())) {
+                            ContactResponse cr = new ContactResponse();
+                            cr.setUserId(vm.getUserId());
+                            cr.setName(vm.getFullName());
+                            cr.setRole("MEMBER");
+                            cr.setRegistrationStatus("REGISTERED"); // Since they are active in dashboard
+                            
+                            // Fetch Public Key if available
+                            publicKeyRepo.findByUserId(vm.getUserId()).ifPresent(pk -> cr.setPublicKey(pk.getPublicKeyPem()));
+                            contacts.add(cr);
+                        }
+                    }
+
+                    // B. Add Gym Admin
+                    if (trainer.getGym().getCreatedByAdmin() != null) {
+                        var admin = trainer.getGym().getCreatedByAdmin();
+                        if (isUserActive(admin, false)) {
+                            contacts.add(createContact(admin,
+                                    "Admin: " + getDisplayName(admin), "ADMIN"));
                         }
                     }
                 }
             }
 
             // 3. If Admin/SuperAdmin/SystemAdmin: Can chat with all Members & Trainers in
-            // their Gyms
+            // their Gyms (Allow Pending)
             if (isAdmin) {
                 List<Gym> myGyms = gymRepo.findByCreatedByAdmin_UserId(userId);
 
-                // Fallback for ANY Admin: If no gyms created by them, find ALL gyms for
-                // visibility
                 if (myGyms.isEmpty()) {
                     System.out.println(
                             "⚠️ Admin " + userId + " has no personalized gyms. Fetching all gyms as fallback.");
                     myGyms = gymRepo.findAll();
                 }
 
-                System.out.println("🔍 Admin Found " + myGyms.size() + " gyms for visibility.");
                 for (Gym gym : myGyms) {
                     // Add all trainers in this gym
                     List<Trainer> trainers = trainerRepo.findByGym_GymId(gym.getGymId());
-                    System.out.println("   📍 Gym [" + gym.getGymName() + "] has " + trainers.size() + " trainers.");
                     for (Trainer t : trainers) {
-                        if (isTrainerValid(t) && !t.getUser().getUserId().equals(userId)) {
-                            contacts.add(createContact(t.getUser().getUserId(),
+                        if (isTrainerValid(t, true) && !t.getUser().getUserId().equals(userId)) {
+                            contacts.add(createContact(t.getUser(),
                                     "Trainer: " + getDisplayName(t),
                                     "TRAINER"));
                         }
                     }
                     // Add all members in this gym
                     List<Member> members = memberRepo.findByGym_GymId(gym.getGymId());
-                    System.out.println("   📍 Gym [" + gym.getGymName() + "] has " + members.size() + " members.");
                     for (Member m : members) {
-                        if (isMemberValid(m) && !m.getUser().getUserId().equals(userId)) {
-                            contacts.add(createContact(m.getUser().getUserId(),
+                        if (isMemberValid(m, true) && !m.getUser().getUserId().equals(userId)) {
+                            contacts.add(createContact(m.getUser(),
                                     "Member: " + getDisplayName(m), "MEMBER"));
                         }
                     }
@@ -166,8 +194,8 @@ public class ContactService {
                     // Search Trainers
                     List<Trainer> trainers = trainerRepo.searchByGymAndName(gym.getGymId(), query);
                     for (Trainer t : trainers) {
-                        if (isTrainerValid(t)) {
-                            contacts.add(createContact(t.getUser().getUserId(),
+                        if (isTrainerValid(t, true)) {
+                            contacts.add(createContact(t.getUser(),
                                     getDisplayName(t),
                                     "TRAINER"));
                         }
@@ -175,21 +203,16 @@ public class ContactService {
                     // Search Members
                     List<Member> members = memberRepo.searchByGymAndName(gym.getGymId(), query);
                     for (Member m : members) {
-                        if (isMemberValid(m)) {
-                            contacts.add(createContact(m.getUser().getUserId(), getDisplayName(m), "MEMBER"));
+                        if (isMemberValid(m, true)) {
+                            contacts.add(createContact(m.getUser(), getDisplayName(m), "MEMBER"));
                         }
                     }
                 }
             } else if (isTrainer) {
-                Trainer trainer = trainerRepo.findByUser_UserId(userId).orElse(null);
-                if (trainer != null) {
-                    List<Member> members = memberRepo.findByTrainer_TrainerId(trainer.getTrainerId());
-                    for (Member m : members) {
-                        if (isMemberValid(m) && matchesQuery(m, query)) {
-                            contacts.add(createContact(m.getUser().getUserId(), getDisplayName(m), "MEMBER"));
-                        }
-                    }
-                }
+                // Reuse the strict getContacts logic filtered by query
+                return getContacts(userId, role).stream()
+                        .filter(c -> c.getName().toLowerCase().contains(query.toLowerCase()))
+                        .collect(Collectors.toList());
             } else if (isMember) {
                 // Members can search their trainer or admin
                 List<ContactResponse> all = getContacts(userId, role);
@@ -241,14 +264,20 @@ public class ContactService {
         return u.getUsername();
     }
 
-    private ContactResponse createContact(Integer userId, String name, String role) {
+    private ContactResponse createContact(com.gymmanagement.commonservices.entity.User user, String name, String role) {
         ContactResponse cr = new ContactResponse();
-        cr.setUserId(userId);
+        cr.setUserId(user.getUserId());
         cr.setName(name);
         cr.setRole(role);
+        
+        if (user.getRegistrationStatus() != null) {
+            cr.setRegistrationStatus(user.getRegistrationStatus().name());
+        } else {
+            cr.setRegistrationStatus("REGISTERED"); // Fallback
+        }
 
         // Fetch Public Key
-        publicKeyRepo.findByUserId(userId).ifPresent(pk -> cr.setPublicKey(pk.getPublicKeyPem()));
+        publicKeyRepo.findByUserId(user.getUserId()).ifPresent(pk -> cr.setPublicKey(pk.getPublicKeyPem()));
 
         return cr;
     }

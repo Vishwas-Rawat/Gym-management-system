@@ -8,6 +8,7 @@ import com.gymmanagement.commonservices.entity.Member;
 @Data
 public class MemberWithExpiryResponse {
     private Integer memberId;
+    private Integer planId; // ⭐ NEW: For ID-based plan selection
     private String fullName;
     private String email;
     private String phoneNo;
@@ -23,6 +24,7 @@ public class MemberWithExpiryResponse {
 
     public MemberWithExpiryResponse(Member member) {
         this.memberId = member.getMemberId();
+        this.planId = member.getPlan() != null ? member.getPlan().getPlanId() : null; // ⭐ Set Plan ID
         this.fullName = member.getUser().getUserProfile() != null
             ? member.getUser().getUserProfile().getFirstName() + " " +
               (member.getUser().getUserProfile().getLastName() != null ? member.getUser().getUserProfile().getLastName() : "")

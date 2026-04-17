@@ -18,6 +18,7 @@ public class AddMemberResponse {
     private Double totalAmount;
     private String paymentMethod;
     private String startDate; // ISO format: "2025-11-05"
+    private String expiryDate;
     private String message;
     private Role role;
 
@@ -34,6 +35,7 @@ public class AddMemberResponse {
         this.paymentMethod = member.getPaymentMethod();
         this.role = member.getUser().getRole();
         this.startDate = member.getJoiningDate() != null ? member.getJoiningDate().toString() : null;
+        this.expiryDate = member.getEndDate() != null ? member.getEndDate().toString() : null;
         this.message = message;
     }
 }

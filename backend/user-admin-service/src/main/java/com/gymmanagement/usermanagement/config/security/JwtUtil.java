@@ -2,6 +2,7 @@ package com.gymmanagement.usermanagement.config.security;
 
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -13,8 +14,10 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    private final String SECRET_KEY = "your-256-bit-secret-here-change-in-prod-your-256-bit-secret-here";
-    private final long EXPIRATION_TIME = 1000 * 60 * 60 * 24; // 24 hours
+    @Value("${jwt.secret:your-256-bit-secret-here-change-in-prod-your-256-bit-secret-here}")
+    private String SECRET_KEY;
+
+    private final long EXPIRATION_TIME = 1000 * 60 * 60; // 1 hour (Security enhancement)
 
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
@@ -58,9 +61,9 @@ public class JwtUtil {
 
         Map<String, Object> claims = new HashMap<>();
         claims.put("role", role);
-        
+
         if (trainerId != null) {
-            claims.put("trainerId", trainerId);  // ⭐ NEW
+            claims.put("trainerId", trainerId); // ⭐ NEW
         }
 
         return Jwts.builder()
@@ -71,7 +74,7 @@ public class JwtUtil {
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
-    
+
     public Integer extractTrainerId(String token) {
         return extractClaim(token, claims -> claims.get("trainerId", Integer.class));
     }

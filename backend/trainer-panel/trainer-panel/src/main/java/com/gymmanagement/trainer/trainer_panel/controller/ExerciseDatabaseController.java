@@ -9,9 +9,12 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 
 @RestController
-@RequestMapping("/api/exercise")
+@RequestMapping("/api/workout/exercise")
 @RequiredArgsConstructor
 public class ExerciseDatabaseController {
 
@@ -27,9 +30,14 @@ public class ExerciseDatabaseController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<MasterExercise>> search(@RequestParam String query, java.security.Principal principal) {
+    public ResponseEntity<Page<MasterExercise>> search(
+            @RequestParam String query,
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "20") int size,
+            java.security.Principal principal) {
         Integer memberId = getMemberIdOrNull(principal);
-        return ResponseEntity.ok(service.searchExercises(query, memberId));
+        Pageable pageable = PageRequest.of(page, size);
+        return ResponseEntity.ok(service.searchExercises(query, memberId, pageable));
     }
 
     @PostMapping

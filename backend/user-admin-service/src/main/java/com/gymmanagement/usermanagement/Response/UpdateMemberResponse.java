@@ -16,6 +16,7 @@ public class UpdateMemberResponse {
     private String email;
     private String phoneNumber;
     private String membershipPlan;
+    private Integer planId; // ⭐ NEW: For ID-based plan selection
     private String workoutTimeSlot;
     private Double totalAmount;
     private String paymentMethod;
@@ -30,6 +31,7 @@ public class UpdateMemberResponse {
             this.email = member.getUser().getEmail();
             this.phoneNumber = member.getUser().getPhoneNumber();
             this.membershipPlan = member.getMembershipPlan();
+            this.planId = member.getPlan() != null ? member.getPlan().getPlanId() : null; // ⭐ Set Plan ID
             this.workoutTimeSlot = member.getWorkoutTimeSlot();
             this.totalAmount = member.getTotalAmount();
             this.paymentMethod = member.getPaymentMethod();

@@ -10,4 +10,5 @@ public class MealDto {
     private MealName mealName;
     private List<FoodDto> foods;
     private ProteinDto protein; // optional
+    private List<String> days; // 🗓️ Added for day-wise support
 }

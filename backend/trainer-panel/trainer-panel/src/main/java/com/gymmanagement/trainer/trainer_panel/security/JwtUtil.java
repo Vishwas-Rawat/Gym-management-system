@@ -4,6 +4,7 @@ package com.gymmanagement.trainer.trainer_panel.security;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import javax.crypto.SecretKey;
@@ -12,9 +13,9 @@ import java.util.function.Function;
 @Component
 public class JwtUtil {
 
-    // MUST match user-management secret (or both use env/prop in prod)
-    private final String SECRET_KEY = "your-256-bit-secret-here-change-in-prod-your-256-bit-secret-here";
-    
+    @Value("${jwt.secret:your-256-bit-secret-here-change-in-prod-your-256-bit-secret-here}")
+    private String SECRET_KEY;
+
     private SecretKey getSigningKey() {
         return Keys.hmacShaKeyFor(SECRET_KEY.getBytes());
     }
@@ -42,9 +43,12 @@ public class JwtUtil {
     public Integer extractTrainerId(String token) {
         // note: JJWT may return Integer or Number depending on serialization
         Object val = extractClaim(token, claims -> claims.get("trainerId"));
-        if (val == null) return null;
-        if (val instanceof Integer) return (Integer) val;
-        if (val instanceof Number) return ((Number) val).intValue();
+        if (val == null)
+            return null;
+        if (val instanceof Integer)
+            return (Integer) val;
+        if (val instanceof Number)
+            return ((Number) val).intValue();
         try {
             return Integer.valueOf(val.toString());
         } catch (Exception e) {

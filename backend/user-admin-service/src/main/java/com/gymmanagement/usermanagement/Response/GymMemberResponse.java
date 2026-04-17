@@ -4,6 +4,7 @@ package com.gymmanagement.usermanagement.Response;
 import com.gymmanagement.commonservices.entity.Member;
 import com.gymmanagement.commonservices.entity.UserProfile;
 import lombok.Data;
+import java.time.LocalDate;
 
 @Data
 public class GymMemberResponse {
@@ -13,8 +14,10 @@ public class GymMemberResponse {
     private String email;
     private String phoneNo;
     private String membershipPlan;
+    private Integer planId; // ⭐ NEW: For ID-based plan selection
     private String workoutTimeSlot;
     private String trainerName; // ✅ Added trainerName
+    private LocalDate expiryDate;
 
     public GymMemberResponse(Member member) {
         this.memberId = member.getMemberId();
@@ -24,7 +27,9 @@ public class GymMemberResponse {
         this.email = member.getUser().getEmail();
         this.phoneNo = member.getUser().getPhoneNumber();
         this.membershipPlan = member.getMembershipPlan();
+        this.planId = member.getPlan() != null ? member.getPlan().getPlanId() : null; // ⭐ Set Plan ID
         this.workoutTimeSlot = member.getWorkoutTimeSlot();
+        this.expiryDate = member.getEndDate();
 
         // ✅ Populate trainerName if assigned
         if (member.getTrainer() != null && member.getTrainer().getUser() != null) {

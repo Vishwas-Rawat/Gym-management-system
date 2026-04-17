@@ -1,5 +1,6 @@
 package com.gymmanagement.commonservices.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -7,7 +8,11 @@ import lombok.Data;
 
 @Data
 @Entity
-@Table(name = "members", uniqueConstraints = @UniqueConstraint(columnNames = { "user_id", "gym_id" }))
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@Table(name = "members", uniqueConstraints = @UniqueConstraint(columnNames = { "user_id", "gym_id" }), indexes = {
+        @Index(name = "idx_member_gym_id", columnList = "gym_id"),
+        @Index(name = "idx_member_is_active", columnList = "is_active")
+})
 public class Member {
 
     @Id
@@ -61,13 +66,30 @@ public class Member {
     @Column(name = "plan_start_date")
     private LocalDate planStartDate;
 
+    @Column(name = "end_date")
+    private LocalDate endDate;
+
     @Column(name = "joining_date", nullable = false)
     private LocalDate joiningDate;
 
-    // === Legacy / Optional Fields ===
+    // === Relationships ===
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "plan_id")
+    private Plan plan;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "time_slot_id")
+    private TimeSlot timeSlot;
+
+    // === Legacy / Optional Fields (To be removed after migration) ===
+    @Deprecated
     private String fitnessGoal;
+    @Deprecated
     private String membershipPlan;
+    @Deprecated
     private Double amountPaid;
+    @Deprecated
     private String workoutTimeSlot;
 
     // === Replace Hibernate timestamps with pure JPA ===

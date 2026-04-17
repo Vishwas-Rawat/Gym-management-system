@@ -41,9 +41,30 @@ public class DietServiceImpl implements DietService {
             plan.setTrainerId(trainerId);
             plan.setCreatedAt(LocalDateTime.now());
         } else {
-            // STRATEGY CHECK: Only wipe if NOT "APPEND"
-            String strategy = req.getStrategy(); // "REPLACE" or "APPEND"
-            if (strategy == null || !strategy.equalsIgnoreCase("APPEND")) {
+            // STRATEGY CHECK:
+            String strategy = req.getStrategy(); // "REPLACE", "APPEND", or "REPLACE_DAYS"
+            if ("REPLACE_DAYS".equalsIgnoreCase(strategy) && req.getMeals() != null) {
+                // GRANULAR REPLACE: Only remove the days being assigned in this request
+                java.util.Set<com.gymmanagement.commonservices.enumeration.DayOfWeek> daysToReplace = req.getMeals().stream()
+                        .filter(m -> m.getDays() != null)
+                        .flatMap(m -> m.getDays().stream())
+                        .map(String::toUpperCase)
+                        .map(com.gymmanagement.commonservices.enumeration.DayOfWeek::valueOf)
+                        .collect(java.util.stream.Collectors.toSet());
+
+                java.util.List<DietMeal> mealsToRemove = new java.util.ArrayList<>();
+                for (DietMeal meal : plan.getMeals()) {
+                    meal.getDays().removeAll(daysToReplace);
+                    if (meal.getDays().isEmpty()) {
+                        mealsToRemove.add(meal);
+                    }
+                }
+                // Cleanup
+                mealRepo.deleteAll(mealsToRemove);
+                plan.getMeals().removeAll(mealsToRemove);
+
+            } else if (strategy == null || !strategy.equalsIgnoreCase("APPEND")) {
+                // Default behavior: REPLACE -> Wipe existing
                 mealRepo.deleteAll(plan.getMeals());
                 plan.getMeals().clear();
             }
@@ -59,6 +80,14 @@ public class DietServiceImpl implements DietService {
                 DietMeal meal = new DietMeal();
                 meal.setDietPlan(plan);
                 meal.setMealName(dto.getMealName());
+                
+                if (dto.getDays() != null) {
+                    meal.setDays(dto.getDays().stream()
+                            .map(String::toUpperCase)
+                            .map(com.gymmanagement.commonservices.enumeration.DayOfWeek::valueOf)
+                            .collect(java.util.stream.Collectors.toSet()));
+                }
+                
                 meal = mealRepo.save(meal);
 
                 if (dto.getFoods() != null) {
@@ -136,6 +165,7 @@ public class DietServiceImpl implements DietService {
 
             MealResponse m = new MealResponse();
             m.setMealName(meal.getMealName().name());
+            m.setDays(meal.getDays().stream().map(Enum::name).sorted().toList()); // 🗓️ Return days
 
             java.util.List<FoodDto> foods = new java.util.ArrayList<>();
             for (DietFood f : meal.getFoods()) {

@@ -2,13 +2,18 @@
 
 package com.gymmanagement.commonservices.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.time.LocalDateTime;
 
 @Data
 @Entity
-@Table(name = "trainers", uniqueConstraints = @UniqueConstraint(columnNames = { "user_id", "gym_id" }))
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
+@Table(name = "trainers", uniqueConstraints = @UniqueConstraint(columnNames = { "user_id", "gym_id" }), indexes = {
+        @Index(name = "idx_trainer_gym_id", columnList = "gym_id"),
+        @Index(name = "idx_trainer_is_active", columnList = "is_active")
+})
 public class Trainer {
 
     @Id
